@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "Retail Analysis Tool"
+version = "1.0.0"
+id = "artifacts/retail-analysis"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 24226
+
+[services.development]
+run = "pnpm --filter @workspace/retail-analysis run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/retail-analysis", "run", "build" ]
+publicDir = "artifacts/retail-analysis/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "24226"
+BASE_PATH = "/"
