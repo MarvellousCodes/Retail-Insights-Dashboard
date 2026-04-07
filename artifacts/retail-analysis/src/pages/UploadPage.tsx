@@ -1,25 +1,20 @@
 import { useState, useRef, DragEvent, ChangeEvent } from "react";
-import { Upload, FileSpreadsheet, AlertCircle } from "lucide-react";
+import { Upload, FileSpreadsheet, AlertCircle, CheckCircle2 } from "lucide-react";
 
-interface UploadScreenProps {
+interface UploadPageProps {
   onUpload: (fileName: string) => void;
 }
 
-export function UploadScreen({ onUpload }: UploadScreenProps) {
+export function UploadPage({ onUpload }: UploadPageProps) {
   const [dragging, setDragging] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const isValidFile = (file: File) => {
-    const validTypes = [
-      "text/csv",
-      "application/vnd.ms-excel",
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    ];
     const validExtensions = [".csv", ".xls", ".xlsx"];
     const ext = "." + file.name.split(".").pop()?.toLowerCase();
-    return validTypes.includes(file.type) || validExtensions.includes(ext);
+    return validExtensions.includes(ext);
   };
 
   const handleFile = (file: File) => {
@@ -60,30 +55,28 @@ export function UploadScreen({ onUpload }: UploadScreenProps) {
   };
 
   return (
-    <div className="min-h-screen bg-[#f8f9fc] flex items-center justify-center p-6">
-      <div className="w-full max-w-md fade-up">
-        <div className="bg-white rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.08)] p-8">
-          <div className="mb-6">
-            <h1 className="text-2xl font-bold text-gray-900 leading-tight">
-              Find where you're losing money
-            </h1>
-            <p className="text-sm text-gray-500 mt-1">
-              Upload your sales or pricing report to get started.
-            </p>
-          </div>
+    <div className="min-h-full flex items-center justify-center p-8">
+      <div className="w-full max-w-lg fade-up">
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold text-gray-900">Upload Report</h1>
+          <p className="text-sm text-gray-500 mt-1">
+            Upload your pricing or sales report to find where you're losing money.
+          </p>
+        </div>
 
+        <div className="bg-white rounded-2xl shadow-[0_2px_16px_rgba(0,0,0,0.07)] p-7">
           <div
             onClick={() => inputRef.current?.click()}
             onDrop={handleDrop}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             className={[
-              "relative flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed py-10 px-6 cursor-pointer transition-all duration-200",
+              "relative flex flex-col items-center justify-center gap-4 rounded-xl border-2 border-dashed py-12 px-6 cursor-pointer transition-all duration-200",
               dragging
                 ? "border-blue-400 bg-blue-50"
                 : selectedFile
-                ? "border-green-400 bg-green-50"
-                : "border-gray-200 bg-gray-50 hover:border-blue-300 hover:bg-blue-50/40",
+                ? "border-green-400 bg-green-50/60"
+                : "border-gray-200 bg-gray-50 hover:border-blue-300 hover:bg-blue-50/30",
             ].join(" ")}
           >
             <input
@@ -96,30 +89,35 @@ export function UploadScreen({ onUpload }: UploadScreenProps) {
 
             {selectedFile ? (
               <>
-                <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
-                  <FileSpreadsheet className="w-6 h-6 text-green-600" />
+                <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center">
+                  <FileSpreadsheet className="w-7 h-7 text-green-600" />
                 </div>
                 <div className="text-center">
-                  <p className="text-sm font-medium text-gray-800 truncate max-w-[220px]">
-                    {selectedFile.name}
-                  </p>
-                  <p className="text-xs text-gray-400 mt-0.5">
+                  <div className="flex items-center justify-center gap-1.5 mb-1">
+                    <CheckCircle2 className="w-4 h-4 text-green-500" />
+                    <p className="text-sm font-semibold text-gray-800 truncate max-w-[260px]">
+                      {selectedFile.name}
+                    </p>
+                  </div>
+                  <p className="text-xs text-gray-400">
                     {(selectedFile.size / 1024).toFixed(1)} KB — click to change
                   </p>
                 </div>
               </>
             ) : (
               <>
-                <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
-                  <Upload className="w-6 h-6 text-gray-400" />
+                <div className="w-14 h-14 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center">
+                  <Upload className="w-7 h-7 text-blue-400" />
                 </div>
                 <div className="text-center">
-                  <p className="text-sm font-medium text-gray-700">
-                    Drop your file here, or{" "}
-                    <span className="text-blue-600">browse</span>
+                  <p className="text-sm font-semibold text-gray-700">
+                    Drag & drop your file here
                   </p>
-                  <p className="text-xs text-gray-400 mt-0.5">
-                    Supports CSV and Excel (.xlsx, .xls)
+                  <p className="text-sm text-gray-400 mt-0.5">
+                    or <span className="text-blue-600 font-medium">browse to upload</span>
+                  </p>
+                  <p className="text-xs text-gray-300 mt-2">
+                    Supports .CSV, .XLS, .XLSX
                   </p>
                 </div>
               </>
@@ -136,14 +134,27 @@ export function UploadScreen({ onUpload }: UploadScreenProps) {
           <button
             onClick={handleUpload}
             className={[
-              "mt-5 w-full py-3 rounded-xl font-semibold text-sm transition-all duration-200",
+              "mt-5 w-full py-3.5 rounded-xl font-semibold text-sm transition-all duration-200",
               selectedFile
                 ? "bg-blue-600 text-white hover:bg-blue-700 active:scale-[0.99] shadow-sm"
                 : "bg-gray-100 text-gray-400 cursor-not-allowed",
             ].join(" ")}
           >
-            Upload Report
+            Upload & Analyse
           </button>
+        </div>
+
+        <div className="mt-5 grid grid-cols-3 gap-3 text-center">
+          {[
+            { label: "Supported formats", value: "CSV, XLS, XLSX" },
+            { label: "Max file size", value: "50 MB" },
+            { label: "Processing time", value: "~5 seconds" },
+          ].map(({ label, value }) => (
+            <div key={label} className="bg-white rounded-xl p-3 shadow-[0_1px_4px_rgba(0,0,0,0.05)]">
+              <p className="text-xs text-gray-400">{label}</p>
+              <p className="text-sm font-semibold text-gray-700 mt-0.5">{value}</p>
+            </div>
+          ))}
         </div>
       </div>
     </div>
