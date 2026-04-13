@@ -234,7 +234,7 @@ export function DashboardPage({ results, onNewUpload }: DashboardPageProps) {
             </div>
             <div className="px-5 py-3 bg-green-50 border-t border-green-100">
               <p className="text-xs text-green-700">
-                <span className="font-semibold">💡 Tip:</span> Fixing these issues could save you{" "}
+                <span className="font-semibold">Tip:</span> Fixing these issues could save you{" "}
                 <span className="font-bold">{formatEuro(potentialSaving)}/month</span>.
               </p>
             </div>

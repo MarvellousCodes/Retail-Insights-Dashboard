@@ -1,4 +1,4 @@
-import { Upload, Search, LayoutDashboard } from "lucide-react";
+import { Upload, LayoutDashboard, AlertCircle, FileText, Settings } from "lucide-react";
 import type { NavTab } from "@/App";
 
 interface SidebarProps {
@@ -9,7 +9,9 @@ interface SidebarProps {
 const NAV_ITEMS: { tab: NavTab; icon: React.ReactNode; label: string }[] = [
   { tab: "dashboard", icon: <LayoutDashboard className="w-5 h-5" />, label: "Dashboard" },
   { tab: "upload", icon: <Upload className="w-5 h-5" />, label: "Upload" },
-  { tab: "analyse", icon: <Search className="w-5 h-5" />, label: "Analyse" },
+  { tab: "issues", icon: <AlertCircle className="w-5 h-5" />, label: "Issues" },
+  { tab: "reports", icon: <FileText className="w-5 h-5" />, label: "Reports" },
+  { tab: "settings", icon: <Settings className="w-5 h-5" />, label: "Settings" },
 ];
 
 export function Sidebar({ activeTab, onTabChange }: SidebarProps) {

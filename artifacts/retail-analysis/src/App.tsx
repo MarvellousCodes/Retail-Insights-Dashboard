@@ -4,10 +4,14 @@ import { Sidebar } from "@/components/Sidebar";
 import { UploadPage } from "@/pages/UploadPage";
 import { AnalysePage } from "@/pages/AnalysePage";
 import { DashboardPage } from "@/pages/DashboardPage";
+import { IssuesPage } from "@/pages/IssuesPage";
+import { ReportsPage } from "@/pages/ReportsPage";
+import { SettingsPage } from "@/pages/SettingsPage";
 
 const queryClient = new QueryClient();
 
-export type NavTab = "upload" | "analyse" | "dashboard";
+export type NavTab = "dashboard" | "upload" | "issues" | "reports" | "settings";
+type InternalTab = NavTab | "analyse";
 
 export interface AnalysisRow {
   product: string;
@@ -109,7 +113,7 @@ const NEW_RESULT_TEMPLATE: Omit<AnalysisResult, "id" | "uploadedAt" | "fileName"
 };
 
 function App() {
-  const [tab, setTab] = useState<NavTab>("dashboard");
+  const [tab, setTab] = useState<InternalTab>("dashboard");
   const [results, setResults] = useState<AnalysisResult[]>(SEED_RESULTS);
   const [analyzing, setAnalyzing] = useState(false);
   const [pendingFile, setPendingFile] = useState("");
@@ -132,14 +136,14 @@ function App() {
     }, 4000);
   };
 
+  const activeNav: NavTab = tab === "analyse" ? "upload" : (tab as NavTab);
+
   return (
     <QueryClientProvider client={queryClient}>
       <div className="flex h-screen bg-[#f4faf6] overflow-hidden">
-        <Sidebar activeTab={tab} onTabChange={setTab} />
+        <Sidebar activeTab={activeNav} onTabChange={(t) => setTab(t)} />
         <main className="flex-1 overflow-y-auto">
-          {tab === "upload" && (
-            <UploadPage onUpload={handleUpload} />
-          )}
+          {tab === "upload" && <UploadPage onUpload={handleUpload} />}
           {tab === "analyse" && (
             <AnalysePage
               analyzing={analyzing}
@@ -150,11 +154,11 @@ function App() {
             />
           )}
           {tab === "dashboard" && (
-            <DashboardPage
-              results={results}
-              onNewUpload={() => setTab("upload")}
-            />
+            <DashboardPage results={results} onNewUpload={() => setTab("upload")} />
           )}
+          {tab === "issues" && <IssuesPage results={results} />}
+          {tab === "reports" && <ReportsPage results={results} onNewUpload={() => setTab("upload")} />}
+          {tab === "settings" && <SettingsPage />}
         </main>
       </div>
     </QueryClientProvider>
