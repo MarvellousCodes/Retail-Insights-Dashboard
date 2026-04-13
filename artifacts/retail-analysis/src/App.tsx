@@ -134,7 +134,7 @@ function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="flex h-screen bg-[#f8f9fc] overflow-hidden">
+      <div className="flex h-screen bg-[#f4faf6] overflow-hidden">
         <Sidebar activeTab={tab} onTabChange={setTab} />
         <main className="flex-1 overflow-y-auto">
           {tab === "upload" && (
