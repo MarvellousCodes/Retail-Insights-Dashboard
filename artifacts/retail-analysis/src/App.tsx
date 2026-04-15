@@ -125,14 +125,18 @@ export function runAnalysis(
       });
     }
 
-    if (product.sellingPrice > 0 && product.costPrice > product.sellingPrice) {
-      if (!anomalyIds.has(product.id)) {
-        priceAnomalies.push({ product, reason: "Selling price is below cost price.", severity: "Critical" });
+    if (!anomalyIds.has(product.id)) {
+      if (product.sellingPrice > 0 && product.costPrice > product.sellingPrice) {
+        priceAnomalies.push({ product, reason: "Selling price is below cost — losing money on every sale.", severity: "Critical" });
         anomalyIds.add(product.id);
-      }
-    } else if (product.costPrice === 0 || product.sellingPrice === 0) {
-      if (!anomalyIds.has(product.id)) {
+      } else if (product.costPrice === 0 || product.sellingPrice === 0) {
         priceAnomalies.push({ product, reason: "Zero cost or selling price — likely a data entry error.", severity: "High" });
+        anomalyIds.add(product.id);
+      } else if (product.margin > 75) {
+        priceAnomalies.push({ product, reason: `Unusually high margin (${product.margin}%) — check cost price is correct.`, severity: "Medium" });
+        anomalyIds.add(product.id);
+      } else if (product.margin < 0) {
+        priceAnomalies.push({ product, reason: `Negative margin (${product.margin}%) — product is priced below cost.`, severity: "Critical" });
         anomalyIds.add(product.id);
       }
     }

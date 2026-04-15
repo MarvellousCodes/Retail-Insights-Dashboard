@@ -62,10 +62,13 @@ export function IssuesPage({ products, marginAlerts, priceAnomalies, fixedIds, o
   const fixed = marginAlerts.filter((a) => fixedIds.has(a.product.id));
   const manual = products.filter((p) => p.isManualEntry && !fixedIds.has(p.id));
 
+  // Build a lookup of anomalies by product id
+  const anomalyMap = new Map(priceAnomalies.map((a) => [a.product.id, a]));
+
   type Row = {
     key: string;
     product: Product;
-    issueType: "margin" | "price" | "manual";
+    issueType: "margin" | "price" | "both" | "manual";
     severity: "Critical" | "High" | "Medium" | "Low";
     threshold?: number;
     gap?: number;
@@ -77,24 +80,30 @@ export function IssuesPage({ products, marginAlerts, priceAnomalies, fixedIds, o
   };
 
   const rows: Row[] = [];
+  const addedIds = new Set<string>();
 
+  // Margin alert rows — tag as "both" if they also have an anomaly
   active.forEach((a) => {
+    const anomaly = anomalyMap.get(a.product.id);
     rows.push({
       key: a.product.id + "-margin",
       product: a.product,
-      issueType: "margin",
-      severity: a.severity,
+      issueType: anomaly ? "both" : "margin",
+      severity: anomaly && anomaly.severity === "Critical" ? "Critical" : a.severity,
       threshold: a.threshold,
       gap: a.gap,
       recommendedPrice: a.recommendedPrice,
       roundedPrice: a.roundedPrice,
       profitImpact: a.profitImpact,
+      reason: anomaly?.reason,
       isFixed: false,
     });
+    addedIds.add(a.product.id);
   });
 
+  // Pure price-anomaly rows (not already in margin alerts)
   priceAnomalies.forEach((a) => {
-    if (rows.some((r) => r.product.id === a.product.id) || fixedIds.has(a.product.id)) return;
+    if (addedIds.has(a.product.id) || fixedIds.has(a.product.id)) return;
     rows.push({
       key: a.product.id + "-price",
       product: a.product,
@@ -103,6 +112,7 @@ export function IssuesPage({ products, marginAlerts, priceAnomalies, fixedIds, o
       reason: a.reason,
       isFixed: false,
     });
+    addedIds.add(a.product.id);
   });
 
   manual.forEach((p) => {
@@ -133,8 +143,8 @@ export function IssuesPage({ products, marginAlerts, priceAnomalies, fixedIds, o
 
   const filtered =
     filter === "all" ? rows.filter((r) => !r.isFixed) :
-    filter === "margin" ? rows.filter((r) => r.issueType === "margin" && !r.isFixed) :
-    filter === "price" ? rows.filter((r) => r.issueType === "price" && !r.isFixed) :
+    filter === "margin" ? rows.filter((r) => (r.issueType === "margin" || r.issueType === "both") && !r.isFixed) :
+    filter === "price" ? rows.filter((r) => (r.issueType === "price" || r.issueType === "both") && !r.isFixed) :
     filter === "manual" ? rows.filter((r) => r.issueType === "manual" && !r.isFixed) :
     rows.filter((r) => r.isFixed);
 
@@ -175,8 +185,8 @@ export function IssuesPage({ products, marginAlerts, priceAnomalies, fixedIds, o
         {/* KPI strip */}
         <div className="grid grid-cols-4 gap-3 mb-5">
           {[
-            { label: "Below Margin", value: active.filter(r => r.issueType === "margin").length, icon: <Tag className="w-4 h-4 text-red-500" />, bg: "bg-red-50", color: "text-red-700" },
-            { label: "Price Anomalies", value: priceAnomalies.filter(a => !fixedIds.has(a.product.id)).length, icon: <AlertCircle className="w-4 h-4 text-orange-500" />, bg: "bg-orange-50", color: "text-orange-700" },
+            { label: "Below Margin", value: rows.filter(r => (r.issueType === "margin" || r.issueType === "both") && !r.isFixed).length, icon: <Tag className="w-4 h-4 text-red-500" />, bg: "bg-red-50", color: "text-red-700" },
+            { label: "Price Anomalies", value: rows.filter(r => (r.issueType === "price" || r.issueType === "both") && !r.isFixed).length, icon: <AlertCircle className="w-4 h-4 text-orange-500" />, bg: "bg-orange-50", color: "text-orange-700" },
             { label: "Manual Entries", value: manual.length, icon: <PackageX className="w-4 h-4 text-violet-500" />, bg: "bg-violet-50", color: "text-violet-700" },
             { label: "Marked Fixed", value: fixedIds.size, icon: <CheckCircle2 className="w-4 h-4 text-green-500" />, bg: "bg-green-50", color: "text-green-700" },
           ].map(({ label, value, icon, bg, color }) => (
@@ -196,8 +206,8 @@ export function IssuesPage({ products, marginAlerts, priceAnomalies, fixedIds, o
           {(["all", "margin", "price", "manual", "fixed"] as const).map((f) => {
             const counts: Record<IssueFilter, number> = {
               all: allActiveCount,
-              margin: rows.filter(r => r.issueType === "margin" && !r.isFixed).length,
-              price: rows.filter(r => r.issueType === "price" && !r.isFixed).length,
+              margin: rows.filter(r => (r.issueType === "margin" || r.issueType === "both") && !r.isFixed).length,
+              price: rows.filter(r => (r.issueType === "price" || r.issueType === "both") && !r.isFixed).length,
               manual: rows.filter(r => r.issueType === "manual" && !r.isFixed).length,
               fixed: rows.filter(r => r.isFixed).length,
             };
@@ -242,11 +252,18 @@ export function IssuesPage({ products, marginAlerts, priceAnomalies, fixedIds, o
               {sorted.map((row) => (
                 <tr key={row.key} className={`transition-colors ${row.isFixed ? "opacity-50 bg-gray-50/60" : "hover:bg-gray-50"}`}>
                   <td className="px-5 py-3.5">
-                    <p className="text-xs font-bold text-gray-900">{row.product.name}</p>
-                    <p className="text-[10px] text-gray-400 mt-0.5">
-                      {row.product.category || row.product.department || "—"}
-                      {row.product.isManualEntry && " · Manual"}
-                    </p>
+                    <div className="flex items-start gap-1.5">
+                      <div>
+                        <p className="text-xs font-bold text-gray-900">{row.product.name}</p>
+                        <p className="text-[10px] text-gray-400 mt-0.5">
+                          {row.product.category || row.product.department || "—"}
+                          {row.product.isManualEntry && " · Manual"}
+                        </p>
+                        {(row.issueType === "price" || row.issueType === "both") && row.reason && (
+                          <p className="text-[10px] text-orange-500 font-semibold mt-0.5">{row.reason}</p>
+                        )}
+                      </div>
+                    </div>
                   </td>
                   <td className="px-4 py-3.5 text-right text-xs text-gray-600">{fmt(row.product.costPrice)}</td>
                   <td className="px-4 py-3.5 text-right text-xs text-gray-600">{fmt(row.product.sellingPrice)}</td>
