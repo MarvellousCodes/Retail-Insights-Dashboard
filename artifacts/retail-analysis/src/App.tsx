@@ -156,7 +156,7 @@ function App() {
           {tab === "dashboard" && (
             <DashboardPage results={results} onNewUpload={() => setTab("upload")} />
           )}
-          {tab === "issues" && <IssuesPage results={results} />}
+          {tab === "issues" && <IssuesPage />}
           {tab === "reports" && <ReportsPage results={results} onNewUpload={() => setTab("upload")} />}
           {tab === "settings" && <SettingsPage />}
         </main>
