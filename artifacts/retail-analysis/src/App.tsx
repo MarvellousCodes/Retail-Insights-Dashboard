@@ -13,7 +13,7 @@ const queryClient = new QueryClient();
 export type NavTab = "dashboard" | "upload" | "issues" | "reports" | "settings";
 type InternalTab = NavTab | "analyse";
 
-// ─── Core Types ─────────────────────────────────────────────────────────────
+// ─── Core Types ───────────────────────────────────────────────────────────────
 
 export interface Product {
   id: string;
@@ -33,6 +33,9 @@ export interface MarginAlert {
   threshold: number;
   gap: number;
   severity: "Critical" | "High" | "Medium" | "Low";
+  recommendedPrice: number;
+  roundedPrice: number;
+  profitImpact: number;
 }
 
 export interface PriceAnomaly {
@@ -65,13 +68,24 @@ export const DEFAULT_THRESHOLDS: DeptThreshold[] = [
   { department: "General", minMargin: 20 },
 ];
 
+// ─── Utilities ───────────────────────────────────────────────────────────────
+
+export function roundRetailPrice(price: number): number {
+  if (price <= 0) return 0;
+  const whole = Math.floor(price);
+  const frac = price - whole;
+  if (frac <= 0.49) return +(whole + 0.49).toFixed(2);
+  if (frac <= 0.99) return +(whole + 0.99).toFixed(2);
+  return +(whole + 1.49).toFixed(2);
+}
+
 // ─── Analysis Engine ─────────────────────────────────────────────────────────
 
 export function runAnalysis(
   products: Product[],
   thresholds: DeptThreshold[]
 ): { marginAlerts: MarginAlert[]; priceAnomalies: PriceAnomaly[] } {
-  const defaultMinMargin = 20;
+  const defaultMin = 20;
   const marginAlerts: MarginAlert[] = [];
   const priceAnomalies: PriceAnomaly[] = [];
   const anomalyIds = new Set<string>();
@@ -83,9 +97,8 @@ export function runAnalysis(
         (t) =>
           t.department.toLowerCase() === key ||
           t.department.toLowerCase() === product.category.toLowerCase()
-      )?.minMargin ?? defaultMinMargin;
+      )?.minMargin ?? defaultMin;
 
-    // Margin below threshold
     if (product.margin < threshold) {
       const gap = threshold - product.margin;
       let severity: MarginAlert["severity"];
@@ -93,45 +106,40 @@ export function runAnalysis(
       else if (gap >= 10) severity = "High";
       else if (gap >= 5) severity = "Medium";
       else severity = "Low";
-      marginAlerts.push({ product, threshold, gap, severity });
+
+      const recommendedPrice =
+        threshold > 0 && threshold < 100
+          ? +(product.costPrice / (1 - threshold / 100)).toFixed(2)
+          : product.sellingPrice;
+      const roundedPrice = roundRetailPrice(recommendedPrice);
+      const profitImpact = +(roundedPrice - product.sellingPrice).toFixed(2);
+
+      marginAlerts.push({
+        product,
+        threshold,
+        gap,
+        severity,
+        recommendedPrice,
+        roundedPrice,
+        profitImpact,
+      });
     }
 
-    // Price anomalies
     if (product.sellingPrice > 0 && product.costPrice > product.sellingPrice) {
       if (!anomalyIds.has(product.id)) {
-        priceAnomalies.push({
-          product,
-          reason: "Selling price is below cost price — every sale loses money.",
-          severity: "Critical",
-        });
-        anomalyIds.add(product.id);
-      }
-    } else if (product.margin < 0 && product.sellingPrice > 0) {
-      if (!anomalyIds.has(product.id)) {
-        priceAnomalies.push({
-          product,
-          reason: "Negative margin detected — check cost and selling price entries.",
-          severity: "Critical",
-        });
+        priceAnomalies.push({ product, reason: "Selling price is below cost price.", severity: "Critical" });
         anomalyIds.add(product.id);
       }
     } else if (product.costPrice === 0 || product.sellingPrice === 0) {
       if (!anomalyIds.has(product.id)) {
-        priceAnomalies.push({
-          product,
-          reason: "Zero cost or selling price detected — likely a data entry error.",
-          severity: "High",
-        });
+        priceAnomalies.push({ product, reason: "Zero cost or selling price — likely a data entry error.", severity: "High" });
         anomalyIds.add(product.id);
       }
     }
   });
 
-  // Sort alerts: Critical → High → Medium → Low, then by gap descending
   const order = { Critical: 0, High: 1, Medium: 2, Low: 3 };
-  marginAlerts.sort(
-    (a, b) => order[a.severity] - order[b.severity] || b.gap - a.gap
-  );
+  marginAlerts.sort((a, b) => order[a.severity] - order[b.severity] || b.gap - a.gap);
   priceAnomalies.sort((a, b) => order[a.severity] - order[b.severity]);
 
   return { marginAlerts, priceAnomalies };
@@ -141,15 +149,17 @@ export function runAnalysis(
 
 function App() {
   const [tab, setTab] = useState<InternalTab>("dashboard");
+  const [sidebarExpanded, setSidebarExpanded] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
   const [marginAlerts, setMarginAlerts] = useState<MarginAlert[]>([]);
   const [priceAnomalies, setPriceAnomalies] = useState<PriceAnomaly[]>([]);
   const [thresholds, setThresholds] = useState<DeptThreshold[]>(DEFAULT_THRESHOLDS);
+  const [fixedIds, setFixedIds] = useState<Set<string>>(new Set());
   const [analyzing, setAnalyzing] = useState(false);
   const [lastFileName, setLastFileName] = useState("");
 
-  const applyAnalysis = (allProducts: Product[], currentThresholds: DeptThreshold[]) => {
-    const { marginAlerts: ma, priceAnomalies: pa } = runAnalysis(allProducts, currentThresholds);
+  const applyAnalysis = (allProducts: Product[], t: DeptThreshold[]) => {
+    const { marginAlerts: ma, priceAnomalies: pa } = runAnalysis(allProducts, t);
     setMarginAlerts(ma);
     setPriceAnomalies(pa);
   };
@@ -158,46 +168,56 @@ function App() {
     setLastFileName(fileName);
     setAnalyzing(true);
     setTab("analyse");
-    const manualOnes = products.filter((p) => p.isManualEntry);
-    const allProducts = [...csvProducts, ...manualOnes];
-    setProducts(allProducts);
-    applyAnalysis(allProducts, thresholds);
-    setTimeout(() => {
-      setAnalyzing(false);
-      setTab("issues");
-    }, 2800);
+    setFixedIds(new Set());
+    const manual = products.filter((p) => p.isManualEntry);
+    const all = [...csvProducts, ...manual];
+    setProducts(all);
+    applyAnalysis(all, thresholds);
+    setTimeout(() => { setAnalyzing(false); setTab("issues"); }, 2800);
   };
 
   const handleManualAdd = (product: Product) => {
-    const allProducts = [...products, product];
-    setProducts(allProducts);
-    applyAnalysis(allProducts, thresholds);
+    const all = [...products, product];
+    setProducts(all);
+    applyAnalysis(all, thresholds);
   };
 
-  const handleThresholdUpdate = (newThresholds: DeptThreshold[]) => {
-    setThresholds(newThresholds);
-    if (products.length > 0) applyAnalysis(products, newThresholds);
+  const handleThresholdUpdate = (newT: DeptThreshold[]) => {
+    setThresholds(newT);
+    if (products.length > 0) applyAnalysis(products, newT);
+  };
+
+  const handleMarkFixed = (id: string) => {
+    setFixedIds((prev) => new Set([...prev, id]));
   };
 
   const activeNav: NavTab = tab === "analyse" ? "upload" : (tab as NavTab);
 
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="flex h-screen bg-[#f4faf6] overflow-hidden">
-        <Sidebar activeTab={activeNav} onTabChange={(t) => setTab(t)} />
+      <div className="flex h-screen bg-gray-50 overflow-hidden">
+        <Sidebar
+          activeTab={activeNav}
+          onTabChange={(t) => setTab(t)}
+          expanded={sidebarExpanded}
+          onToggle={() => setSidebarExpanded((e) => !e)}
+        />
         <main className="flex-1 overflow-y-auto">
           {tab === "upload" && (
-            <UploadPage onAnalyse={handleAnalyse} onManualAdd={handleManualAdd} manualProducts={products.filter(p => p.isManualEntry)} />
+            <UploadPage
+              onAnalyse={handleAnalyse}
+              onManualAdd={handleManualAdd}
+              manualProducts={products.filter((p) => p.isManualEntry)}
+            />
           )}
-          {tab === "analyse" && (
-            <AnalysePage analyzing={analyzing} fileName={lastFileName} />
-          )}
+          {tab === "analyse" && <AnalysePage analyzing={analyzing} fileName={lastFileName} />}
           {tab === "dashboard" && (
             <DashboardPage
               products={products}
               marginAlerts={marginAlerts}
               priceAnomalies={priceAnomalies}
               thresholds={thresholds}
+              fixedIds={fixedIds}
               onNewUpload={() => setTab("upload")}
             />
           )}
@@ -206,6 +226,8 @@ function App() {
               products={products}
               marginAlerts={marginAlerts}
               priceAnomalies={priceAnomalies}
+              fixedIds={fixedIds}
+              onMarkFixed={handleMarkFixed}
               onNewUpload={() => setTab("upload")}
             />
           )}
@@ -214,6 +236,7 @@ function App() {
               products={products}
               marginAlerts={marginAlerts}
               priceAnomalies={priceAnomalies}
+              fixedIds={fixedIds}
               onNewUpload={() => setTab("upload")}
             />
           )}
