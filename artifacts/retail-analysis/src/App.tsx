@@ -13,127 +13,170 @@ const queryClient = new QueryClient();
 export type NavTab = "dashboard" | "upload" | "issues" | "reports" | "settings";
 type InternalTab = NavTab | "analyse";
 
-export interface AnalysisRow {
-  product: string;
-  issue: string;
-  estimatedLoss: number;
-  category: string;
-}
+// ─── Core Types ─────────────────────────────────────────────────────────────
 
-export interface AnalysisResult {
+export interface Product {
   id: string;
-  totalLoss: number;
-  pricingIssues: number;
-  inconsistencies: number;
-  suspiciousEntries: number;
-  worstProduct: { name: string; loss: number };
-  biggestIssue: string;
-  mostAffectedCategory: string;
-  rows: AnalysisRow[];
-  uploadedAt: Date;
-  fileName: string;
+  name: string;
+  sku: string;
+  category: string;
+  department: string;
+  costPrice: number;
+  sellingPrice: number;
+  margin: number;
+  supplier: string;
+  isManualEntry: boolean;
 }
 
-export const SEED_RESULTS: AnalysisResult[] = [
-  {
-    id: "seed-1",
-    totalLoss: 1240,
-    pricingIssues: 6,
-    inconsistencies: 3,
-    suspiciousEntries: 2,
-    worstProduct: { name: "Coke 500ml", loss: 320 },
-    biggestIssue: "Low margins",
-    mostAffectedCategory: "Drinks",
-    rows: [
-      { product: "Coke 500ml", issue: "Margin too low", estimatedLoss: 120, category: "Drinks" },
-      { product: "Orange Juice", issue: "Pricing inconsistency", estimatedLoss: 95, category: "Drinks" },
-      { product: "Water 1L", issue: "Margin too low", estimatedLoss: 60, category: "Drinks" },
-      { product: "Bread", issue: "Cost mismatch", estimatedLoss: 80, category: "Bakery" },
-      { product: "Chips 200g", issue: "Suspicious entry", estimatedLoss: 45, category: "Snacks" },
-      { product: "Milk 1L", issue: "Cost mismatch", estimatedLoss: 70, category: "Dairy" },
-    ],
-    uploadedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3),
-    fileName: "sales_report_march.xlsx",
-  },
-  {
-    id: "seed-2",
-    totalLoss: 890,
-    pricingIssues: 4,
-    inconsistencies: 2,
-    suspiciousEntries: 1,
-    worstProduct: { name: "Greek Yogurt", loss: 210 },
-    biggestIssue: "Cost mismatch",
-    mostAffectedCategory: "Dairy",
-    rows: [
-      { product: "Greek Yogurt", issue: "Cost mismatch", estimatedLoss: 210, category: "Dairy" },
-      { product: "Butter 250g", issue: "Margin too low", estimatedLoss: 90, category: "Dairy" },
-      { product: "Sparkling Water", issue: "Pricing inconsistency", estimatedLoss: 75, category: "Drinks" },
-      { product: "Croissant", issue: "Suspicious entry", estimatedLoss: 55, category: "Bakery" },
-      { product: "Granola Bar", issue: "Margin too low", estimatedLoss: 40, category: "Snacks" },
-    ],
-    uploadedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 10),
-    fileName: "pricing_feb.csv",
-  },
-  {
-    id: "seed-3",
-    totalLoss: 560,
-    pricingIssues: 3,
-    inconsistencies: 1,
-    suspiciousEntries: 2,
-    worstProduct: { name: "Red Wine", loss: 180 },
-    biggestIssue: "Suspicious entry",
-    mostAffectedCategory: "Alcohol",
-    rows: [
-      { product: "Red Wine", issue: "Suspicious entry", estimatedLoss: 180, category: "Alcohol" },
-      { product: "Beer 6-Pack", issue: "Margin too low", estimatedLoss: 95, category: "Alcohol" },
-      { product: "Sourdough", issue: "Cost mismatch", estimatedLoss: 65, category: "Bakery" },
-      { product: "Cheddar 200g", issue: "Pricing inconsistency", estimatedLoss: 50, category: "Dairy" },
-    ],
-    uploadedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 21),
-    fileName: "inventory_jan.xlsx",
-  },
+export interface MarginAlert {
+  product: Product;
+  threshold: number;
+  gap: number;
+  severity: "Critical" | "High" | "Medium" | "Low";
+}
+
+export interface PriceAnomaly {
+  product: Product;
+  reason: string;
+  severity: "Critical" | "High" | "Medium" | "Low";
+}
+
+export interface DeptThreshold {
+  department: string;
+  minMargin: number;
+}
+
+// ─── Default Thresholds ──────────────────────────────────────────────────────
+
+export const DEFAULT_THRESHOLDS: DeptThreshold[] = [
+  { department: "Off Licence", minMargin: 18 },
+  { department: "Alcohol", minMargin: 18 },
+  { department: "Dairy", minMargin: 25 },
+  { department: "Bakery", minMargin: 30 },
+  { department: "Produce", minMargin: 35 },
+  { department: "Grocery", minMargin: 22 },
+  { department: "Deli", minMargin: 45 },
+  { department: "Non-Food", minMargin: 30 },
+  { department: "Drinks", minMargin: 20 },
+  { department: "Beverages", minMargin: 20 },
+  { department: "Snacks", minMargin: 28 },
+  { department: "Frozen", minMargin: 22 },
+  { department: "Chilled", minMargin: 24 },
+  { department: "General", minMargin: 20 },
 ];
 
-const NEW_RESULT_TEMPLATE: Omit<AnalysisResult, "id" | "uploadedAt" | "fileName"> = {
-  totalLoss: 1240,
-  pricingIssues: 6,
-  inconsistencies: 3,
-  suspiciousEntries: 2,
-  worstProduct: { name: "Coke 500ml", loss: 320 },
-  biggestIssue: "Low margins",
-  mostAffectedCategory: "Drinks",
-  rows: [
-    { product: "Coke 500ml", issue: "Margin too low", estimatedLoss: 120, category: "Drinks" },
-    { product: "Orange Juice", issue: "Pricing inconsistency", estimatedLoss: 95, category: "Drinks" },
-    { product: "Water 1L", issue: "Margin too low", estimatedLoss: 60, category: "Drinks" },
-    { product: "Bread", issue: "Cost mismatch", estimatedLoss: 80, category: "Bakery" },
-    { product: "Chips 200g", issue: "Suspicious entry", estimatedLoss: 45, category: "Snacks" },
-    { product: "Milk 1L", issue: "Cost mismatch", estimatedLoss: 70, category: "Dairy" },
-  ],
-};
+// ─── Analysis Engine ─────────────────────────────────────────────────────────
+
+export function runAnalysis(
+  products: Product[],
+  thresholds: DeptThreshold[]
+): { marginAlerts: MarginAlert[]; priceAnomalies: PriceAnomaly[] } {
+  const defaultMinMargin = 20;
+  const marginAlerts: MarginAlert[] = [];
+  const priceAnomalies: PriceAnomaly[] = [];
+  const anomalyIds = new Set<string>();
+
+  products.forEach((product) => {
+    const key = (product.department || product.category || "").toLowerCase();
+    const threshold =
+      thresholds.find(
+        (t) =>
+          t.department.toLowerCase() === key ||
+          t.department.toLowerCase() === product.category.toLowerCase()
+      )?.minMargin ?? defaultMinMargin;
+
+    // Margin below threshold
+    if (product.margin < threshold) {
+      const gap = threshold - product.margin;
+      let severity: MarginAlert["severity"];
+      if (product.margin < 0) severity = "Critical";
+      else if (gap >= 10) severity = "High";
+      else if (gap >= 5) severity = "Medium";
+      else severity = "Low";
+      marginAlerts.push({ product, threshold, gap, severity });
+    }
+
+    // Price anomalies
+    if (product.sellingPrice > 0 && product.costPrice > product.sellingPrice) {
+      if (!anomalyIds.has(product.id)) {
+        priceAnomalies.push({
+          product,
+          reason: "Selling price is below cost price — every sale loses money.",
+          severity: "Critical",
+        });
+        anomalyIds.add(product.id);
+      }
+    } else if (product.margin < 0 && product.sellingPrice > 0) {
+      if (!anomalyIds.has(product.id)) {
+        priceAnomalies.push({
+          product,
+          reason: "Negative margin detected — check cost and selling price entries.",
+          severity: "Critical",
+        });
+        anomalyIds.add(product.id);
+      }
+    } else if (product.costPrice === 0 || product.sellingPrice === 0) {
+      if (!anomalyIds.has(product.id)) {
+        priceAnomalies.push({
+          product,
+          reason: "Zero cost or selling price detected — likely a data entry error.",
+          severity: "High",
+        });
+        anomalyIds.add(product.id);
+      }
+    }
+  });
+
+  // Sort alerts: Critical → High → Medium → Low, then by gap descending
+  const order = { Critical: 0, High: 1, Medium: 2, Low: 3 };
+  marginAlerts.sort(
+    (a, b) => order[a.severity] - order[b.severity] || b.gap - a.gap
+  );
+  priceAnomalies.sort((a, b) => order[a.severity] - order[b.severity]);
+
+  return { marginAlerts, priceAnomalies };
+}
+
+// ─── App ──────────────────────────────────────────────────────────────────────
 
 function App() {
   const [tab, setTab] = useState<InternalTab>("dashboard");
-  const [results, setResults] = useState<AnalysisResult[]>(SEED_RESULTS);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [marginAlerts, setMarginAlerts] = useState<MarginAlert[]>([]);
+  const [priceAnomalies, setPriceAnomalies] = useState<PriceAnomaly[]>([]);
+  const [thresholds, setThresholds] = useState<DeptThreshold[]>(DEFAULT_THRESHOLDS);
   const [analyzing, setAnalyzing] = useState(false);
-  const [pendingFile, setPendingFile] = useState("");
-  const [lastResult, setLastResult] = useState<AnalysisResult | null>(null);
+  const [lastFileName, setLastFileName] = useState("");
 
-  const handleUpload = (fileName: string) => {
-    setPendingFile(fileName);
+  const applyAnalysis = (allProducts: Product[], currentThresholds: DeptThreshold[]) => {
+    const { marginAlerts: ma, priceAnomalies: pa } = runAnalysis(allProducts, currentThresholds);
+    setMarginAlerts(ma);
+    setPriceAnomalies(pa);
+  };
+
+  const handleAnalyse = (csvProducts: Product[], fileName: string) => {
+    setLastFileName(fileName);
     setAnalyzing(true);
     setTab("analyse");
+    const manualOnes = products.filter((p) => p.isManualEntry);
+    const allProducts = [...csvProducts, ...manualOnes];
+    setProducts(allProducts);
+    applyAnalysis(allProducts, thresholds);
     setTimeout(() => {
-      const newResult: AnalysisResult = {
-        ...NEW_RESULT_TEMPLATE,
-        id: `result-${Date.now()}`,
-        uploadedAt: new Date(),
-        fileName,
-      };
-      setResults((prev) => [newResult, ...prev]);
-      setLastResult(newResult);
       setAnalyzing(false);
-    }, 4000);
+      setTab("issues");
+    }, 2800);
+  };
+
+  const handleManualAdd = (product: Product) => {
+    const allProducts = [...products, product];
+    setProducts(allProducts);
+    applyAnalysis(allProducts, thresholds);
+  };
+
+  const handleThresholdUpdate = (newThresholds: DeptThreshold[]) => {
+    setThresholds(newThresholds);
+    if (products.length > 0) applyAnalysis(products, newThresholds);
   };
 
   const activeNav: NavTab = tab === "analyse" ? "upload" : (tab as NavTab);
@@ -143,22 +186,40 @@ function App() {
       <div className="flex h-screen bg-[#f4faf6] overflow-hidden">
         <Sidebar activeTab={activeNav} onTabChange={(t) => setTab(t)} />
         <main className="flex-1 overflow-y-auto">
-          {tab === "upload" && <UploadPage onUpload={handleUpload} />}
+          {tab === "upload" && (
+            <UploadPage onAnalyse={handleAnalyse} onManualAdd={handleManualAdd} manualProducts={products.filter(p => p.isManualEntry)} />
+          )}
           {tab === "analyse" && (
-            <AnalysePage
-              analyzing={analyzing}
-              fileName={pendingFile}
-              result={lastResult}
-              onNavigateDashboard={() => setTab("dashboard")}
+            <AnalysePage analyzing={analyzing} fileName={lastFileName} />
+          )}
+          {tab === "dashboard" && (
+            <DashboardPage
+              products={products}
+              marginAlerts={marginAlerts}
+              priceAnomalies={priceAnomalies}
+              thresholds={thresholds}
               onNewUpload={() => setTab("upload")}
             />
           )}
-          {tab === "dashboard" && (
-            <DashboardPage results={results} onNewUpload={() => setTab("upload")} />
+          {tab === "issues" && (
+            <IssuesPage
+              products={products}
+              marginAlerts={marginAlerts}
+              priceAnomalies={priceAnomalies}
+              onNewUpload={() => setTab("upload")}
+            />
           )}
-          {tab === "issues" && <IssuesPage />}
-          {tab === "reports" && <ReportsPage results={results} onNewUpload={() => setTab("upload")} />}
-          {tab === "settings" && <SettingsPage />}
+          {tab === "reports" && (
+            <ReportsPage
+              products={products}
+              marginAlerts={marginAlerts}
+              priceAnomalies={priceAnomalies}
+              onNewUpload={() => setTab("upload")}
+            />
+          )}
+          {tab === "settings" && (
+            <SettingsPage thresholds={thresholds} onUpdate={handleThresholdUpdate} />
+          )}
         </main>
       </div>
     </QueryClientProvider>
