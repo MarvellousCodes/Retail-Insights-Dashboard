@@ -8,13 +8,16 @@ interface ReportsPageProps {
   priceAnomalies: PriceAnomaly[];
   fixedIds: Set<string>;
   onNewUpload: () => void;
+  sourceControls: import("@/components/SourceSelector").SourceControls;
 }
 
 function fmt(n: number) { return `€${n.toFixed(2)}`; }
 
 const TOP_N_OPTIONS = [10, 25, 50, 100, -1];
 
-export function ReportsPage({ products, marginAlerts, priceAnomalies, fixedIds, onNewUpload }: ReportsPageProps) {
+import { SourceSelector } from "@/components/SourceSelector";
+
+export function ReportsPage({ products, marginAlerts, priceAnomalies, fixedIds, onNewUpload, sourceControls }: ReportsPageProps) {
   const [topN, setTopN] = useState(25);
 
   if (products.length === 0) {
@@ -103,6 +106,7 @@ export function ReportsPage({ products, marginAlerts, priceAnomalies, fixedIds, 
             <p className="text-sm text-gray-400 mt-0.5">{products.length} products · {items.length} active issues</p>
           </div>
           <div className="flex items-center gap-3">
+            <SourceSelector {...sourceControls} />
             <button onClick={onNewUpload} className="flex items-center gap-2 text-xs font-bold text-gray-600 border border-gray-200 bg-white px-4 py-2.5 rounded-xl hover:border-violet-300 hover:text-violet-600">
               <Upload className="w-3.5 h-3.5" /> New Upload
             </button>

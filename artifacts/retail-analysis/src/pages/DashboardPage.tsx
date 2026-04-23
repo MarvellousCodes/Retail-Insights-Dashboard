@@ -10,9 +10,12 @@ interface DashboardPageProps {
   thresholds: DeptThreshold[];
   fixedIds: Set<string>;
   onNewUpload: () => void;
+  sourceControls: import("@/components/SourceSelector").SourceControls;
 }
 
-export function DashboardPage({ products, marginAlerts, priceAnomalies, thresholds, fixedIds, onNewUpload }: DashboardPageProps) {
+import { SourceSelector } from "@/components/SourceSelector";
+
+export function DashboardPage({ products, marginAlerts, priceAnomalies, thresholds, fixedIds, onNewUpload, sourceControls }: DashboardPageProps) {
   if (products.length === 0) {
     return (
       <div className="min-h-full bg-gray-50 flex items-center justify-center fade-up">
@@ -70,9 +73,12 @@ export function DashboardPage({ products, marginAlerts, priceAnomalies, threshol
             <h1 className="text-xl font-black text-gray-900">Dashboard</h1>
             <p className="text-sm text-gray-400 mt-0.5">{products.length} products analysed</p>
           </div>
-          <button onClick={onNewUpload} className="flex items-center gap-2 bg-violet-600 text-white text-xs font-bold px-4 py-2.5 rounded-xl hover:bg-violet-700 transition-colors shadow-sm shadow-violet-600/25">
-            <Upload className="w-3.5 h-3.5" /> New Upload
-          </button>
+          <div className="flex items-center gap-2">
+            <SourceSelector {...sourceControls} />
+            <button onClick={onNewUpload} className="flex items-center gap-2 bg-violet-600 text-white text-xs font-bold px-4 py-2.5 rounded-xl hover:bg-violet-700 transition-colors shadow-sm shadow-violet-600/25">
+              <Upload className="w-3.5 h-3.5" /> New Upload
+            </button>
+          </div>
         </div>
 
         {/* Total recoverable banner */}

@@ -1,6 +1,9 @@
 import { useState, useRef, DragEvent, ChangeEvent } from "react";
-import { Upload, FileSpreadsheet, AlertCircle, CheckCircle2, PlusCircle, ChevronRight, Info } from "lucide-react";
-import type { Product } from "@/App";
+import {
+  Upload, AlertCircle, CheckCircle2, PlusCircle, ChevronRight, Info,
+  FileSpreadsheet, X, ChevronDown,
+} from "lucide-react";
+import type { Product, Source } from "@/App";
 
 // ─── CSV Parsing ─────────────────────────────────────────────────────────────
 
@@ -70,7 +73,7 @@ function autoDetect(headers: string[]): ColumnMapping {
   };
 }
 
-function rowsToProducts(rows: Record<string, string>[], mapping: ColumnMapping): Product[] {
+function rowsToProducts(rows: Record<string, string>[], mapping: ColumnMapping, fileTag: string): Product[] {
   return rows.map((row, i) => {
     const name = (mapping.name ? row[mapping.name] : "").trim();
     if (!name) return null;
@@ -78,7 +81,8 @@ function rowsToProducts(rows: Record<string, string>[], mapping: ColumnMapping):
     const sellingPrice = parsePrice(mapping.sellingPrice ? row[mapping.sellingPrice] : "0");
     const margin = sellingPrice > 0 ? Math.round(((sellingPrice - costPrice) / sellingPrice) * 1000) / 10 : costPrice > 0 ? -100 : 0;
     return {
-      id: `csv-${i}-${Date.now()}`, name,
+      id: `${fileTag}-${i}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      name,
       sku: (mapping.sku ? row[mapping.sku] : "") ?? "",
       department: (mapping.department ? row[mapping.department] : "") ?? "",
       category: (mapping.category ? row[mapping.category] : "") ||
@@ -91,49 +95,95 @@ function rowsToProducts(rows: Record<string, string>[], mapping: ColumnMapping):
 }
 
 const DEPARTMENTS = ["Off Licence", "Alcohol", "Dairy", "Bakery", "Produce", "Grocery", "Deli", "Non-Food", "Drinks", "Beverages", "Snacks", "Frozen", "Chilled", "General", "Other"];
-type Step = "drop" | "map";
+
 type ActiveTab = "csv" | "manual";
 const emptyForm = { name: "", sku: "", department: "Grocery", category: "", costPrice: "", sellingPrice: "", supplier: "" };
 
-interface UploadPageProps {
-  onAnalyse: (products: Product[], fileName: string) => void;
-  onManualAdd: (product: Product) => void;
-  manualProducts: Product[];
+interface ParsedFile {
+  id: string;
+  fileName: string;
+  headers: string[];
+  rows: Record<string, string>[];
+  mapping: ColumnMapping;
 }
 
-export function UploadPage({ onAnalyse, onManualAdd, manualProducts }: UploadPageProps) {
+interface UploadPageProps {
+  onAnalyse: (files: { fileName: string; products: Product[] }[]) => void;
+  onManualAdd: (product: Product) => void;
+  manualProducts: Product[];
+  existingSources: Source[];
+  onRemoveSource: (id: string) => void;
+}
+
+export function UploadPage({ onAnalyse, onManualAdd, manualProducts, existingSources, onRemoveSource }: UploadPageProps) {
   const [activeTab, setActiveTab] = useState<ActiveTab>("csv");
-  const [step, setStep] = useState<Step>("drop");
+  const [parsedFiles, setParsedFiles] = useState<ParsedFile[]>([]);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
-  const [file, setFile] = useState<File | null>(null);
-  const [csvHeaders, setCsvHeaders] = useState<string[]>([]);
-  const [csvRows, setCsvRows] = useState<Record<string, string>[]>([]);
-  const [mapping, setMapping] = useState<ColumnMapping>({ name: "", costPrice: "", sellingPrice: "", sku: "", department: "", category: "", supplier: "" });
   const [parseError, setParseError] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [formError, setFormError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const handleFile = (f: File) => {
-    if (!f.name.toLowerCase().endsWith(".csv")) { setParseError("Please upload a CSV file (.csv)."); return; }
-    setFile(f); setParseError(null);
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const text = e.target?.result as string;
-      const { headers, rows } = parseCSVText(text);
-      if (headers.length === 0) { setParseError("Could not read file — make sure it has a header row."); return; }
-      setCsvHeaders(headers); setCsvRows(rows); setMapping(autoDetect(headers)); setStep("map");
-    };
-    reader.readAsText(f);
+  const handleFiles = (files: FileList | File[]) => {
+    setParseError(null);
+    const arr = Array.from(files);
+    arr.forEach((f) => {
+      if (!f.name.toLowerCase().endsWith(".csv")) {
+        setParseError(`${f.name} is not a CSV file (.csv only).`);
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const text = e.target?.result as string;
+        const { headers, rows } = parseCSVText(text);
+        if (headers.length === 0) {
+          setParseError(`Could not read ${f.name} — no header row found.`);
+          return;
+        }
+        const newFile: ParsedFile = {
+          id: `pf-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+          fileName: f.name,
+          headers,
+          rows,
+          mapping: autoDetect(headers),
+        };
+        setParsedFiles((prev) => [...prev, newFile]);
+      };
+      reader.readAsText(f);
+    });
   };
 
+  const removeParsedFile = (id: string) => {
+    setParsedFiles((prev) => prev.filter((p) => p.id !== id));
+    if (expandedId === id) setExpandedId(null);
+  };
+
+  const updateMapping = (id: string, field: keyof ColumnMapping, value: string) => {
+    setParsedFiles((prev) => prev.map((p) =>
+      p.id === id ? { ...p, mapping: { ...p.mapping, [field]: value } } : p
+    ));
+  };
+
+  const isFileValid = (p: ParsedFile) =>
+    !!p.mapping.name && !!p.mapping.costPrice && !!p.mapping.sellingPrice;
+
   const handleRunAnalysis = () => {
-    if (!mapping.name) { setParseError("Please map the Product Name column."); return; }
-    if (!mapping.costPrice) { setParseError("Please map the Cost Price column."); return; }
-    if (!mapping.sellingPrice) { setParseError("Please map the Selling Price column."); return; }
-    const products = rowsToProducts(csvRows, mapping);
-    if (products.length === 0) { setParseError("No valid products found after parsing."); return; }
-    onAnalyse(products, file?.name ?? "upload.csv");
+    if (parsedFiles.length === 0) { setParseError("Add at least one CSV file."); return; }
+    const invalid = parsedFiles.find((p) => !isFileValid(p));
+    if (invalid) {
+      setParseError(`${invalid.fileName} is missing a required column. Click to expand and map it.`);
+      setExpandedId(invalid.id);
+      return;
+    }
+    const fileResults = parsedFiles.map((p) => ({
+      fileName: p.fileName,
+      products: rowsToProducts(p.rows, p.mapping, p.id),
+    }));
+    onAnalyse(fileResults);
+    // Clear staged files after handing off to analyse
+    setParsedFiles([]);
+    setExpandedId(null);
   };
 
   const handleManualSubmit = () => {
@@ -142,7 +192,12 @@ export function UploadPage({ onAnalyse, onManualAdd, manualProducts }: UploadPag
     if (isNaN(cost) || cost < 0) { setFormError("Enter a valid cost price."); return; }
     if (isNaN(sell) || sell <= 0) { setFormError("Enter a valid selling price."); return; }
     const margin = Math.round(((sell - cost) / sell) * 1000) / 10;
-    onManualAdd({ id: `manual-${Date.now()}`, name: form.name.trim(), sku: form.sku.trim(), department: form.department, category: form.category.trim() || form.department, costPrice: cost, sellingPrice: sell, margin, supplier: form.supplier.trim(), isManualEntry: true });
+    onManualAdd({
+      id: `manual-${Date.now()}`, name: form.name.trim(), sku: form.sku.trim(),
+      department: form.department, category: form.category.trim() || form.department,
+      costPrice: cost, sellingPrice: sell, margin,
+      supplier: form.supplier.trim(), isManualEntry: true,
+    });
     setForm(emptyForm); setFormError(null);
   };
 
@@ -152,18 +207,20 @@ export function UploadPage({ onAnalyse, onManualAdd, manualProducts }: UploadPag
     return Math.round(((s - c) / s) * 100);
   };
 
+  const totalRows = parsedFiles.reduce((s, p) => s + p.rows.length, 0);
+
   return (
     <div className="min-h-full bg-gray-50 fade-up">
-      <div className="px-7 py-6 max-w-[860px] mx-auto">
+      <div className="px-7 py-6 max-w-[900px] mx-auto">
         <div className="mb-6">
           <h1 className="text-xl font-black text-gray-900">Upload</h1>
-          <p className="text-sm text-gray-400 mt-0.5">Import products via CSV or enter them manually to run profit analysis.</p>
+          <p className="text-sm text-gray-400 mt-0.5">Drop one or many CSV files at once, then choose which ones to analyse from the dashboard.</p>
         </div>
 
         {/* Tabs */}
         <div className="flex gap-1 bg-white rounded-xl p-1 border border-gray-100 shadow-sm mb-6 w-fit">
           {(["csv", "manual"] as const).map((t) => (
-            <button key={t} onClick={() => { setActiveTab(t); setStep("drop"); setFile(null); setParseError(null); }}
+            <button key={t} onClick={() => setActiveTab(t)}
               className={["px-5 py-2 rounded-lg text-sm font-bold transition-all",
                 activeTab === t ? "bg-violet-600 text-white shadow-sm" : "text-gray-400 hover:text-gray-700"].join(" ")}>
               {t === "csv" ? "CSV Upload" : "Manual Entry"}
@@ -173,37 +230,71 @@ export function UploadPage({ onAnalyse, onManualAdd, manualProducts }: UploadPag
 
         {activeTab === "csv" && (
           <>
-            {step === "drop" && (
-              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-7">
-                <div onClick={() => inputRef.current?.click()}
-                  onDrop={(e: DragEvent<HTMLDivElement>) => { e.preventDefault(); setDragging(false); const f = e.dataTransfer.files[0]; if (f) handleFile(f); }}
-                  onDragOver={(e: DragEvent<HTMLDivElement>) => { e.preventDefault(); setDragging(true); }}
-                  onDragLeave={() => setDragging(false)}
-                  className={["flex flex-col items-center justify-center gap-4 rounded-xl border-2 border-dashed py-14 px-6 cursor-pointer transition-all duration-200",
-                    dragging ? "border-violet-400 bg-violet-50" : "border-gray-200 bg-gray-50 hover:border-violet-300 hover:bg-violet-50/30"].join(" ")}>
-                  <input ref={inputRef} type="file" accept=".csv" className="hidden" onChange={(e: ChangeEvent<HTMLInputElement>) => { const f = e.target.files?.[0]; if (f) handleFile(f); }} />
-                  <div className="w-14 h-14 rounded-2xl bg-violet-100 flex items-center justify-center">
-                    <Upload className="w-7 h-7 text-violet-600" />
-                  </div>
-                  <div className="text-center">
-                    <p className="text-sm font-black text-gray-700">Drag & drop your CSV file here</p>
-                    <p className="text-sm text-gray-400 mt-0.5">or <span className="text-violet-600 font-bold">browse to upload</span></p>
-                    <p className="text-xs text-gray-300 mt-2">Supports .CSV — Excel export to CSV recommended</p>
-                  </div>
+            {/* Existing already-uploaded sources */}
+            {existingSources.length > 0 && (
+              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 mb-5">
+                <p className="text-xs font-black text-gray-500 uppercase tracking-wide mb-3">
+                  Currently Loaded ({existingSources.length})
+                </p>
+                <div className="space-y-2">
+                  {existingSources.map((s) => (
+                    <div key={s.id} className="flex items-center gap-3 bg-violet-50/50 border border-violet-100 rounded-xl px-3.5 py-2.5">
+                      <FileSpreadsheet className="w-4 h-4 text-violet-500 shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-bold text-gray-800 truncate">{s.name}</p>
+                        <p className="text-[10px] text-gray-400">{s.products.length} products</p>
+                      </div>
+                      <button onClick={() => onRemoveSource(s.id)}
+                        className="text-gray-300 hover:text-red-500 transition-colors" title="Remove this source">
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
                 </div>
-                {parseError && (
-                  <div className="mt-4 flex items-start gap-2 text-sm text-red-600 bg-red-50 rounded-xl px-4 py-3">
-                    <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" /><span>{parseError}</span>
-                  </div>
-                )}
-                <div className="mt-6 bg-gray-50 rounded-xl px-5 py-4">
-                  <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3 flex items-center gap-1.5"><Info className="w-3.5 h-3.5" /> Expected CSV columns</p>
+                <p className="text-[11px] text-gray-400 mt-3 leading-relaxed">
+                  Adding new files below will <strong>replace</strong> these. Use the source selector on Dashboard / Issues / Reports to toggle which files are visible.
+                </p>
+              </div>
+            )}
+
+            {/* Drop zone — always shown so you can keep adding files */}
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-5">
+              <div onClick={() => inputRef.current?.click()}
+                onDrop={(e: DragEvent<HTMLDivElement>) => { e.preventDefault(); setDragging(false); if (e.dataTransfer.files.length) handleFiles(e.dataTransfer.files); }}
+                onDragOver={(e: DragEvent<HTMLDivElement>) => { e.preventDefault(); setDragging(true); }}
+                onDragLeave={() => setDragging(false)}
+                className={["flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed py-10 px-6 cursor-pointer transition-all duration-200",
+                  dragging ? "border-violet-400 bg-violet-50" : "border-gray-200 bg-gray-50 hover:border-violet-300 hover:bg-violet-50/30"].join(" ")}>
+                <input ref={inputRef} type="file" accept=".csv" multiple className="hidden"
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => { if (e.target.files?.length) handleFiles(e.target.files); e.target.value = ""; }} />
+                <div className="w-12 h-12 rounded-2xl bg-violet-100 flex items-center justify-center">
+                  <Upload className="w-6 h-6 text-violet-600" />
+                </div>
+                <div className="text-center">
+                  <p className="text-sm font-black text-gray-700">
+                    {parsedFiles.length === 0 ? "Drag & drop one or many CSV files" : "Add more CSV files"}
+                  </p>
+                  <p className="text-xs text-gray-400 mt-0.5">or <span className="text-violet-600 font-bold">browse to upload</span> — multi-select supported</p>
+                </div>
+              </div>
+
+              {parseError && (
+                <div className="mt-3 flex items-start gap-2 text-sm text-red-600 bg-red-50 rounded-xl px-4 py-2.5">
+                  <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" /><span>{parseError}</span>
+                </div>
+              )}
+
+              {parsedFiles.length === 0 && existingSources.length === 0 && (
+                <div className="mt-5 bg-gray-50 rounded-xl px-5 py-4">
+                  <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3 flex items-center gap-1.5">
+                    <Info className="w-3.5 h-3.5" /> Expected columns
+                  </p>
                   <div className="grid grid-cols-2 gap-x-6 gap-y-1.5">
                     {[
                       { col: "Product Name", note: "required" },
                       { col: "Cost Price", note: "required — ex-VAT cost" },
                       { col: "Selling Price", note: "required — shelf price" },
-                      { col: "Category", note: "recommended — for margin targets" },
+                      { col: "Category", note: "recommended" },
                       { col: "SKU / Barcode", note: "optional" },
                       { col: "Supplier", note: "optional" },
                     ].map(({ col, note }) => (
@@ -214,89 +305,107 @@ export function UploadPage({ onAnalyse, onManualAdd, manualProducts }: UploadPag
                     ))}
                   </div>
                 </div>
+              )}
+            </div>
+
+            {/* Staged files awaiting analysis */}
+            {parsedFiles.length > 0 && (
+              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-5">
+                <div className="px-5 py-3.5 border-b border-gray-100 flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-black text-gray-800">{parsedFiles.length} file{parsedFiles.length !== 1 ? "s" : ""} ready</p>
+                    <p className="text-[11px] text-gray-400">{totalRows} rows total — click any file to review its column mapping</p>
+                  </div>
+                </div>
+                <div className="divide-y divide-gray-50">
+                  {parsedFiles.map((p) => {
+                    const valid = isFileValid(p);
+                    const expanded = expandedId === p.id;
+                    return (
+                      <div key={p.id}>
+                        <div className="px-5 py-3 flex items-center gap-3 hover:bg-gray-50 transition-colors">
+                          <button onClick={() => setExpandedId(expanded ? null : p.id)} className="flex items-center gap-2 flex-1 min-w-0 text-left">
+                            <ChevronDown className={`w-3.5 h-3.5 text-gray-400 transition-transform shrink-0 ${expanded ? "rotate-0" : "-rotate-90"}`} />
+                            <FileSpreadsheet className="w-4 h-4 text-violet-500 shrink-0" />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs font-bold text-gray-900 truncate">{p.fileName}</p>
+                              <p className="text-[10px] text-gray-400">{p.rows.length} rows</p>
+                            </div>
+                          </button>
+                          {valid ? (
+                            <span className="flex items-center gap-1 text-[10px] font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
+                              <CheckCircle2 className="w-3 h-3" /> Mapped
+                            </span>
+                          ) : (
+                            <span className="flex items-center gap-1 text-[10px] font-bold text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full">
+                              <AlertCircle className="w-3 h-3" /> Needs mapping
+                            </span>
+                          )}
+                          <button onClick={() => removeParsedFile(p.id)} className="text-gray-300 hover:text-red-400 transition-colors" title="Remove file">
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                        {expanded && (
+                          <div className="px-5 pb-4 bg-violet-50/30 border-t border-violet-100">
+                            <div className="grid grid-cols-2 gap-3 pt-4">
+                              {(["name", "costPrice", "sellingPrice", "category", "sku", "supplier"] as const).map((field) => {
+                                const meta: Record<string, { label: string; req?: boolean }> = {
+                                  name: { label: "Product Name", req: true },
+                                  costPrice: { label: "Cost Price", req: true },
+                                  sellingPrice: { label: "Selling Price", req: true },
+                                  category: { label: "Category" }, sku: { label: "SKU" }, supplier: { label: "Supplier" },
+                                };
+                                return (
+                                  <div key={field}>
+                                    <label className="text-[10px] font-bold text-gray-500 block mb-0.5">
+                                      {meta[field].label} {meta[field].req && <span className="text-red-500">*</span>}
+                                    </label>
+                                    <select value={p.mapping[field]} onChange={(e) => updateMapping(p.id, field, e.target.value)}
+                                      className="w-full text-xs border border-gray-200 rounded-lg px-2 py-1.5 bg-white focus:outline-none focus:border-violet-400">
+                                      <option value="">— Not mapped —</option>
+                                      {p.headers.map((h) => <option key={h} value={h}>{h}</option>)}
+                                    </select>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                            {/* Preview */}
+                            <div className="mt-3 bg-white rounded-lg border border-gray-100 overflow-hidden">
+                              <div className="px-3 py-1.5 border-b border-gray-100 text-[10px] font-bold text-gray-400 uppercase">Preview — first 3 rows</div>
+                              <table className="w-full text-[11px]">
+                                <tbody className="divide-y divide-gray-50">
+                                  {p.rows.slice(0, 3).map((row, i) => {
+                                    const cost = parsePrice(p.mapping.costPrice ? row[p.mapping.costPrice] : "");
+                                    const sell = parsePrice(p.mapping.sellingPrice ? row[p.mapping.sellingPrice] : "");
+                                    const margin = sell > 0 ? Math.round(((sell - cost) / sell) * 100) : null;
+                                    return (
+                                      <tr key={i}>
+                                        <td className="px-3 py-1.5 text-gray-700 truncate max-w-[200px]">{p.mapping.name ? row[p.mapping.name] : "—"}</td>
+                                        <td className="px-3 py-1.5 text-right text-gray-500">€{cost.toFixed(2)}</td>
+                                        <td className="px-3 py-1.5 text-right text-gray-500">€{sell.toFixed(2)}</td>
+                                        <td className={`px-3 py-1.5 text-right font-black ${margin === null ? "text-gray-300" : margin < 0 ? "text-red-600" : margin < 20 ? "text-amber-600" : "text-green-700"}`}>
+                                          {margin !== null ? `${margin}%` : "—"}
+                                        </td>
+                                      </tr>
+                                    );
+                                  })}
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             )}
 
-            {step === "map" && (
-              <div className="space-y-5">
-                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-                  <div className="flex items-center justify-between mb-4">
-                    <div>
-                      <div className="flex items-center gap-2 mb-0.5">
-                        <CheckCircle2 className="w-4 h-4 text-green-500" />
-                        <p className="text-sm font-black text-gray-900">{file?.name}</p>
-                      </div>
-                      <p className="text-xs text-gray-400">{csvRows.length} products found — confirm column mapping below</p>
-                    </div>
-                    <button onClick={() => { setStep("drop"); setFile(null); }} className="text-xs text-gray-400 hover:text-violet-600 underline">Change file</button>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    {(["name", "costPrice", "sellingPrice", "category", "sku", "supplier"] as const).map((field) => {
-                      const meta: Record<string, { label: string; req?: boolean }> = {
-                        name: { label: "Product Name", req: true }, costPrice: { label: "Cost Price (ex-VAT)", req: true },
-                        sellingPrice: { label: "Selling Price", req: true }, category: { label: "Category" }, sku: { label: "SKU / Barcode" }, supplier: { label: "Supplier" },
-                      };
-                      return (
-                        <div key={field}>
-                          <label className="text-xs font-bold text-gray-500 block mb-1">{meta[field].label} {meta[field].req && <span className="text-red-500">*</span>}</label>
-                          <select value={mapping[field]} onChange={(e) => setMapping((m) => ({ ...m, [field]: e.target.value }))}
-                            className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2 bg-white focus:outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100 transition-colors">
-                            <option value="">— Not mapped —</option>
-                            {csvHeaders.map((h) => <option key={h} value={h}>{h}</option>)}
-                          </select>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-                  <div className="px-5 py-3.5 border-b border-gray-100">
-                    <p className="text-sm font-black text-gray-800">Preview — first 5 rows</p>
-                  </div>
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-xs">
-                      <thead>
-                        <tr className="bg-gray-50 border-b border-gray-100">
-                          {["name", "costPrice", "sellingPrice", "category"].filter(f => mapping[f as keyof ColumnMapping]).map((f) => (
-                            <th key={f} className="text-left px-4 py-2.5 text-[10px] font-bold text-gray-400 uppercase tracking-wide">
-                              {f === "name" ? "Product" : f === "costPrice" ? "Cost" : f === "sellingPrice" ? "Sell Price" : "Category"}
-                            </th>
-                          ))}
-                          <th className="text-right px-4 py-2.5 text-[10px] font-bold text-gray-400 uppercase tracking-wide">Margin</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-50">
-                        {csvRows.slice(0, 5).map((row, i) => {
-                          const cost = parsePrice(mapping.costPrice ? row[mapping.costPrice] : "");
-                          const sell = parsePrice(mapping.sellingPrice ? row[mapping.sellingPrice] : "");
-                          const margin = sell > 0 ? Math.round(((sell - cost) / sell) * 100) : null;
-                          return (
-                            <tr key={i} className="hover:bg-gray-50">
-                              {["name", "costPrice", "sellingPrice", "category"].filter(f => mapping[f as keyof ColumnMapping]).map((f) => (
-                                <td key={f} className="px-4 py-2.5 text-gray-700 truncate max-w-[160px]">{mapping[f as keyof ColumnMapping] ? row[mapping[f as keyof ColumnMapping]] : "—"}</td>
-                              ))}
-                              <td className={`px-4 py-2.5 text-right font-black ${margin === null ? "text-gray-300" : margin < 0 ? "text-red-600" : margin < 20 ? "text-amber-600" : "text-green-700"}`}>
-                                {margin !== null ? `${margin}%` : "—"}
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-
-                {parseError && (
-                  <div className="flex items-start gap-2 text-sm text-red-600 bg-red-50 rounded-xl px-4 py-3">
-                    <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" /><span>{parseError}</span>
-                  </div>
-                )}
-
-                <button onClick={handleRunAnalysis} className="w-full py-3.5 rounded-xl font-black text-sm bg-violet-600 text-white hover:bg-violet-700 transition-colors shadow-md shadow-violet-600/25">
-                  Run Profit Analysis — {csvRows.length} products
-                </button>
-              </div>
+            {parsedFiles.length > 0 && (
+              <button onClick={handleRunAnalysis}
+                className="w-full py-3.5 rounded-xl font-black text-sm bg-violet-600 text-white hover:bg-violet-700 transition-colors shadow-md shadow-violet-600/25">
+                Run Profit Analysis on {parsedFiles.length} file{parsedFiles.length !== 1 ? "s" : ""} — {totalRows} products
+              </button>
             )}
           </>
         )}

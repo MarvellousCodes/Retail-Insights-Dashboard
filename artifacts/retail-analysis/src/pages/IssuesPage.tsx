@@ -5,6 +5,7 @@ import {
   Pencil, RotateCcw,
 } from "lucide-react";
 import type { Product, MarginAlert, PriceAnomaly } from "@/App";
+import { SourceSelector, type SourceControls } from "@/components/SourceSelector";
 
 type IssueFilter = "all" | "margin" | "price" | "manual" | "fixed";
 type SortKey = "severity" | "margin" | "gap" | "name" | "impact";
@@ -37,6 +38,7 @@ interface IssuesPageProps {
   onMarkFixed: (id: string) => void;
   onSetProductOverride: (id: string, margin: number | null) => void;
   onNewUpload: () => void;
+  sourceControls: SourceControls;
 }
 
 // ─── Inline target editor ─────────────────────────────────────────────────────
@@ -177,7 +179,7 @@ function ProductSearchTable({
 
 export function IssuesPage({
   products, marginAlerts, priceAnomalies, fixedIds,
-  productOverrides, onMarkFixed, onSetProductOverride, onNewUpload,
+  productOverrides, onMarkFixed, onSetProductOverride, onNewUpload, sourceControls,
 }: IssuesPageProps) {
   const [filter, setFilter] = useState<IssueFilter>("all");
   const [sort, setSort] = useState<SortKey>("severity");
@@ -220,9 +222,12 @@ export function IssuesPage({
               <h1 className="text-xl font-black text-gray-900">Product Search</h1>
               <p className="text-sm text-gray-400 mt-0.5">{matched.length} of {products.length} products — hover a target to edit it</p>
             </div>
-            <button onClick={onNewUpload} className="flex items-center gap-2 bg-violet-600 text-white text-xs font-bold px-4 py-2.5 rounded-xl hover:bg-violet-700 transition-colors shadow-sm">
-              <Upload className="w-3.5 h-3.5" /> New Upload
-            </button>
+            <div className="flex items-center gap-2">
+              <SourceSelector {...sourceControls} />
+              <button onClick={onNewUpload} className="flex items-center gap-2 bg-violet-600 text-white text-xs font-bold px-4 py-2.5 rounded-xl hover:bg-violet-700 transition-colors shadow-sm">
+                <Upload className="w-3.5 h-3.5" /> New Upload
+              </button>
+            </div>
           </div>
           {/* Search bar */}
           <div className="relative mb-4">
@@ -376,6 +381,7 @@ export function IssuesPage({
             </p>
           </div>
           <div className="flex items-center gap-2">
+            <SourceSelector {...sourceControls} />
             <button onClick={onNewUpload} className="flex items-center gap-2 bg-violet-600 text-white text-xs font-bold px-4 py-2.5 rounded-xl hover:bg-violet-700 transition-colors shadow-sm">
               <Upload className="w-3.5 h-3.5" /> New Upload
             </button>

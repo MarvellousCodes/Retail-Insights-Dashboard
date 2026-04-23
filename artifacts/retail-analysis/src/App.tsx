@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Sidebar } from "@/components/Sidebar";
 import { UploadPage } from "@/pages/UploadPage";
@@ -26,6 +26,7 @@ export interface Product {
   margin: number;
   supplier: string;
   isManualEntry: boolean;
+  sourceId?: string;
 }
 
 export interface MarginAlert {
@@ -48,6 +49,16 @@ export interface DeptThreshold {
   department: string;
   minMargin: number;
 }
+
+export interface Source {
+  id: string;
+  name: string;
+  uploadedAt: number;
+  products: Product[];
+  isManual?: boolean;
+}
+
+export const MANUAL_SOURCE_ID = "manual-entries";
 
 // ─── Default Thresholds ──────────────────────────────────────────────────────
 
@@ -99,7 +110,6 @@ export function runAnalysis(
           t.department.toLowerCase() === key ||
           t.department.toLowerCase() === product.category.toLowerCase()
       )?.minMargin ?? defaultMin;
-    // Product-level override takes priority over department threshold
     const threshold = productOverrides[product.id] ?? deptThreshold;
 
     if (product.margin < threshold) {
@@ -118,13 +128,8 @@ export function runAnalysis(
       const profitImpact = +(roundedPrice - product.sellingPrice).toFixed(2);
 
       marginAlerts.push({
-        product,
-        threshold,
-        gap,
-        severity,
-        recommendedPrice,
-        roundedPrice,
-        profitImpact,
+        product, threshold, gap, severity,
+        recommendedPrice, roundedPrice, profitImpact,
       });
     }
 
@@ -157,60 +162,127 @@ export function runAnalysis(
 function App() {
   const [tab, setTab] = useState<InternalTab>("dashboard");
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
-  const [products, setProducts] = useState<Product[]>([]);
+  const [sources, setSources] = useState<Source[]>([]);
+  const [activeSourceIds, setActiveSourceIds] = useState<Set<string>>(new Set());
   const [marginAlerts, setMarginAlerts] = useState<MarginAlert[]>([]);
   const [priceAnomalies, setPriceAnomalies] = useState<PriceAnomaly[]>([]);
   const [thresholds, setThresholds] = useState<DeptThreshold[]>(DEFAULT_THRESHOLDS);
   const [productOverrides, setProductOverrides] = useState<Record<string, number>>({});
   const [fixedIds, setFixedIds] = useState<Set<string>>(new Set());
   const [analyzing, setAnalyzing] = useState(false);
-  const [lastFileName, setLastFileName] = useState("");
+  const [lastFileNames, setLastFileNames] = useState("");
 
-  const applyAnalysis = (
-    allProducts: Product[],
-    t: DeptThreshold[],
-    overrides: Record<string, number> = productOverrides
-  ) => {
-    const { marginAlerts: ma, priceAnomalies: pa } = runAnalysis(allProducts, t, overrides);
+  // Active products = union of all products from currently-selected sources
+  const activeProducts = useMemo(
+    () => sources.filter((s) => activeSourceIds.has(s.id)).flatMap((s) => s.products),
+    [sources, activeSourceIds]
+  );
+
+  // Re-run analysis whenever active products / thresholds / overrides change
+  useEffect(() => {
+    if (activeProducts.length === 0) {
+      setMarginAlerts([]);
+      setPriceAnomalies([]);
+      return;
+    }
+    const { marginAlerts: ma, priceAnomalies: pa } = runAnalysis(activeProducts, thresholds, productOverrides);
     setMarginAlerts(ma);
     setPriceAnomalies(pa);
-  };
+  }, [activeProducts, thresholds, productOverrides]);
 
-  const handleAnalyse = (csvProducts: Product[], fileName: string) => {
-    setLastFileName(fileName);
+  const handleAnalyseMultiple = (files: { fileName: string; products: Product[] }[]) => {
+    if (files.length === 0) return;
+    setLastFileNames(files.map((f) => f.fileName).join(", "));
     setAnalyzing(true);
     setTab("analyse");
     setFixedIds(new Set());
-    const manual = products.filter((p) => p.isManualEntry);
-    const all = [...csvProducts, ...manual];
-    setProducts(all);
-    applyAnalysis(all, thresholds, productOverrides);
+
+    // Create a new source per file. Tag products with their source id.
+    const newSources: Source[] = files.map(({ fileName, products }) => {
+      const sourceId = `csv-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+      return {
+        id: sourceId,
+        name: fileName,
+        uploadedAt: Date.now(),
+        products: products.map((p) => ({ ...p, sourceId })),
+      };
+    });
+
+    // Preserve any manual source that exists
+    const manualSource = sources.find((s) => s.isManual);
+    const allSources = [...newSources, ...(manualSource ? [manualSource] : [])];
+    setSources(allSources);
+    setActiveSourceIds(new Set(allSources.map((s) => s.id)));
+
     setTimeout(() => { setAnalyzing(false); setTab("issues"); }, 2800);
   };
 
   const handleManualAdd = (product: Product) => {
-    const all = [...products, product];
-    setProducts(all);
-    applyAnalysis(all, thresholds);
+    const tagged = { ...product, sourceId: MANUAL_SOURCE_ID };
+    setSources((prev) => {
+      const existing = prev.find((s) => s.id === MANUAL_SOURCE_ID);
+      if (existing) {
+        return prev.map((s) => s.id === MANUAL_SOURCE_ID
+          ? { ...s, products: [...s.products, tagged] }
+          : s);
+      }
+      return [...prev, {
+        id: MANUAL_SOURCE_ID,
+        name: "Manual Entries",
+        uploadedAt: Date.now(),
+        products: [tagged],
+        isManual: true,
+      }];
+    });
+    setActiveSourceIds((prev) => new Set([...prev, MANUAL_SOURCE_ID]));
   };
 
-  const handleThresholdUpdate = (newT: DeptThreshold[]) => {
-    setThresholds(newT);
-    if (products.length > 0) applyAnalysis(products, newT);
-  };
+  const handleThresholdUpdate = (newT: DeptThreshold[]) => setThresholds(newT);
 
   const handleMarkFixed = (id: string) => {
     setFixedIds((prev) => new Set([...prev, id]));
   };
 
   const handleSetProductOverride = (productId: string, margin: number | null) => {
-    const next = { ...productOverrides };
-    if (margin === null) delete next[productId];
-    else next[productId] = margin;
-    setProductOverrides(next);
-    if (products.length > 0) applyAnalysis(products, thresholds, next);
+    setProductOverrides((prev) => {
+      const next = { ...prev };
+      if (margin === null) delete next[productId];
+      else next[productId] = margin;
+      return next;
+    });
   };
 
+  const handleToggleSource = (id: string) => {
+    setActiveSourceIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const handleSelectAllSources = () => setActiveSourceIds(new Set(sources.map((s) => s.id)));
+  const handleSelectNoSources = () => setActiveSourceIds(new Set());
+
+  const handleRemoveSource = (id: string) => {
+    setSources((prev) => prev.filter((s) => s.id !== id));
+    setActiveSourceIds((prev) => {
+      const next = new Set(prev);
+      next.delete(id);
+      return next;
+    });
+  };
+
+  const sourceControls = {
+    sources,
+    activeIds: activeSourceIds,
+    onToggle: handleToggleSource,
+    onSelectAll: handleSelectAllSources,
+    onSelectNone: handleSelectNoSources,
+    onRemove: handleRemoveSource,
+  };
+
+  const manualProducts = sources.find((s) => s.isManual)?.products ?? [];
   const activeNav: NavTab = tab === "analyse" ? "upload" : (tab as NavTab);
 
   return (
@@ -225,25 +297,28 @@ function App() {
         <main className="flex-1 overflow-y-auto">
           {tab === "upload" && (
             <UploadPage
-              onAnalyse={handleAnalyse}
+              onAnalyse={handleAnalyseMultiple}
               onManualAdd={handleManualAdd}
-              manualProducts={products.filter((p) => p.isManualEntry)}
+              manualProducts={manualProducts}
+              existingSources={sources.filter((s) => !s.isManual)}
+              onRemoveSource={handleRemoveSource}
             />
           )}
-          {tab === "analyse" && <AnalysePage analyzing={analyzing} fileName={lastFileName} />}
+          {tab === "analyse" && <AnalysePage analyzing={analyzing} fileName={lastFileNames} />}
           {tab === "dashboard" && (
             <DashboardPage
-              products={products}
+              products={activeProducts}
               marginAlerts={marginAlerts}
               priceAnomalies={priceAnomalies}
               thresholds={thresholds}
               fixedIds={fixedIds}
               onNewUpload={() => setTab("upload")}
+              sourceControls={sourceControls}
             />
           )}
           {tab === "issues" && (
             <IssuesPage
-              products={products}
+              products={activeProducts}
               marginAlerts={marginAlerts}
               priceAnomalies={priceAnomalies}
               fixedIds={fixedIds}
@@ -251,15 +326,17 @@ function App() {
               onMarkFixed={handleMarkFixed}
               onSetProductOverride={handleSetProductOverride}
               onNewUpload={() => setTab("upload")}
+              sourceControls={sourceControls}
             />
           )}
           {tab === "reports" && (
             <ReportsPage
-              products={products}
+              products={activeProducts}
               marginAlerts={marginAlerts}
               priceAnomalies={priceAnomalies}
               fixedIds={fixedIds}
               onNewUpload={() => setTab("upload")}
+              sourceControls={sourceControls}
             />
           )}
           {tab === "settings" && (
