@@ -17,6 +17,36 @@ import { SourceSelector } from "@/components/SourceSelector";
 
 export function DashboardPage({ products, marginAlerts, priceAnomalies, thresholds, fixedIds, onNewUpload, sourceControls }: DashboardPageProps) {
   if (products.length === 0) {
+    const hasSources = sourceControls.sources.length > 0;
+    if (hasSources) {
+      // Sources exist but none selected — keep header + selector visible so user can re-enable
+      return (
+        <div className="min-h-full bg-gray-50 fade-up">
+          <div className="px-7 py-6 max-w-[1200px] mx-auto">
+            <div className="flex items-center justify-between mb-5">
+              <div>
+                <h1 className="text-xl font-black text-gray-900">Dashboard</h1>
+                <p className="text-sm text-gray-400 mt-0.5">No sources selected — pick at least one to view your data</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <SourceSelector {...sourceControls} />
+                <button onClick={onNewUpload} className="flex items-center gap-2 bg-violet-600 text-white text-xs font-bold px-4 py-2.5 rounded-xl hover:bg-violet-700 transition-colors shadow-sm">
+                  <Upload className="w-3.5 h-3.5" /> New Upload
+                </button>
+              </div>
+            </div>
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm py-16 text-center">
+              <div className="w-14 h-14 rounded-2xl bg-violet-100 flex items-center justify-center mx-auto mb-3">
+                <TrendingUp className="w-7 h-7 text-violet-400" />
+              </div>
+              <h2 className="text-base font-black text-gray-800">No active sources</h2>
+              <p className="text-sm text-gray-400 mt-1">Open the source selector above and tick the files you want to include.</p>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    // True empty state — no sources uploaded yet
     return (
       <div className="min-h-full bg-gray-50 flex items-center justify-center fade-up">
         <div className="text-center max-w-md px-4">

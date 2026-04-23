@@ -187,17 +187,40 @@ export function IssuesPage({
   const [search, setSearch] = useState("");
 
   if (products.length === 0) {
+    const hasSources = sourceControls.sources.length > 0;
     return (
-      <div className="min-h-full bg-gray-50 flex items-center justify-center fade-up">
-        <div className="text-center max-w-sm">
-          <div className="w-16 h-16 rounded-full bg-violet-100 flex items-center justify-center mx-auto mb-4">
-            <AlertTriangle className="w-8 h-8 text-violet-400" />
+      <div className="min-h-full bg-gray-50 fade-up">
+        <div className="px-7 py-6 max-w-[1200px] mx-auto">
+          <div className="flex items-center justify-between mb-5">
+            <div>
+              <h1 className="text-xl font-black text-gray-900">Issues</h1>
+              <p className="text-sm text-gray-400 mt-0.5">
+                {hasSources ? "No sources selected — pick at least one to view your data" : "Upload a CSV to detect margin issues and price anomalies"}
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <SourceSelector {...sourceControls} />
+              <button onClick={onNewUpload} className="flex items-center gap-2 bg-violet-600 text-white text-xs font-bold px-4 py-2.5 rounded-xl hover:bg-violet-700 transition-colors shadow-sm">
+                <Upload className="w-3.5 h-3.5" /> {hasSources ? "New Upload" : "Upload CSV"}
+              </button>
+            </div>
           </div>
-          <h2 className="text-lg font-black text-gray-800">No data yet</h2>
-          <p className="text-sm text-gray-400 mt-1 mb-5">Upload a CSV to detect margin issues and price anomalies.</p>
-          <button onClick={onNewUpload} className="inline-flex items-center gap-2 bg-violet-600 text-white text-sm font-bold px-5 py-2.5 rounded-xl hover:bg-violet-700 transition-colors shadow-md shadow-violet-600/25">
-            <Upload className="w-4 h-4" /> Upload CSV
-          </button>
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm py-16 text-center">
+            <div className="w-14 h-14 rounded-full bg-violet-100 flex items-center justify-center mx-auto mb-3">
+              <AlertTriangle className="w-7 h-7 text-violet-400" />
+            </div>
+            {hasSources ? (
+              <>
+                <h2 className="text-base font-black text-gray-800">No active sources</h2>
+                <p className="text-sm text-gray-400 mt-1">Open the source selector above and tick the files you want to include.</p>
+              </>
+            ) : (
+              <>
+                <h2 className="text-base font-black text-gray-800">No data yet</h2>
+                <p className="text-sm text-gray-400 mt-1">Upload one or more CSV files to get started.</p>
+              </>
+            )}
+          </div>
         </div>
       </div>
     );
