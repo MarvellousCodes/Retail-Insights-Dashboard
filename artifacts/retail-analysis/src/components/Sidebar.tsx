@@ -12,9 +12,9 @@ interface SidebarProps {
 
 const NAV_ITEMS: { tab: NavTab; icon: React.ReactNode; label: string }[] = [
   { tab: "dashboard", icon: <LayoutDashboard className="w-5 h-5 shrink-0" />, label: "Dashboard" },
-  { tab: "upload", icon: <Upload className="w-5 h-5 shrink-0" />, label: "Upload" },
   { tab: "issues", icon: <AlertCircle className="w-5 h-5 shrink-0" />, label: "Issues" },
   { tab: "reports", icon: <FileText className="w-5 h-5 shrink-0" />, label: "Reports" },
+  { tab: "upload", icon: <Upload className="w-5 h-5 shrink-0" />, label: "Upload" },
   { tab: "settings", icon: <Settings className="w-5 h-5 shrink-0" />, label: "Settings" },
 ];
 

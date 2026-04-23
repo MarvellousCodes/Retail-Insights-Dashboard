@@ -176,3 +176,7 @@
   border-color: #374151;
 }
 .dark input::placeholder { color: #6b7280; }
+
+/* Remove the visible seam between sidebar and main content in dark mode */
+.dark aside { border-color: #111827 !important; }
+.dark aside.border-r { border-right-color: #0f1624 !important; }
