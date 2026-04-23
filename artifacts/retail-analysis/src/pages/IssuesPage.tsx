@@ -235,9 +235,9 @@ export function IssuesPage({ products, marginAlerts, priceAnomalies, fixedIds, o
                 <th className="text-right px-4 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wide">Cost</th>
                 <th className="text-right px-4 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wide">Selling</th>
                 <th className="text-center px-4 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wide">
-                  <button className="flex items-center gap-1 hover:text-gray-600 mx-auto" onClick={() => toggleSort("margin")}>Margin <ArrowUpDown className="w-3 h-3" /></button>
+                  <button className="flex items-center gap-1 hover:text-gray-600 mx-auto" onClick={() => toggleSort("margin")}>Current Margin <ArrowUpDown className="w-3 h-3" /></button>
                 </th>
-                <th className="text-center px-4 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wide">Target</th>
+                <th className="text-center px-4 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wide">Margin Target</th>
                 <th className="text-right px-4 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wide">Recommended</th>
                 <th className="text-right px-4 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wide">
                   <button className="flex items-center gap-1 hover:text-gray-600" onClick={() => toggleSort("impact")}>Impact <ArrowUpDown className="w-3 h-3" /></button>
