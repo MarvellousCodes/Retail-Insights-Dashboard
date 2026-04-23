@@ -1,4 +1,4 @@
-import { Upload, TrendingDown, TrendingUp, AlertTriangle, Tag, ArrowRight } from "lucide-react";
+import { Upload, TrendingDown, TrendingUp, AlertTriangle, Tag, ArrowRight, Shield } from "lucide-react";
 import type { Product, MarginAlert, PriceAnomaly, DeptThreshold } from "@/App";
 
 function fmt(n: number) { return `€${n.toFixed(2)}`; }
@@ -93,10 +93,13 @@ export function DashboardPage({ products, marginAlerts, priceAnomalies, threshol
     return (
       <div className="min-h-full bg-gray-50 flex items-center justify-center fade-up">
         <div className="text-center max-w-md px-4">
-          <div className="w-16 h-16 rounded-2xl bg-violet-100 flex items-center justify-center mx-auto mb-5">
-            <TrendingUp className="w-8 h-8 text-violet-600" />
+          <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-violet-600 to-fuchsia-600 flex items-center justify-center mx-auto mb-5 shadow-xl shadow-violet-600/40">
+            <Shield className="w-10 h-10 text-white" strokeWidth={2.5} />
           </div>
-          <h2 className="text-2xl font-black text-gray-900 mb-2">Profit Optimisation</h2>
+          <h2 className="text-4xl font-black mb-1 bg-gradient-to-r from-violet-600 via-fuchsia-600 to-violet-600 bg-clip-text text-transparent tracking-tight">
+            RetailGuard
+          </h2>
+          <p className="text-xs font-bold text-violet-500 uppercase tracking-[0.2em] mb-4">Profit Optimisation</p>
           <p className="text-sm text-gray-500 mb-7 leading-relaxed">
             Upload a CSV with your products to automatically detect below-margin items,
             calculate recommended prices, and see exactly how much profit you can recover.

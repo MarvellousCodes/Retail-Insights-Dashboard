@@ -1,4 +1,4 @@
-import { Upload, LayoutDashboard, AlertCircle, FileText, Settings, ChevronRight, ChevronLeft } from "lucide-react";
+import { Upload, LayoutDashboard, AlertCircle, FileText, Settings, ChevronRight, ChevronLeft, Shield, Sun, Moon } from "lucide-react";
 import type { NavTab } from "@/App";
 
 interface SidebarProps {
@@ -6,6 +6,8 @@ interface SidebarProps {
   onTabChange: (tab: NavTab) => void;
   expanded: boolean;
   onToggle: () => void;
+  theme: "light" | "dark";
+  onThemeToggle: () => void;
 }
 
 const NAV_ITEMS: { tab: NavTab; icon: React.ReactNode; label: string }[] = [
@@ -16,7 +18,8 @@ const NAV_ITEMS: { tab: NavTab; icon: React.ReactNode; label: string }[] = [
   { tab: "settings", icon: <Settings className="w-5 h-5 shrink-0" />, label: "Settings" },
 ];
 
-export function Sidebar({ activeTab, onTabChange, expanded, onToggle }: SidebarProps) {
+export function Sidebar({ activeTab, onTabChange, expanded, onToggle, theme, onThemeToggle }: SidebarProps) {
+  const isDark = theme === "dark";
   return (
     <aside
       className="flex flex-col bg-white border-r border-gray-200 py-4 shrink-0 z-10 transition-all duration-200 ease-in-out"
@@ -24,11 +27,11 @@ export function Sidebar({ activeTab, onTabChange, expanded, onToggle }: SidebarP
     >
       {/* Logo + toggle */}
       <div className={`flex items-center mb-6 px-3 ${expanded ? "justify-between" : "justify-center"}`}>
-        <div className="w-8 h-8 rounded-lg bg-violet-600 flex items-center justify-center shrink-0 shadow-md shadow-violet-600/30">
-          <span className="text-white text-xs font-black tracking-tight">R</span>
+        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-600 to-fuchsia-600 flex items-center justify-center shrink-0 shadow-md shadow-violet-600/40">
+          <Shield className="w-4 h-4 text-white" strokeWidth={2.5} />
         </div>
         {expanded && (
-          <span className="text-sm font-black text-gray-900 ml-2 mr-auto leading-none whitespace-nowrap">Retail Guard</span>
+          <span className="text-sm font-black ml-2 mr-auto leading-none whitespace-nowrap bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent tracking-tight">RetailGuard</span>
         )}
         <button
           onClick={onToggle}
@@ -65,8 +68,26 @@ export function Sidebar({ activeTab, onTabChange, expanded, onToggle }: SidebarP
         })}
       </nav>
 
+      {/* Theme toggle */}
+      <div className={`px-2 mb-2 ${expanded ? "" : "flex justify-center"}`}>
+        <button
+          onClick={onThemeToggle}
+          title={isDark ? "Switch to light mode" : "Switch to dark mode"}
+          className={[
+            "flex items-center gap-3 rounded-xl px-2.5 h-10 transition-colors",
+            expanded ? "w-full" : "justify-center w-10",
+            "text-gray-500 hover:bg-violet-50 hover:text-violet-700",
+          ].join(" ")}
+        >
+          {isDark ? <Sun className="w-5 h-5 shrink-0" /> : <Moon className="w-5 h-5 shrink-0" />}
+          {expanded && (
+            <span className="text-sm font-semibold whitespace-nowrap">{isDark ? "Light mode" : "Dark mode"}</span>
+          )}
+        </button>
+      </div>
+
       {/* User avatar */}
-      <div className={`px-2 mt-auto ${expanded ? "" : "flex justify-center"}`}>
+      <div className={`px-2 ${expanded ? "" : "flex justify-center"}`}>
         <div className={`flex items-center gap-2.5 rounded-xl px-2.5 py-2 ${expanded ? "" : "justify-center"}`}>
           <div className="w-7 h-7 rounded-full bg-violet-100 flex items-center justify-center shrink-0">
             <span className="text-violet-700 text-xs font-black">U</span>

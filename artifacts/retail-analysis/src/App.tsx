@@ -162,6 +162,17 @@ export function runAnalysis(
 function App() {
   const [tab, setTab] = useState<InternalTab>("dashboard");
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
+  const [theme, setTheme] = useState<"light" | "dark">(() => {
+    if (typeof window === "undefined") return "light";
+    return (localStorage.getItem("rg-theme") as "light" | "dark") || "light";
+  });
+
+  useEffect(() => {
+    const root = document.documentElement;
+    if (theme === "dark") root.classList.add("dark");
+    else root.classList.remove("dark");
+    localStorage.setItem("rg-theme", theme);
+  }, [theme]);
   const [sources, setSources] = useState<Source[]>([]);
   const [activeSourceIds, setActiveSourceIds] = useState<Set<string>>(new Set());
   const [marginAlerts, setMarginAlerts] = useState<MarginAlert[]>([]);
@@ -208,11 +219,24 @@ function App() {
       };
     });
 
-    // Preserve any manual source that exists
+    // MERGE with existing sources — do not remove previously uploaded files.
+    // Keep existing CSV sources, append the new ones, then put manual last.
+    const existingCsvSources = sources.filter((s) => !s.isManual);
     const manualSource = sources.find((s) => s.isManual);
-    const allSources = [...newSources, ...(manualSource ? [manualSource] : [])];
+    const allSources = [
+      ...existingCsvSources,
+      ...newSources,
+      ...(manualSource ? [manualSource] : []),
+    ];
     setSources(allSources);
-    setActiveSourceIds(new Set(allSources.map((s) => s.id)));
+    // Preserve previous active selection and activate the newly uploaded sources.
+    setActiveSourceIds((prev) => {
+      const next = new Set(prev);
+      newSources.forEach((s) => next.add(s.id));
+      existingCsvSources.forEach((s) => { if (prev.size === 0) next.add(s.id); });
+      if (manualSource) next.add(manualSource.id);
+      return next;
+    });
 
     setTimeout(() => { setAnalyzing(false); setTab("issues"); }, 2800);
   };
@@ -293,6 +317,8 @@ function App() {
           onTabChange={(t) => setTab(t)}
           expanded={sidebarExpanded}
           onToggle={() => setSidebarExpanded((e) => !e)}
+          theme={theme}
+          onThemeToggle={() => setTheme((t) => (t === "dark" ? "light" : "dark"))}
         />
         <main className="flex-1 overflow-y-auto">
           {tab === "upload" && (
