@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import {
   Upload, CheckCircle2, AlertCircle, Tag, PackageX,
-  AlertTriangle, ArrowUpDown, Filter,
+  AlertTriangle, ArrowUpDown, Filter, Search, X,
+  Pencil, RotateCcw,
 } from "lucide-react";
 import type { Product, MarginAlert, PriceAnomaly } from "@/App";
 
@@ -32,14 +33,156 @@ interface IssuesPageProps {
   marginAlerts: MarginAlert[];
   priceAnomalies: PriceAnomaly[];
   fixedIds: Set<string>;
+  productOverrides: Record<string, number>;
   onMarkFixed: (id: string) => void;
+  onSetProductOverride: (id: string, margin: number | null) => void;
   onNewUpload: () => void;
 }
 
-export function IssuesPage({ products, marginAlerts, priceAnomalies, fixedIds, onMarkFixed, onNewUpload }: IssuesPageProps) {
+// ─── Inline target editor ─────────────────────────────────────────────────────
+
+function TargetCell({
+  productId, current, isOverride, onSave, onClear,
+}: {
+  productId: string;
+  current: number;
+  isOverride: boolean;
+  onSave: (id: string, val: number) => void;
+  onClear: (id: string) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [val, setVal] = useState(String(current));
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const commit = () => {
+    const n = parseFloat(val);
+    if (!isNaN(n) && n >= 0 && n <= 100) { onSave(productId, n); }
+    setEditing(false);
+  };
+
+  if (editing) {
+    return (
+      <div className="flex items-center gap-1 justify-center">
+        <input
+          ref={inputRef}
+          type="number" min="0" max="100" step="0.5"
+          value={val}
+          onChange={(e) => setVal(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Enter") commit(); if (e.key === "Escape") setEditing(false); }}
+          onBlur={commit}
+          autoFocus
+          className="w-14 text-xs font-black text-center border border-violet-400 rounded-lg px-1.5 py-1 focus:outline-none focus:ring-2 focus:ring-violet-200"
+        />
+        <span className="text-[10px] text-gray-400">%</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-1 justify-center group">
+      <span className={`text-xs font-black ${isOverride ? "text-violet-700" : "text-gray-400"}`}>
+        {current}%
+      </span>
+      {isOverride && (
+        <span className="text-[9px] bg-violet-100 text-violet-600 font-black px-1 py-0.5 rounded">custom</span>
+      )}
+      <button
+        onClick={() => { setVal(String(current)); setEditing(true); }}
+        className="opacity-0 group-hover:opacity-100 transition-opacity text-gray-300 hover:text-violet-600 ml-0.5"
+        title="Edit target"
+      >
+        <Pencil className="w-3 h-3" />
+      </button>
+      {isOverride && (
+        <button
+          onClick={() => onClear(productId)}
+          className="opacity-0 group-hover:opacity-100 transition-opacity text-gray-300 hover:text-red-400"
+          title="Reset to department default"
+        >
+          <RotateCcw className="w-3 h-3" />
+        </button>
+      )}
+    </div>
+  );
+}
+
+// ─── Product search table ─────────────────────────────────────────────────────
+
+function ProductSearchTable({
+  products, productOverrides, onSetProductOverride,
+}: {
+  products: Product[];
+  productOverrides: Record<string, number>;
+  onSetProductOverride: (id: string, margin: number | null) => void;
+}) {
+  return (
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="bg-gray-50 border-b border-gray-100">
+            <th className="text-left px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wide">Product</th>
+            <th className="text-left px-4 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wide">SKU</th>
+            <th className="text-left px-4 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wide">Category</th>
+            <th className="text-right px-4 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wide">Cost</th>
+            <th className="text-right px-4 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wide">Selling</th>
+            <th className="text-center px-4 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wide">Current Margin</th>
+            <th className="text-center px-4 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wide">
+              Margin Target
+              <span className="text-[9px] text-violet-500 ml-1 normal-case">(hover to edit)</span>
+            </th>
+            <th className="text-left px-4 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wide">Supplier</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-gray-50">
+          {products.map((p) => {
+            const isOverride = productOverrides[p.id] != null;
+            const target = productOverrides[p.id] ?? 20;
+            return (
+              <tr key={p.id} className="hover:bg-gray-50 transition-colors">
+                <td className="px-5 py-3">
+                  <p className="text-xs font-bold text-gray-900">{p.name}</p>
+                  {p.isManualEntry && <span className="text-[9px] text-violet-500 font-bold">Manual</span>}
+                </td>
+                <td className="px-4 py-3 text-xs text-gray-400 font-mono">{p.sku || "—"}</td>
+                <td className="px-4 py-3 text-xs text-gray-500">{p.category || p.department || "—"}</td>
+                <td className="px-4 py-3 text-right text-xs text-gray-600">{fmt(p.costPrice)}</td>
+                <td className="px-4 py-3 text-right text-xs text-gray-600">{fmt(p.sellingPrice)}</td>
+                <td className="px-4 py-3 text-center"><MarginPill margin={p.margin} /></td>
+                <td className="px-4 py-3">
+                  <TargetCell
+                    productId={p.id}
+                    current={target}
+                    isOverride={isOverride}
+                    onSave={onSetProductOverride}
+                    onClear={(id) => onSetProductOverride(id, null)}
+                  />
+                </td>
+                <td className="px-4 py-3 text-xs text-gray-400">{p.supplier || "—"}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+      {products.length === 0 && (
+        <div className="text-center py-10 text-gray-400">
+          <Search className="w-6 h-6 mx-auto mb-2" />
+          <p className="text-sm">No products match your search</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Main Issues Page ─────────────────────────────────────────────────────────
+
+export function IssuesPage({
+  products, marginAlerts, priceAnomalies, fixedIds,
+  productOverrides, onMarkFixed, onSetProductOverride, onNewUpload,
+}: IssuesPageProps) {
   const [filter, setFilter] = useState<IssueFilter>("all");
   const [sort, setSort] = useState<SortKey>("severity");
   const [desc, setDesc] = useState(true);
+  const [search, setSearch] = useState("");
 
   if (products.length === 0) {
     return (
@@ -58,6 +201,59 @@ export function IssuesPage({ products, marginAlerts, priceAnomalies, fixedIds, o
     );
   }
 
+  // ── Search mode: show ALL products filtered by query ──
+  const isSearching = search.trim().length > 0;
+  if (isSearching) {
+    const q = search.toLowerCase();
+    const matched = products.filter((p) =>
+      p.name.toLowerCase().includes(q) ||
+      (p.sku && p.sku.toLowerCase().includes(q)) ||
+      (p.category && p.category.toLowerCase().includes(q)) ||
+      (p.department && p.department.toLowerCase().includes(q)) ||
+      (p.supplier && p.supplier.toLowerCase().includes(q))
+    );
+    return (
+      <div className="min-h-full bg-gray-50 fade-up">
+        <div className="px-7 py-6 max-w-[1200px] mx-auto">
+          <div className="flex items-center justify-between mb-5">
+            <div>
+              <h1 className="text-xl font-black text-gray-900">Product Search</h1>
+              <p className="text-sm text-gray-400 mt-0.5">{matched.length} of {products.length} products — hover a target to edit it</p>
+            </div>
+            <button onClick={onNewUpload} className="flex items-center gap-2 bg-violet-600 text-white text-xs font-bold px-4 py-2.5 rounded-xl hover:bg-violet-700 transition-colors shadow-sm">
+              <Upload className="w-3.5 h-3.5" /> New Upload
+            </button>
+          </div>
+          {/* Search bar */}
+          <div className="relative mb-4">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search by name, SKU, category, supplier..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full pl-10 pr-10 py-2.5 text-sm border border-violet-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-200 bg-white"
+              autoFocus
+            />
+            <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+          <div className="bg-violet-50 border border-violet-200 rounded-xl px-4 py-2.5 mb-4 flex items-center gap-2">
+            <Pencil className="w-3.5 h-3.5 text-violet-500 shrink-0" />
+            <p className="text-xs text-violet-700">Hover any <strong>Margin Target</strong> cell to set a custom target for that individual product — it overrides the department default without affecting anything else.</p>
+          </div>
+          <ProductSearchTable
+            products={matched}
+            productOverrides={productOverrides}
+            onSetProductOverride={onSetProductOverride}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  // ── Normal issues view ──
   const active = marginAlerts.filter((a) => !fixedIds.has(a.product.id));
   const fixed = marginAlerts.filter((a) => fixedIds.has(a.product.id));
   const manual = products.filter((p) => p.isManualEntry && !fixedIds.has(p.id));
@@ -165,6 +361,7 @@ export function IssuesPage({ products, marginAlerts, priceAnomalies, fixedIds, o
 
   const allActiveCount = rows.filter((r) => !r.isFixed).length;
   const recoverableProfit = active.reduce((s, a) => s + Math.max(0, a.profitImpact), 0);
+  const overrideCount = Object.keys(productOverrides).length;
 
   return (
     <div className="min-h-full bg-gray-50 fade-up">
@@ -175,11 +372,26 @@ export function IssuesPage({ products, marginAlerts, priceAnomalies, fixedIds, o
             <h1 className="text-xl font-black text-gray-900">Issues</h1>
             <p className="text-sm text-gray-400 mt-0.5">
               {products.length} products · {active.length} active issues · {fmt(recoverableProfit)} recoverable
+              {overrideCount > 0 && <span className="ml-2 text-violet-600 font-semibold">· {overrideCount} custom target{overrideCount !== 1 ? "s" : ""}</span>}
             </p>
           </div>
-          <button onClick={onNewUpload} className="flex items-center gap-2 bg-violet-600 text-white text-xs font-bold px-4 py-2.5 rounded-xl hover:bg-violet-700 transition-colors shadow-sm">
-            <Upload className="w-3.5 h-3.5" /> New Upload
-          </button>
+          <div className="flex items-center gap-2">
+            <button onClick={onNewUpload} className="flex items-center gap-2 bg-violet-600 text-white text-xs font-bold px-4 py-2.5 rounded-xl hover:bg-violet-700 transition-colors shadow-sm">
+              <Upload className="w-3.5 h-3.5" /> New Upload
+            </button>
+          </div>
+        </div>
+
+        {/* Search bar */}
+        <div className="relative mb-5">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Search all products by name, SKU, category, supplier..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full pl-10 pr-4 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-200 focus:border-violet-300 bg-white transition-colors"
+          />
         </div>
 
         {/* KPI strip */}
@@ -237,7 +449,10 @@ export function IssuesPage({ products, marginAlerts, priceAnomalies, fixedIds, o
                 <th className="text-center px-4 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wide">
                   <button className="flex items-center gap-1 hover:text-gray-600 mx-auto" onClick={() => toggleSort("margin")}>Current Margin <ArrowUpDown className="w-3 h-3" /></button>
                 </th>
-                <th className="text-center px-4 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wide">Margin Target</th>
+                <th className="text-center px-4 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wide">
+                  Margin Target
+                  <span className="text-[9px] text-violet-500 ml-1 normal-case">(hover to edit)</span>
+                </th>
                 <th className="text-right px-4 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wide">Recommended</th>
                 <th className="text-right px-4 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wide">
                   <button className="flex items-center gap-1 hover:text-gray-600" onClick={() => toggleSort("impact")}>Impact <ArrowUpDown className="w-3 h-3" /></button>
@@ -252,23 +467,32 @@ export function IssuesPage({ products, marginAlerts, priceAnomalies, fixedIds, o
               {sorted.map((row) => (
                 <tr key={row.key} className={`transition-colors ${row.isFixed ? "opacity-50 bg-gray-50/60" : "hover:bg-gray-50"}`}>
                   <td className="px-5 py-3.5">
-                    <div className="flex items-start gap-1.5">
-                      <div>
-                        <p className="text-xs font-bold text-gray-900">{row.product.name}</p>
-                        <p className="text-[10px] text-gray-400 mt-0.5">
-                          {row.product.category || row.product.department || "—"}
-                          {row.product.isManualEntry && " · Manual"}
-                        </p>
-                        {(row.issueType === "price" || row.issueType === "both") && row.reason && (
-                          <p className="text-[10px] text-orange-500 font-semibold mt-0.5">{row.reason}</p>
-                        )}
-                      </div>
+                    <div>
+                      <p className="text-xs font-bold text-gray-900">{row.product.name}</p>
+                      <p className="text-[10px] text-gray-400 mt-0.5">
+                        {row.product.category || row.product.department || "—"}
+                        {row.product.sku ? ` · ${row.product.sku}` : ""}
+                        {row.product.isManualEntry && " · Manual"}
+                      </p>
+                      {(row.issueType === "price" || row.issueType === "both") && row.reason && (
+                        <p className="text-[10px] text-orange-500 font-semibold mt-0.5">{row.reason}</p>
+                      )}
                     </div>
                   </td>
                   <td className="px-4 py-3.5 text-right text-xs text-gray-600">{fmt(row.product.costPrice)}</td>
                   <td className="px-4 py-3.5 text-right text-xs text-gray-600">{fmt(row.product.sellingPrice)}</td>
                   <td className="px-4 py-3.5 text-center"><MarginPill margin={row.product.margin} threshold={row.threshold} /></td>
-                  <td className="px-4 py-3.5 text-center text-xs text-gray-400">{row.threshold != null ? `${row.threshold}%` : "—"}</td>
+                  <td className="px-4 py-3.5">
+                    {row.threshold != null ? (
+                      <TargetCell
+                        productId={row.product.id}
+                        current={row.threshold}
+                        isOverride={productOverrides[row.product.id] != null}
+                        onSave={onSetProductOverride}
+                        onClear={(id) => onSetProductOverride(id, null)}
+                      />
+                    ) : <span className="text-center block text-gray-300 text-xs">—</span>}
+                  </td>
                   <td className="px-4 py-3.5 text-right">
                     {row.roundedPrice != null ? (
                       <div>

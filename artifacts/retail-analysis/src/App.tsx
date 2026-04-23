@@ -83,7 +83,8 @@ export function roundRetailPrice(price: number): number {
 
 export function runAnalysis(
   products: Product[],
-  thresholds: DeptThreshold[]
+  thresholds: DeptThreshold[],
+  productOverrides: Record<string, number> = {}
 ): { marginAlerts: MarginAlert[]; priceAnomalies: PriceAnomaly[] } {
   const defaultMin = 20;
   const marginAlerts: MarginAlert[] = [];
@@ -92,12 +93,14 @@ export function runAnalysis(
 
   products.forEach((product) => {
     const key = (product.department || product.category || "").toLowerCase();
-    const threshold =
+    const deptThreshold =
       thresholds.find(
         (t) =>
           t.department.toLowerCase() === key ||
           t.department.toLowerCase() === product.category.toLowerCase()
       )?.minMargin ?? defaultMin;
+    // Product-level override takes priority over department threshold
+    const threshold = productOverrides[product.id] ?? deptThreshold;
 
     if (product.margin < threshold) {
       const gap = threshold - product.margin;
@@ -158,12 +161,17 @@ function App() {
   const [marginAlerts, setMarginAlerts] = useState<MarginAlert[]>([]);
   const [priceAnomalies, setPriceAnomalies] = useState<PriceAnomaly[]>([]);
   const [thresholds, setThresholds] = useState<DeptThreshold[]>(DEFAULT_THRESHOLDS);
+  const [productOverrides, setProductOverrides] = useState<Record<string, number>>({});
   const [fixedIds, setFixedIds] = useState<Set<string>>(new Set());
   const [analyzing, setAnalyzing] = useState(false);
   const [lastFileName, setLastFileName] = useState("");
 
-  const applyAnalysis = (allProducts: Product[], t: DeptThreshold[]) => {
-    const { marginAlerts: ma, priceAnomalies: pa } = runAnalysis(allProducts, t);
+  const applyAnalysis = (
+    allProducts: Product[],
+    t: DeptThreshold[],
+    overrides: Record<string, number> = productOverrides
+  ) => {
+    const { marginAlerts: ma, priceAnomalies: pa } = runAnalysis(allProducts, t, overrides);
     setMarginAlerts(ma);
     setPriceAnomalies(pa);
   };
@@ -176,7 +184,7 @@ function App() {
     const manual = products.filter((p) => p.isManualEntry);
     const all = [...csvProducts, ...manual];
     setProducts(all);
-    applyAnalysis(all, thresholds);
+    applyAnalysis(all, thresholds, productOverrides);
     setTimeout(() => { setAnalyzing(false); setTab("issues"); }, 2800);
   };
 
@@ -193,6 +201,14 @@ function App() {
 
   const handleMarkFixed = (id: string) => {
     setFixedIds((prev) => new Set([...prev, id]));
+  };
+
+  const handleSetProductOverride = (productId: string, margin: number | null) => {
+    const next = { ...productOverrides };
+    if (margin === null) delete next[productId];
+    else next[productId] = margin;
+    setProductOverrides(next);
+    if (products.length > 0) applyAnalysis(products, thresholds, next);
   };
 
   const activeNav: NavTab = tab === "analyse" ? "upload" : (tab as NavTab);
@@ -231,7 +247,9 @@ function App() {
               marginAlerts={marginAlerts}
               priceAnomalies={priceAnomalies}
               fixedIds={fixedIds}
+              productOverrides={productOverrides}
               onMarkFixed={handleMarkFixed}
+              onSetProductOverride={handleSetProductOverride}
               onNewUpload={() => setTab("upload")}
             />
           )}

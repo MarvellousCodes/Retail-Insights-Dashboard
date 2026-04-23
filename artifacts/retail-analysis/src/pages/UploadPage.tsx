@@ -80,8 +80,9 @@ function rowsToProducts(rows: Record<string, string>[], mapping: ColumnMapping):
     return {
       id: `csv-${i}-${Date.now()}`, name,
       sku: (mapping.sku ? row[mapping.sku] : "") ?? "",
-      category: (mapping.category ? row[mapping.category] : "Uncategorised") || "Uncategorised",
       department: (mapping.department ? row[mapping.department] : "") ?? "",
+      category: (mapping.category ? row[mapping.category] : "") ||
+        (mapping.department ? row[mapping.department] : "") || "General",
       costPrice, sellingPrice, margin,
       supplier: (mapping.supplier ? row[mapping.supplier] : "") ?? "",
       isManualEntry: false,
