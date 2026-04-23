@@ -190,7 +190,7 @@ export function IssuesPage({
     const hasSources = sourceControls.sources.length > 0;
     return (
       <div className="min-h-full bg-gray-50 fade-up">
-        <div className="px-7 py-6 max-w-[1200px] mx-auto">
+        <div className="px-7 py-6 max-w-[1600px] mx-auto">
           <div className="flex items-center justify-between mb-5">
             <div>
               <h1 className="text-xl font-black text-gray-900">Issues</h1>
@@ -239,7 +239,7 @@ export function IssuesPage({
     );
     return (
       <div className="min-h-full bg-gray-50 fade-up">
-        <div className="px-7 py-6 max-w-[1200px] mx-auto">
+        <div className="px-7 py-6 max-w-[1600px] mx-auto">
           <div className="flex items-center justify-between mb-5">
             <div>
               <h1 className="text-xl font-black text-gray-900">Product Search</h1>
@@ -393,7 +393,7 @@ export function IssuesPage({
 
   return (
     <div className="min-h-full bg-gray-50 fade-up">
-      <div className="px-7 py-6 max-w-[1200px] mx-auto">
+      <div className="px-7 py-6 max-w-[1600px] mx-auto">
 
         <div className="flex items-center justify-between mb-5">
           <div>

@@ -3,6 +3,49 @@ import type { Product, MarginAlert, PriceAnomaly, DeptThreshold } from "@/App";
 
 function fmt(n: number) { return `€${n.toFixed(2)}`; }
 
+// Small inline sparkline: draws a smooth line (and optional filled area) from a
+// numeric series. Series can have any length; we normalise to the svg viewBox.
+function Sparkline({
+  values,
+  stroke,
+  fill,
+  width = 120,
+  height = 36,
+  strokeWidth = 1.75,
+}: {
+  values: number[];
+  stroke: string;
+  fill?: string;
+  width?: number;
+  height?: number;
+  strokeWidth?: number;
+}) {
+  if (values.length === 0) return <svg width={width} height={height} />;
+  const pts = values.length === 1 ? [values[0], values[0]] : values;
+  const min = Math.min(...pts);
+  const max = Math.max(...pts);
+  const range = max - min || 1;
+  const stepX = width / (pts.length - 1 || 1);
+  const coords = pts.map((v, i) => {
+    const x = i * stepX;
+    // Leave 2px padding top/bottom so the stroke isn't clipped
+    const y = height - 2 - ((v - min) / range) * (height - 4);
+    return [x, y] as const;
+  });
+  const linePath = coords
+    .map(([x, y], i) => (i === 0 ? `M ${x} ${y}` : `L ${x} ${y}`))
+    .join(" ");
+  const areaPath = fill
+    ? `${linePath} L ${width} ${height} L 0 ${height} Z`
+    : null;
+  return (
+    <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} className="overflow-visible">
+      {areaPath && <path d={areaPath} fill={fill} opacity={0.18} />}
+      <path d={linePath} fill="none" stroke={stroke} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 interface DashboardPageProps {
   products: Product[];
   marginAlerts: MarginAlert[];
@@ -22,7 +65,7 @@ export function DashboardPage({ products, marginAlerts, priceAnomalies, threshol
       // Sources exist but none selected — keep header + selector visible so user can re-enable
       return (
         <div className="min-h-full bg-gray-50 fade-up">
-          <div className="px-7 py-6 max-w-[1200px] mx-auto">
+          <div className="px-7 py-6 max-w-[1600px] mx-auto">
             <div className="flex items-center justify-between mb-5">
               <div>
                 <h1 className="text-xl font-black text-gray-900">Dashboard</h1>
@@ -93,14 +136,51 @@ export function DashboardPage({ products, marginAlerts, priceAnomalies, threshol
 
   const priorityActions = activeAlerts.slice(0, 5);
 
+  // ── Build deterministic sparkline series from real product data ──
+  // Bucket products by category/department to get ~16 data points, then derive:
+  //  - belowSeries:  count of below-target products per bucket  (red, downward feel)
+  //  - marginSeries: average margin % per bucket                 (green)
+  //  - profitSeries: cumulative recoverable profit               (violet, rising)
+  //  - anomalySeries:count of price anomalies per bucket         (orange)
+  const buckets = (() => {
+    const map = new Map<string, Product[]>();
+    products.forEach((p) => {
+      const k = p.category || p.department || "Other";
+      if (!map.has(k)) map.set(k, []);
+      map.get(k)!.push(p);
+    });
+    return Array.from(map.values());
+  })();
+  const belowSeries = buckets.map((b) =>
+    b.filter((p) => activeAlerts.some((a) => a.product.id === p.id)).length,
+  );
+  const marginSeries = buckets.map(
+    (b) => Math.round((b.reduce((s, p) => s + p.margin, 0) / b.length) * 10) / 10,
+  );
+  const profitSeries = (() => {
+    const sorted = [...activeAlerts].sort((a, b) => b.profitImpact - a.profitImpact);
+    const out: number[] = [];
+    let cum = 0;
+    const n = Math.max(8, Math.min(24, sorted.length));
+    const step = Math.max(1, Math.floor(sorted.length / n));
+    for (let i = 0; i < sorted.length; i += step) {
+      cum += Math.max(0, sorted[i].profitImpact);
+      out.push(cum);
+    }
+    return out.length > 1 ? out : [0, recoverableProfit];
+  })();
+  const anomalySeries = buckets.map(
+    (b) => b.filter((p) => priceAnomalies.some((x) => x.product.id === p.id)).length,
+  );
+
   return (
     <div className="min-h-full bg-gray-50 fade-up">
-      <div className="px-7 py-6 max-w-[1100px] mx-auto">
+      <div className="px-7 py-6 w-full max-w-[1600px] mx-auto">
 
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-5">
           <div>
-            <h1 className="text-xl font-black text-gray-900">Dashboard</h1>
+            <h1 className="text-2xl font-black text-gray-900">Dashboard</h1>
             <p className="text-sm text-gray-400 mt-0.5">{products.length} products analysed</p>
           </div>
           <div className="flex items-center gap-2">
@@ -111,21 +191,36 @@ export function DashboardPage({ products, marginAlerts, priceAnomalies, threshol
           </div>
         </div>
 
-        {/* Total recoverable banner */}
+        {/* Total recoverable banner — now with sparkline */}
         {recoverableProfit > 0 && (
-          <div className="bg-violet-600 rounded-2xl px-6 py-4 mb-5 flex items-center justify-between shadow-lg shadow-violet-600/25">
-            <div>
-              <p className="text-violet-200 text-xs font-semibold uppercase tracking-wide">Total Recoverable Profit</p>
-              <p className="text-white text-3xl font-black mt-0.5">{fmt(recoverableProfit)}<span className="text-violet-300 text-sm font-medium ml-2">per unit across {activeAlerts.length} products</span></p>
+          <div className="relative bg-violet-700 rounded-2xl px-6 py-5 mb-6 flex items-center justify-between shadow-lg shadow-violet-600/25 overflow-hidden">
+            <div className="relative z-10">
+              <p className="text-violet-200 text-[10px] font-semibold uppercase tracking-widest">Total Recoverable Profit</p>
+              <p className="text-white text-4xl font-black mt-1">{fmt(recoverableProfit)}</p>
+              <p className="text-violet-200 text-xs mt-1">per unit across {activeAlerts.length} products</p>
             </div>
-            <div className="text-right">
-              <p className="text-violet-200 text-xs font-medium">{fixedCount} issue{fixedCount !== 1 ? "s" : ""} marked fixed</p>
-              <p className="text-violet-300 text-xs mt-0.5">{criticalCount} critical remaining</p>
+            <div className="relative z-10 text-right">
+              <p className="text-violet-100 text-sm font-bold">{fixedCount} issue{fixedCount !== 1 ? "s" : ""} marked fixed</p>
+              <p className="text-violet-200 text-sm mt-0.5">{criticalCount} critical remaining</p>
+            </div>
+            {/* Large decorative sparkline behind the text */}
+            <div className="absolute right-0 top-0 h-full w-[55%] pointer-events-none opacity-90">
+              <Sparkline
+                values={profitSeries}
+                stroke="#c4b5fd"
+                fill="#a78bfa"
+                strokeWidth={2}
+                width={600}
+                height={110}
+              />
             </div>
           </div>
         )}
 
-        {/* KPI cards */}
+        {/* Overview heading */}
+        <h2 className="text-xs font-black text-gray-900 uppercase tracking-wide mb-3">Overview</h2>
+
+        {/* KPI cards with sparklines */}
         <div className="grid grid-cols-4 gap-4 mb-6">
           {[
             {
@@ -134,7 +229,10 @@ export function DashboardPage({ products, marginAlerts, priceAnomalies, threshol
               sub: `${criticalCount} critical`,
               icon: <TrendingDown className="w-4 h-4" />,
               color: activeAlerts.length > 0 ? "text-red-600" : "text-green-600",
-              iconBg: activeAlerts.length > 0 ? "bg-red-100 text-red-500" : "bg-green-100 text-green-500",
+              iconBg: activeAlerts.length > 0 ? "bg-red-50 text-red-500" : "bg-green-50 text-green-500",
+              series: belowSeries,
+              stroke: "#ef4444",
+              fill: "#fecaca",
             },
             {
               label: "Average Margin",
@@ -142,7 +240,10 @@ export function DashboardPage({ products, marginAlerts, priceAnomalies, threshol
               sub: avgMargin >= 20 ? "above 20% target" : "below 20% target",
               icon: <Tag className="w-4 h-4" />,
               color: avgMargin >= 20 ? "text-green-600" : "text-amber-600",
-              iconBg: avgMargin >= 20 ? "bg-green-100 text-green-500" : "bg-amber-100 text-amber-500",
+              iconBg: avgMargin >= 20 ? "bg-green-50 text-green-500" : "bg-amber-50 text-amber-500",
+              series: marginSeries,
+              stroke: "#10b981",
+              fill: "#a7f3d0",
             },
             {
               label: "Recoverable Profit",
@@ -150,7 +251,10 @@ export function DashboardPage({ products, marginAlerts, priceAnomalies, threshol
               sub: "per unit if all fixed",
               icon: <TrendingUp className="w-4 h-4" />,
               color: "text-violet-700",
-              iconBg: "bg-violet-100 text-violet-600",
+              iconBg: "bg-violet-50 text-violet-600",
+              series: profitSeries,
+              stroke: "#7c3aed",
+              fill: "#c4b5fd",
             },
             {
               label: "Price Anomalies",
@@ -158,16 +262,22 @@ export function DashboardPage({ products, marginAlerts, priceAnomalies, threshol
               sub: "data entry issues",
               icon: <AlertTriangle className="w-4 h-4" />,
               color: priceAnomalies.length > 0 ? "text-orange-600" : "text-green-600",
-              iconBg: priceAnomalies.length > 0 ? "bg-orange-100 text-orange-500" : "bg-green-100 text-green-500",
+              iconBg: priceAnomalies.length > 0 ? "bg-orange-50 text-orange-500" : "bg-green-50 text-green-500",
+              series: anomalySeries,
+              stroke: "#f97316",
+              fill: "#fed7aa",
             },
-          ].map(({ label, value, sub, icon, color, iconBg }) => (
-            <div key={label} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-              <div className="flex items-center justify-between mb-3">
+          ].map(({ label, value, sub, icon, color, iconBg, series, stroke, fill }) => (
+            <div key={label} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 relative overflow-hidden">
+              <div className="flex items-start justify-between mb-2">
                 <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">{label}</span>
                 <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${iconBg}`}>{icon}</div>
               </div>
-              <p className={`text-2xl font-black ${color}`}>{value}</p>
-              <p className="text-[11px] text-gray-400 mt-0.5">{sub}</p>
+              <p className={`text-3xl font-black ${color}`}>{value}</p>
+              <div className="flex items-end justify-between mt-2">
+                <p className="text-[11px] text-gray-400">{sub}</p>
+                <Sparkline values={series} stroke={stroke} fill={fill} width={90} height={32} />
+              </div>
             </div>
           ))}
         </div>
