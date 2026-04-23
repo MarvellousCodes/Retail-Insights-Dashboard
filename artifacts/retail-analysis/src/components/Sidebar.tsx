@@ -28,7 +28,7 @@ export function Sidebar({ activeTab, onTabChange, expanded, onToggle }: SidebarP
           <span className="text-white text-xs font-black tracking-tight">R</span>
         </div>
         {expanded && (
-          <span className="text-sm font-black text-gray-900 ml-2 mr-auto leading-none">Profit</span>
+          <span className="text-sm font-black text-gray-900 ml-2 mr-auto leading-none whitespace-nowrap">Retail Guard</span>
         )}
         <button
           onClick={onToggle}
