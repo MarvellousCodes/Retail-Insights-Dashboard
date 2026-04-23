@@ -55,22 +55,32 @@ interface ColumnMapping {
 
 function autoDetect(headers: string[]): ColumnMapping {
   const h = headers.map((x) => x.toLowerCase());
+  // Track which headers have already been claimed so a single column isn't
+  // assigned to two different fields (e.g. "Cost Price" being matched as both
+  // cost and selling price via the generic "price" fallback).
+  const used = new Set<string>();
   const find = (...patterns: string[]) => {
     for (const p of patterns) {
-      const idx = h.findIndex((hdr) => hdr.includes(p));
-      if (idx !== -1) return headers[idx];
+      for (let i = 0; i < h.length; i++) {
+        if (used.has(headers[i])) continue;
+        if (h[i].includes(p)) {
+          used.add(headers[i]);
+          return headers[i];
+        }
+      }
     }
     return "";
   };
-  return {
-    name: find("product name", "product desc", "description", "product", "item name", "item", "title", "name"),
-    costPrice: find("cost price", "cost ex", "buy price", "purchase price", "unit cost", "cost", "buy"),
-    sellingPrice: find("selling price", "sell price", "retail price", "sale price", "rrp", "price inc", "price ex", "price", "sell", "retail"),
-    sku: find("barcode", "sku", "product code", "item code", "ean", "upc", "code", "ref"),
-    department: find("department", "dept", "section", "group", "division"),
-    category: find("category", "cat", "type", "class"),
-    supplier: find("supplier", "vendor", "manufacturer", "brand"),
-  };
+  // Detection order matters — claim the most specific fields first so generic
+  // patterns ("price", "cost") don't steal a column from a more specific one.
+  const sku = find("barcode", "sku", "product code", "item code", "ean", "upc");
+  const name = find("product name", "product desc", "description", "product", "item name", "item", "title", "name");
+  const costPrice = find("cost price", "cost ex vat", "cost incl vat", "cost inc vat", "cost ex", "cost inc", "buy price", "purchase price", "wholesale", "unit cost", "net cost", "cost", "buy");
+  const sellingPrice = find("selling price", "sell price", "retail price", "sale price", "shelf price", "list price", "rrp", "price inc vat", "price ex vat", "price inc", "price ex", "unit price", "price", "sell", "retail");
+  const department = find("department", "dept", "section", "group", "division");
+  const category = find("category", "cat", "type", "class");
+  const supplier = find("supplier", "vendor", "manufacturer", "brand");
+  return { name, sku, costPrice, sellingPrice, department, category, supplier };
 }
 
 function rowsToProducts(rows: Record<string, string>[], mapping: ColumnMapping, fileTag: string): Product[] {
@@ -329,7 +339,20 @@ export function UploadPage({ onAnalyse, onManualAdd, manualProducts, existingSou
                             <FileSpreadsheet className="w-4 h-4 text-violet-500 shrink-0" />
                             <div className="flex-1 min-w-0">
                               <p className="text-xs font-bold text-gray-900 truncate">{p.fileName}</p>
-                              <p className="text-[10px] text-gray-400">{p.rows.length} rows</p>
+                              <div className="flex items-center gap-2 flex-wrap mt-0.5">
+                                <span className="text-[10px] text-gray-400">{p.rows.length} rows</span>
+                                <span className="text-[10px] text-gray-300">·</span>
+                                <span className="text-[10px] text-gray-500">
+                                  Cost: <span className={`font-bold ${p.mapping.costPrice ? "text-violet-600" : "text-red-500"}`}>{p.mapping.costPrice || "not set"}</span>
+                                </span>
+                                <span className="text-[10px] text-gray-300">·</span>
+                                <span className="text-[10px] text-gray-500">
+                                  Sell: <span className={`font-bold ${p.mapping.sellingPrice ? "text-violet-600" : "text-red-500"}`}>{p.mapping.sellingPrice || "not set"}</span>
+                                </span>
+                                {p.mapping.costPrice && p.mapping.sellingPrice && p.mapping.costPrice === p.mapping.sellingPrice && (
+                                  <span className="text-[10px] font-bold text-red-600 bg-red-50 px-1.5 py-0.5 rounded">⚠ same column</span>
+                                )}
+                              </div>
                             </div>
                           </button>
                           {valid ? (
