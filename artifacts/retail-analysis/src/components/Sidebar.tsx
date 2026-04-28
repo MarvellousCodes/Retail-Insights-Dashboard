@@ -1,4 +1,4 @@
-import { Upload, LayoutDashboard, AlertCircle, FileText, Settings, ChevronRight, ChevronLeft, Shield, Sun, Moon } from "lucide-react";
+import { Upload, LayoutDashboard, AlertCircle, FileText, Settings, ChevronRight, ChevronLeft, Shield, Sun, Moon, ScanLine, BarChart3, Building2 } from "lucide-react";
 import type { NavTab } from "@/App";
 
 interface SidebarProps {
@@ -13,7 +13,10 @@ interface SidebarProps {
 const NAV_ITEMS: { tab: NavTab; icon: React.ReactNode; label: string }[] = [
   { tab: "dashboard", icon: <LayoutDashboard className="w-5 h-5 shrink-0" />, label: "Dashboard" },
   { tab: "issues", icon: <AlertCircle className="w-5 h-5 shrink-0" />, label: "Issues" },
+  { tab: "insights", icon: <BarChart3 className="w-5 h-5 shrink-0" />, label: "Insights" },
+  { tab: "departments", icon: <Building2 className="w-5 h-5 shrink-0" />, label: "Departments" },
   { tab: "reports", icon: <FileText className="w-5 h-5 shrink-0" />, label: "Reports" },
+  { tab: "invoices", icon: <ScanLine className="w-5 h-5 shrink-0" />, label: "Invoices" },
   { tab: "upload", icon: <Upload className="w-5 h-5 shrink-0" />, label: "Upload" },
   { tab: "settings", icon: <Settings className="w-5 h-5 shrink-0" />, label: "Settings" },
 ];

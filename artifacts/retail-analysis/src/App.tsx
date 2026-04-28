@@ -7,10 +7,13 @@ import { DashboardPage } from "@/pages/DashboardPage";
 import { IssuesPage } from "@/pages/IssuesPage";
 import { ReportsPage } from "@/pages/ReportsPage";
 import { SettingsPage } from "@/pages/SettingsPage";
+import { InvoiceScannerPage } from "@/pages/InvoiceScannerPage";
+import { InsightsPage } from "@/pages/InsightsPage";
+import { DepartmentsPage } from "@/pages/DepartmentsPage";
 
 const queryClient = new QueryClient();
 
-export type NavTab = "dashboard" | "upload" | "issues" | "reports" | "settings";
+export type NavTab = "dashboard" | "upload" | "issues" | "reports" | "insights" | "departments" | "invoices" | "settings";
 type InternalTab = NavTab | "analyse";
 
 // ─── Core Types ───────────────────────────────────────────────────────────────
@@ -367,6 +370,13 @@ function App() {
           )}
           {tab === "settings" && (
             <SettingsPage thresholds={thresholds} onUpdate={handleThresholdUpdate} />
+          )}
+          {tab === "invoices" && <InvoiceScannerPage />}
+          {tab === "insights" && (
+            <InsightsPage products={activeProducts} onNewUpload={() => setTab("upload")} />
+          )}
+          {tab === "departments" && (
+            <DepartmentsPage products={activeProducts} thresholds={thresholds} onNewUpload={() => setTab("upload")} />
           )}
         </main>
       </div>

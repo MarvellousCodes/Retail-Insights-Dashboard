@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RetailGuard — Architecture Map</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0a0f;color:#e0e0e0;min-height:100vh;overflow-x:hidden}
+.glow{position:fixed;width:600px;height:600px;border-radius:50%;pointer-events:none;z-index:0;filter:blur(120px);opacity:.15}
+.glow-1{top:-200px;left:-100px;background:#7c3aed}
+.glow-2{bottom:-200px;right:-100px;background:#c026d3}
+.container{max-width:1200px;margin:0 auto;padding:40px 24px;position:relative;z-index:1}
+h1{font-size:2.5rem;font-weight:900;background:linear-gradient(135deg,#a78bfa,#e879f9);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px}
+.subtitle{color:#888;font-size:1rem;margin-bottom:48px}
+h2{font-size:1.4rem;font-weight:800;color:#c4b5fd;margin:48px 0 20px;display:flex;align-items:center;gap:10px}
+h2 .emoji{font-size:1.2rem;-webkit-text-fill-color:initial}
+.card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:24px;margin-bottom:16px;backdrop-filter:blur(12px);transition:border-color .2s}
+.card:hover{border-color:rgba(167,139,250,.3)}
+.card-title{font-weight:800;font-size:1.05rem;margin-bottom:6px;color:#e2e8f0}
+.card-sub{font-size:.82rem;color:#94a3b8;margin-bottom:12px}
+.tag{display:inline-block;font-size:.7rem;font-weight:700;padding:3px 10px;border-radius:99px;margin-right:6px;margin-bottom:4px}
+.tag-in{background:rgba(34,197,94,.12);color:#4ade80;border:1px solid rgba(34,197,94,.2)}
+.tag-out{background:rgba(168,85,247,.12);color:#c084fc;border:1px solid rgba(168,85,247,.2)}
+.tag-state{background:rgba(251,191,36,.12);color:#fbbf24;border:1px solid rgba(251,191,36,.2)}
+.problem{background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.15);border-radius:12px;padding:16px;margin-top:12px}
+.problem-title{font-weight:800;font-size:.85rem;color:#f87171;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.problem p{font-size:.8rem;color:#fca5a5;line-height:1.5}
+.flow{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:24px 0;padding:20px;background:rgba(255,255,255,.02);border-radius:12px;border:1px solid rgba(255,255,255,.06)}
+.flow-step{background:rgba(124,58,237,.15);border:1px solid rgba(124,58,237,.3);border-radius:10px;padding:10px 16px;font-size:.8rem;font-weight:700;color:#c4b5fd}
+.flow-arrow{color:#6d28d9;font-size:1.2rem;font-weight:900}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px}
+.legend{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:32px}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:.75rem;color:#94a3b8}
+</style>
+</head>
+<body>
+<div class="glow glow-1"></div>
+<div class="glow glow-2"></div>
+<div class="container">
+
+<h1>RetailGuard Architecture Map</h1>
+<p class="subtitle">Complete component breakdown — responsibility, inputs, outputs, and problem areas</p>
+
+<div class="legend">
+  <div class="legend-item"><span class="tag tag-in" style="margin:0">INPUT</span> Data flowing in</div>
+  <div class="legend-item"><span class="tag tag-out" style="margin:0">OUTPUT</span> Data flowing out</div>
+  <div class="legend-item"><span class="tag tag-state" style="margin:0">STATE</span> Internal state managed</div>
+</div>
+
+<!-- DATA FLOW -->
+<h2><span class="emoji">🔄</span> Data Flow</h2>
+<div class="flow">
+  <div class="flow-step">CSV File</div><span class="flow-arrow">→</span>
+  <div class="flow-step">UploadPage (parse)</div><span class="flow-arrow">→</span>
+  <div class="flow-step">App.tsx (state hub)</div><span class="flow-arrow">→</span>
+  <div class="flow-step">runAnalysis()</div><span class="flow-arrow">→</span>
+  <div class="flow-step">marginAlerts + priceAnomalies</div><span class="flow-arrow">→</span>
+  <div class="flow-step">All Pages</div>
+</div>
+<div class="flow">
+  <div class="flow-step">Invoice (PDF/JPG/PNG)</div><span class="flow-arrow">→</span>
+  <div class="flow-step">InvoiceScannerPage</div><span class="flow-arrow">→</span>
+  <div class="flow-step">Margin Guardian API (:5000)</div><span class="flow-arrow">→</span>
+  <div class="flow-step">OCR extraction</div><span class="flow-arrow">→</span>
+  <div class="flow-step">Editable table</div>
+</div>
+
+<!-- CORE COMPONENTS -->
+<h2><span class="emoji">🧠</span> Core Components</h2>
+<div class="grid">
+
+<div class="card">
+  <div class="card-title">App.tsx — Central State Hub</div>
+  <div class="card-sub">The god component. Owns ALL application state and passes everything down as props.</div>
+  <span class="tag tag-in">INPUT</span> File uploads from UploadPage, manual product entries, threshold edits, source toggles<br>
+  <span class="tag tag-out">OUTPUT</span> Props to every page: products[], marginAlerts[], priceAnomalies[], thresholds[], fixedIds, sourceControls<br>
+  <span class="tag tag-state">STATE</span> sources[], activeSourceIds, marginAlerts[], priceAnomalies[], thresholds[], productOverrides, fixedIds, tab, theme
+  <div class="problem">
+    <div class="problem-title">⚠️ Problems</div>
+    <p>• <b>God component anti-pattern</b> — 250+ lines managing 10+ state variables. Every state change re-renders the entire app tree.<br>
+    • <b>No persistence</b> — all data lost on refresh. No localStorage, no IndexedDB, no backend save.<br>
+    • <b>No URL routing</b> — tab state is internal useState, can't bookmark or share links.<br>
+    • <b>Types defined inline</b> — Product, MarginAlert, Source types live in App.tsx instead of a shared types file.<br>
+    • <b>Analysis runs on every render</b> — useEffect re-runs runAnalysis on any activeProducts/thresholds change with no debounce.</p>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-title">runAnalysis() — Analysis Engine</div>
+  <div class="card-sub">Pure function that computes margin alerts and price anomalies from products + thresholds.</div>
+  <span class="tag tag-in">INPUT</span> products: Product[], thresholds: DeptThreshold[], productOverrides: Record&lt;string, number&gt;<br>
+  <span class="tag tag-out">OUTPUT</span> { marginAlerts: MarginAlert[], priceAnomalies: PriceAnomaly[] }
+  <div class="problem">
+    <div class="problem-title">⚠️ Problems</div>
+    <p>• <b>O(n×m) threshold lookup</b> — for each product, scans entire thresholds array with .find(). Fine for 4K SKUs, breaks at 100K+.<br>
+    • <b>Hardcoded severity bands</b> — gap≥10 = High, gap≥5 = Medium. Not configurable per department.<br>
+    • <b>No historical comparison</b> — can't detect margin drift over time, only snapshot analysis.<br>
+    • <b>roundRetailPrice() is Irish-specific</b> — .49/.99 rounding won't work for other markets.</p>
+  </div>
+</div>
+
+</div>
+
+<!-- PAGES -->
+<h2><span class="emoji">📄</span> Pages</h2>
+<div class="grid">
+
+<div class="card">
+  <div class="card-title">DashboardPage — Overview Dashboard</div>
+  <div class="card-sub">KPI cards, department breakdown bars, severity distribution, sparkline charts. The landing page.</div>
+  <span class="tag tag-in">INPUT</span> products[], marginAlerts[], priceAnomalies[], thresholds[], fixedIds, sourceControls<br>
+  <span class="tag tag-out">OUTPUT</span> Visual-only (no callbacks except onNewUpload)
+  <div class="problem">
+    <div class="problem-title">⚠️ Problems</div>
+    <p>• <b>18KB single file</b> — inline Sparkline component, all chart logic, all layout in one file.<br>
+    • <b>No real-time data</b> — static snapshot, no WebSocket or polling for live updates.<br>
+    • <b>Sparkline data is synthetic</b> — generates random-ish values, not actual historical trends.</p>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-title">UploadPage — CSV Upload & Parse</div>
+  <div class="card-sub">Drag-and-drop CSV upload with auto column mapping, multi-file support, manual product entry form.</div>
+  <span class="tag tag-in">INPUT</span> CSV files (drag/drop or file picker), manual product form data<br>
+  <span class="tag tag-out">OUTPUT</span> onAnalyse(files[]), onManualAdd(product), onRemoveSource(id)
+  <div class="problem">
+    <div class="problem-title">⚠️ Problems</div>
+    <p>• <b>30KB monster file</b> — CSV parser, column mapper, preview table, manual entry form all in one.<br>
+    • <b>Client-side CSV parsing</b> — custom parser handles delimiters/quotes but no streaming for large files.<br>
+    • <b>Column mapping is heuristic</b> — fuzzy matches on header names, can silently mismap columns.<br>
+    • <b>No validation feedback</b> — bad rows silently produce 0-value products.</p>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-title">IssuesPage — Issue Tracker</div>
+  <div class="card-sub">Filterable, sortable table of all margin alerts and price anomalies. Mark-as-fixed, per-product threshold overrides.</div>
+  <span class="tag tag-in">INPUT</span> products[], marginAlerts[], priceAnomalies[], fixedIds, productOverrides, sourceControls<br>
+  <span class="tag tag-out">OUTPUT</span> onMarkFixed(id), onSetProductOverride(id, margin)
+  <div class="problem">
+    <div class="problem-title">⚠️ Problems</div>
+    <p>• <b>27KB file</b> — filtering, sorting, inline editing, severity badges all in one component.<br>
+    • <b>No pagination</b> — renders all issues in a single scrollable list. Sluggish at 1000+ alerts.<br>
+    • <b>Fixed state is ephemeral</b> — marking an issue "fixed" is lost on refresh.</p>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-title">ReportsPage — Export Reports</div>
+  <div class="card-sub">Generates attention reports with top-N worst margins, anomalies, department summaries. CSV download.</div>
+  <span class="tag tag-in">INPUT</span> products[], marginAlerts[], priceAnomalies[], fixedIds, sourceControls<br>
+  <span class="tag tag-out">OUTPUT</span> CSV file download (browser-generated)
+  <div class="problem">
+    <div class="problem-title">⚠️ Problems</div>
+    <p>• <b>No PDF export</b> — only CSV. The Margin Guardian backend has PDF generation but it's not connected.<br>
+    • <b>No email delivery</b> — Margin Guardian has email but this frontend doesn't use it.<br>
+    • <b>Report is regenerated every render</b> — no caching or memoization.</p>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-title">InsightsPage — Product Intelligence</div>
+  <div class="card-sub">Metric cards showing top/bottom performers by margin and profit. Expandable product lists.</div>
+  <span class="tag tag-in">INPUT</span> products[]<br>
+  <span class="tag tag-out">OUTPUT</span> Visual-only
+  <div class="problem">
+    <div class="problem-title">⚠️ Problems</div>
+    <p>• <b>No trend analysis</b> — shows current snapshot only, no comparison to previous uploads.<br>
+    • <b>No supplier analysis</b> — doesn't group by supplier to identify problematic vendors.</p>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-title">DepartmentsPage — Department Breakdown</div>
+  <div class="card-sub">Per-department health grades (A-F), margin averages, profit totals, below-target counts.</div>
+  <span class="tag tag-in">INPUT</span> products[], thresholds[]<br>
+  <span class="tag tag-out">OUTPUT</span> Visual-only
+  <div class="problem">
+    <div class="problem-title">⚠️ Problems</div>
+    <p>• <b>Grade thresholds are hardcoded</b> — A≥40%, B≥30% etc. Not configurable.<br>
+    • <b>No drill-down</b> — can't click a department to see its products.</p>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-title">InvoiceScannerPage — OCR Invoice Entry</div>
+  <div class="card-sub">Upload PDF/JPG/PNG invoices, OCR extracts line items, editable table, CSV export for Retail Solutions import.</div>
+  <span class="tag tag-in">INPUT</span> Invoice file (PDF/JPG/PNG) → POST to Margin Guardian API at localhost:5000<br>
+  <span class="tag tag-out">OUTPUT</span> Editable extraction table, CSV download
+  <div class="problem">
+    <div class="problem-title">⚠️ Problems</div>
+    <p>• <b>Hardcoded API_BASE</b> — "http://127.0.0.1:5000" is baked in. No env var, no config.<br>
+    • <b>Disconnected from main analysis</b> — scanned invoices don't feed into the margin analysis pipeline.<br>
+    • <b>No error recovery</b> — if OCR fails, user gets a generic error with no retry or manual fallback.<br>
+    • <b>Depends on separate Flask backend</b> — the only page that needs a server, creating a split architecture.</p>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-title">SettingsPage — Threshold Configuration</div>
+  <div class="card-sub">Edit department minimum margin thresholds. Add/remove departments. Reset to defaults.</div>
+  <span class="tag tag-in">INPUT</span> thresholds[]<br>
+  <span class="tag tag-out">OUTPUT</span> onUpdate(thresholds[])
+  <div class="problem">
+    <div class="problem-title">⚠️ Problems</div>
+    <p>• <b>No persistence</b> — custom thresholds lost on refresh.<br>
+    • <b>No import/export</b> — can't save threshold profiles or share between stores.</p>
+  </div>
+</div>
+
+</div>
+
+<!-- SHARED COMPONENTS -->
+<h2><span class="emoji">🧩</span> Shared Components</h2>
+<div class="grid">
+
+<div class="card">
+  <div class="card-title">Sidebar — Navigation</div>
+  <div class="card-sub">Collapsible sidebar with 8 nav items, theme toggle, user avatar. Controls which page is shown.</div>
+  <span class="tag tag-in">INPUT</span> activeTab, theme, expanded state<br>
+  <span class="tag tag-out">OUTPUT</span> onTabChange(tab), onToggle(), onThemeToggle()
+  <div class="problem">
+    <div class="problem-title">⚠️ Problems</div>
+    <p>• <b>Hardcoded user</b> — shows "Store Manager / Pro plan" with no auth system.<br>
+    • <b>No mobile responsive</b> — sidebar doesn't collapse to hamburger on small screens.</p>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-title">SourceSelector — Data Source Picker</div>
+  <div class="card-sub">Dropdown to toggle which uploaded CSV files are included in the active analysis.</div>
+  <span class="tag tag-in">INPUT</span> sources[], activeIds Set<br>
+  <span class="tag tag-out">OUTPUT</span> onToggle(id), onSelectAll(), onSelectNone(), onRemove(id)
+  <div class="problem">
+    <div class="problem-title">⚠️ Problems</div>
+    <p>• <b>No search/filter</b> — with many uploads, no way to find a specific source.<br>
+    • <b>Click-outside detection</b> — manual mousedown listener instead of using a proper dropdown component.</p>
+  </div>
+</div>
+
+</div>
+
+<!-- BACKEND & INFRASTRUCTURE -->
+<h2><span class="emoji">⚙️</span> Backend & Infrastructure</h2>
+<div class="grid">
+
+<div class="card">
+  <div class="card-title">API Server (Express) — Unused Backend</div>
+  <div class="card-sub">Express server with CORS, pino logging, health check endpoint. Scaffolded by Replit but never used.</div>
+  <span class="tag tag-in">INPUT</span> HTTP requests on PORT env var<br>
+  <span class="tag tag-out">OUTPUT</span> GET /api/healthz → { status: "ok" }
+  <div class="problem">
+    <div class="problem-title">⚠️ Problems</div>
+    <p>• <b>Completely empty</b> — only a health check route. No product, analysis, or report endpoints.<br>
+    • <b>Requires PostgreSQL</b> — DB lib throws if DATABASE_URL not set, but nothing uses the DB.<br>
+    • <b>Dead code</b> — the frontend does everything client-side. This server adds complexity for zero value.</p>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-title">DB Schema (Drizzle/PostgreSQL) — Empty</div>
+  <div class="card-sub">Drizzle ORM setup with PostgreSQL pool. Schema file is a template with no tables defined.</div>
+  <span class="tag tag-in">INPUT</span> DATABASE_URL env var<br>
+  <span class="tag tag-out">OUTPUT</span> Nothing — no tables, no queries
+  <div class="problem">
+    <div class="problem-title">⚠️ Problems</div>
+    <p>• <b>Zero tables defined</b> — schema is commented-out example code.<br>
+    • <b>Unnecessary dependency</b> — PostgreSQL requirement blocks local dev for no benefit.</p>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-title">Margin Guardian API (Flask :5000) — OCR Backend</div>
+  <div class="card-sub">Separate Flask app providing invoice OCR via Tesseract + pdfplumber. Only used by InvoiceScannerPage.</div>
+  <span class="tag tag-in">INPUT</span> POST /api/invoice/upload with multipart file<br>
+  <span class="tag tag-out">OUTPUT</span> JSON array of extracted line items
+  <div class="problem">
+    <div class="problem-title">⚠️ Problems</div>
+    <p>• <b>Separate process</b> — must run independently on port 5000. No unified dev command.<br>
+    • <b>No CORS config visible</b> — may fail silently from browser.<br>
+    • <b>Tesseract dependency</b> — requires system-level install, not portable.</p>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-title">generate_test_data.py — Test Data Generator</div>
+  <div class="card-sub">Python script generating 20K realistic Irish retail products across 8 departments with realistic margins.</div>
+  <span class="tag tag-in">INPUT</span> Hardcoded config (department counts, margin ranges, supplier lists)<br>
+  <span class="tag tag-out">OUTPUT</span> test_data_20k.csv
+  <div class="problem">
+    <div class="problem-title">⚠️ Problems</div>
+    <p>• <b>Hardcoded output path</b> — absolute path to user's machine.<br>
+    • <b>No CLI args</b> — can't control row count, departments, or output path.</p>
+  </div>
+</div>
+
+</div>
+
+<!-- PRIORITY PROBLEM AREAS -->
+<h2><span class="emoji">🎯</span> Priority Problem Areas (Tackle Order)</h2>
+
+<div class="card" style="border-color:rgba(239,68,68,.3)">
+  <div class="card-title" style="color:#f87171">1. No Data Persistence</div>
+  <p style="font-size:.85rem;color:#cbd5e1;line-height:1.6">Every upload, threshold edit, and "mark fixed" action is lost on page refresh. This is the #1 blocker for real usage. <b>Fix:</b> Add IndexedDB/localStorage persistence for sources, thresholds, overrides, and fixed IDs. Or wire up the empty Express backend with actual CRUD endpoints.</p>
+</div>
+
+<div class="card" style="border-color:rgba(239,68,68,.3)">
+  <div class="card-title" style="color:#f87171">2. God Component (App.tsx)</div>
+  <p style="font-size:.85rem;color:#cbd5e1;line-height:1.6">App.tsx owns 10+ state variables and passes them as props through every page. <b>Fix:</b> Extract into React Context or Zustand store. Split types into shared types file. Add URL routing (wouter is already a dependency but unused).</p>
+</div>
+
+<div class="card" style="border-color:rgba(251,191,36,.3)">
+  <div class="card-title" style="color:#fbbf24">3. Invoice Scanner is Disconnected</div>
+  <p style="font-size:.85rem;color:#cbd5e1;line-height:1.6">Scanned invoices produce a table but don't feed back into the margin analysis. Two separate worlds. <b>Fix:</b> Add "Import to Analysis" button that converts scanned items to Product[] and adds them as a source.</p>
+</div>
+
+<div class="card" style="border-color:rgba(251,191,36,.3)">
+  <div class="card-title" style="color:#fbbf24">4. Monster Page Files</div>
+  <p style="font-size:.85rem;color:#cbd5e1;line-height:1.6">UploadPage (30KB), IssuesPage (27KB), DashboardPage (18KB) are unmaintainable monoliths. <b>Fix:</b> Extract CSV parser, column mapper, chart components, filter/sort logic into separate modules.</p>
+</div>
+
+<div class="card" style="border-color:rgba(251,191,36,.3)">
+  <div class="card-title" style="color:#fbbf24">5. Dead Backend Code</div>
+  <p style="font-size:.85rem;color:#cbd5e1;line-height:1.6">Express server + Drizzle DB + PostgreSQL requirement exist but do nothing. <b>Fix:</b> Either remove entirely (pure SPA) or build real API endpoints for persistence, multi-user, and report generation.</p>
+</div>
+
+<div class="card" style="border-color:rgba(96,165,250,.3)">
+  <div class="card-title" style="color:#60a5fa">6. No Historical Analysis</div>
+  <p style="font-size:.85rem;color:#cbd5e1;line-height:1.6">Can only analyze current snapshot. No margin drift detection, no week-over-week comparison, no trend alerts. <b>Fix:</b> Store upload history with timestamps, compute deltas between uploads.</p>
+</div>
+
+<div class="card" style="border-color:rgba(96,165,250,.3)">
+  <div class="card-title" style="color:#60a5fa">7. No Authentication or Multi-Store</div>
+  <p style="font-size:.85rem;color:#cbd5e1;line-height:1.6">Hardcoded "Store Manager / Pro plan" with no login. Can't support multiple stores or users. <b>Fix:</b> Add auth layer if going multi-tenant, or at minimum make store name configurable.</p>
+</div>
+
+<div class="card" style="border-color:rgba(96,165,250,.3)">
+  <div class="card-title" style="color:#60a5fa">8. Performance at Scale</div>
+  <p style="font-size:.85rem;color:#cbd5e1;line-height:1.6">Client-side analysis works for 4K-20K products but will choke at 100K+. No virtualized lists, no pagination, no Web Workers. <b>Fix:</b> Add virtual scrolling to IssuesPage, move analysis to Web Worker, add pagination.</p>
+</div>
+
+</div>
+</body>
+</html>
+
+</div>
+</body>
+</html>
