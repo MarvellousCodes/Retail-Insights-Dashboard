@@ -67,18 +67,31 @@ export const MANUAL_SOURCE_ID = "manual-entries";
 
 export const DEFAULT_THRESHOLDS: DeptThreshold[] = [
   { department: "Off Licence", minMargin: 18 },
-  { department: "Alcohol", minMargin: 18 },
-  { department: "Dairy", minMargin: 25 },
-  { department: "Bakery", minMargin: 30 },
-  { department: "Produce", minMargin: 35 },
+  { department: "Bread and Cakes", minMargin: 28 },
+  { department: "Biscuits", minMargin: 25 },
+  { department: "Confectionery", minMargin: 25 },
+  { department: "Dairy Wall", minMargin: 22 },
+  { department: "Soft Drinks", minMargin: 20 },
+  { department: "Frozen Food", minMargin: 22 },
+  { department: "Ice Cream N Cones", minMargin: 30 },
   { department: "Grocery", minMargin: 22 },
-  { department: "Deli", minMargin: 45 },
-  { department: "Non-Food", minMargin: 30 },
-  { department: "Drinks", minMargin: 20 },
-  { department: "Beverages", minMargin: 20 },
-  { department: "Snacks", minMargin: 28 },
-  { department: "Frozen", minMargin: 22 },
-  { department: "Chilled", minMargin: 24 },
+  { department: "Health and Beauty", minMargin: 35 },
+  { department: "Newspapers", minMargin: 10 },
+  { department: "Deli Cold", minMargin: 40 },
+  { department: "Deli Hot", minMargin: 45 },
+  { department: "Instore Bakery", minMargin: 35 },
+  { department: "Tea/Coffee Machine", minMargin: 60 },
+  { department: "Non Food", minMargin: 30 },
+  { department: "Fresh Produce", minMargin: 35 },
+  { department: "Tobacco", minMargin: 8 },
+  { department: "Newsagents", minMargin: 15 },
+  { department: "Prepared Meals", minMargin: 40 },
+  { department: "Breakfast Meats", minMargin: 25 },
+  { department: "Cooked Meats", minMargin: 30 },
+  { department: "Crisps and Snacks", minMargin: 28 },
+  { department: "Sports and Nutrition", minMargin: 30 },
+  { department: "Fresh Meat", minMargin: 25 },
+  { department: "Forecourt Services", minMargin: 15 },
   { department: "General", minMargin: 20 },
 ];
 
@@ -371,7 +384,7 @@ function App() {
           {tab === "settings" && (
             <SettingsPage thresholds={thresholds} onUpdate={handleThresholdUpdate} />
           )}
-          {tab === "invoices" && <InvoiceScannerPage />}
+          {tab === "invoices" && <InvoiceScannerPage existingProducts={activeProducts} onAddToSystem={handleAnalyseMultiple} />}
           {tab === "insights" && (
             <InsightsPage products={activeProducts} onNewUpload={() => setTab("upload")} />
           )}

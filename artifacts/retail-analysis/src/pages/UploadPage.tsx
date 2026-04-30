@@ -3,6 +3,7 @@ import {
   Upload, AlertCircle, CheckCircle2, PlusCircle, ChevronRight, Info,
   FileSpreadsheet, X, ChevronDown,
 } from "lucide-react";
+import { track, uploadFile } from "../lib/analytics";
 import type { Product, Source } from "@/App";
 
 // ─── CSV Parsing ─────────────────────────────────────────────────────────────
@@ -161,6 +162,7 @@ export function UploadPage({ onAnalyse, onManualAdd, manualProducts, existingSou
         setParsedFiles((prev) => [...prev, newFile]);
       };
       reader.readAsText(f);
+      uploadFile(f, "csv");
     });
   };
 
@@ -191,6 +193,7 @@ export function UploadPage({ onAnalyse, onManualAdd, manualProducts, existingSou
       products: rowsToProducts(p.rows, p.mapping, p.id),
     }));
     onAnalyse(fileResults);
+    fileResults.forEach((f) => track("csv_upload", { file: f.fileName, products: f.products.length }));
     // Clear staged files after handing off to analyse
     setParsedFiles([]);
     setExpandedId(null);
