@@ -1,0 +1,25 @@
+barcode,product_name,department,system_qty,counted_qty,variance,cost_price,variance_value
+5391234567890,Barry's Gold Blend 80s,Grocery,24,24,0,2.85,0.00
+5391234567891,Tayto Cheese & Onion 6pk,Confectionery,36,34,-2,1.95,-3.90
+5391234567892,Brennans Family Pan,Grocery,18,18,0,1.42,0.00
+5391234567893,Kerrygold Butter 227g,Grocery,30,28,-2,2.10,-4.20
+5391234567895,Cadbury Dairy Milk 110g,Confectionery,40,35,-5,1.45,-7.25
+5391234567896,Lucozade Orange 500ml,Confectionery,48,46,-2,1.10,-2.20
+5391234567897,Denny Gold Medal Sausages 454g,Deli,15,15,0,2.30,0.00
+5391234567898,Avonmore Fresh Milk 2L,Grocery,25,23,-2,1.75,-3.50
+5391234567899,Bulmers Original 500ml,Off-Licence,20,17,-3,2.15,-6.45
+5391234567900,Smithwick's Red Ale 4pk,Off-Licence,16,14,-2,5.20,-10.40
+5391234567901,Silk Cut Purple 20s,Tobacco,30,26,-4,15.50,-62.00
+5391234567902,Irish Independent,Newspapers,12,12,0,2.00,0.00
+5391234567903,Fairy Liquid Original 450ml,Household,18,18,0,1.85,0.00
+5391234567904,Galtee Rashers 200g,Deli,14,13,-1,2.45,-2.45
+5391234567905,Club Orange 2L,Confectionery,22,22,0,1.30,0.00
+5391234567906,Flahavan's Porridge 1.5kg,Grocery,10,10,0,3.10,0.00
+5391234567907,Paddy Irish Whiskey 700ml,Off-Licence,8,6,-2,22.50,-45.00
+5391234567908,Odlums Cream Flour 2kg,Grocery,20,21,1,1.60,1.60
+5391234567909,Clonakilty Black Pudding 200g,Deli,12,12,0,2.80,0.00
+5391234567910,Ballygowan Still Water 2L,Grocery,35,35,0,0.65,0.00
+5391234567911,Lyons Original 80s,Grocery,19,19,0,2.90,0.00
+5391234567912,King Crisps 6pk,Confectionery,28,25,-3,1.90,-5.70
+5391234567913,Powers Gold Label 700ml,Off-Licence,6,5,-1,23.00,-23.00
+5391234567914,Dairygold Spread 454g,Grocery,17,17,0,1.95,0.00

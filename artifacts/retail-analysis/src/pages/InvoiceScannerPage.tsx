@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef } from "react";
 import { Upload, Plus, Trash2, Download, Calculator, FileText, Image, Loader2, AlertTriangle } from "lucide-react";
+import { extractFromImage, extractFromPdf } from "../lib/invoiceParser";
 
 interface InvoiceItem {
   id: string;
@@ -18,14 +19,13 @@ const empty = (): InvoiceItem => ({
   unitCost: "", totalCost: "", vatRate: "0", sellPrice: "", department: "",
 });
 
-const API_BASE = "http://127.0.0.1:5000";
-
 export function InvoiceScannerPage() {
   const [items, setItems] = useState<InvoiceItem[]>([]);
   const [supplier, setSupplier] = useState("");
   const [targetMargin, setTargetMargin] = useState(30);
   const [dragOver, setDragOver] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [ocrProgress, setOcrProgress] = useState(0);
   const [error, setError] = useState("");
   const [lastFile, setLastFile] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
@@ -33,14 +33,14 @@ export function InvoiceScannerPage() {
   const handleFile = useCallback(async (file: File) => {
     setError("");
     setUploading(true);
+    setOcrProgress(0);
     setLastFile(file.name);
     try {
-      const fd = new FormData();
-      fd.append("file", file);
-      const res = await fetch(`${API_BASE}/api/invoice/upload`, { method: "POST", body: fd });
-      const data = await res.json();
-      if (data.error) { setError(data.error); return; }
-      const parsed: InvoiceItem[] = (data.items || []).map((i: any) => ({
+      const ext = file.name.split(".").pop()?.toLowerCase() ?? "";
+      const rawItems = ext === "pdf"
+        ? await extractFromPdf(file)
+        : await extractFromImage(file, setOcrProgress);
+      const parsed: InvoiceItem[] = rawItems.map((i) => ({
         id: crypto.randomUUID(),
         productName: i.product_name || "",
         barcode: i.barcode || "",
@@ -51,9 +51,10 @@ export function InvoiceScannerPage() {
         sellPrice: "",
         department: "",
       }));
+      if (!parsed.length) setError("No line items detected. Try a clearer image or add rows manually.");
       setItems((prev) => [...prev, ...parsed]);
     } catch (e: any) {
-      setError(`Could not connect to invoice processing server. Make sure Margin Guardian is running on port 5000.\n\nRun: cd /Users/marvade/Projects/margin-guardian && source venv/bin/activate && python3 app.py`);
+      setError(`OCR processing failed: ${e.message}`);
     } finally {
       setUploading(false);
     }
@@ -123,7 +124,9 @@ export function InvoiceScannerPage() {
           <>
             <Loader2 className="w-10 h-10 text-violet-500 mx-auto mb-3 animate-spin" />
             <p className="font-semibold text-violet-600 dark:text-violet-400">Processing {lastFile}...</p>
-            <p className="text-xs text-gray-400 mt-1">Extracting line items via OCR</p>
+            <p className="text-xs text-gray-400 mt-1">
+              {ocrProgress > 0 ? `OCR: ${Math.round(ocrProgress * 100)}%` : "Extracting line items via OCR (runs in your browser)"}
+            </p>
           </>
         ) : (
           <>

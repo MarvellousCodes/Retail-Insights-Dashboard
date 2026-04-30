@@ -1,0 +1,26 @@
+barcode,product_name,department,supplier,cost_price,sell_price,vat_rate,margin_percent,stock_qty
+5391234567890,Barry's Gold Blend 80s,Grocery,Barry's Tea,2.85,4.49,0.00,36.53,24
+5391234567891,Tayto Cheese & Onion 6pk,Confectionery,Tayto,1.95,3.29,23.00,40.73,36
+5391234567892,Brennans Family Pan,Grocery,Brennans,1.42,2.15,0.00,33.95,18
+5391234567893,Kerrygold Butter 227g,Grocery,Kerrygold,2.10,3.19,0.00,34.17,30
+5391234567894,Jacob's Cream Crackers 200g,Grocery,Jacob's,1.15,1.89,0.00,39.15,22
+5391234567895,Cadbury Dairy Milk 110g,Confectionery,BWG Foods,1.45,2.30,23.00,36.96,40
+5391234567896,Lucozade Orange 500ml,Confectionery,Musgrave,1.10,1.95,23.00,43.59,48
+5391234567897,Denny Gold Medal Sausages 454g,Deli,BWG Foods,2.30,3.99,0.00,42.36,15
+5391234567898,Avonmore Fresh Milk 2L,Grocery,Musgrave,1.75,2.29,0.00,23.58,25
+5391234567899,Bulmers Original 500ml,Off-Licence,BWG Foods,2.15,3.50,23.00,38.57,20
+5391234567900,Smithwick's Red Ale 4pk,Off-Licence,Musgrave,5.20,8.49,23.00,38.75,16
+5391234567901,Silk Cut Purple 20s,Tobacco,BWG Foods,15.50,16.50,23.00,6.06,30
+5391234567902,Irish Independent,Newspapers,Musgrave,2.00,2.40,0.00,16.67,12
+5391234567903,Fairy Liquid Original 450ml,Household,BWG Foods,1.85,2.99,23.00,38.13,18
+5391234567904,Galtee Rashers 200g,Deli,Musgrave,2.45,3.49,0.00,29.80,14
+5391234567905,Club Orange 2L,Confectionery,BWG Foods,1.30,2.49,23.00,47.79,22
+5391234567906,Flahavan's Porridge 1.5kg,Grocery,Musgrave,3.10,4.99,0.00,37.88,10
+5391234567907,Paddy Irish Whiskey 700ml,Off-Licence,BWG Foods,22.50,32.99,23.00,31.80,8
+5391234567908,Odlums Cream Flour 2kg,Grocery,BWG Foods,1.60,2.39,0.00,33.05,20
+5391234567909,Clonakilty Black Pudding 200g,Deli,O'Connell's Local Supplies,2.80,3.99,0.00,29.82,12
+5391234567910,Ballygowan Still Water 2L,Grocery,Musgrave,0.65,1.29,23.00,49.61,35
+5391234567911,Lyons Original 80s,Grocery,BWG Foods,2.90,4.49,0.00,35.41,19
+5391234567912,King Crisps 6pk,Confectionery,Tayto,1.90,3.19,23.00,40.44,28
+5391234567913,Powers Gold Label 700ml,Off-Licence,Musgrave,23.00,33.99,23.00,32.33,6
+5391234567914,Dairygold Spread 454g,Grocery,Kerry Co-op,1.95,2.99,0.00,34.78,17

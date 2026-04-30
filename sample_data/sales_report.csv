@@ -1,0 +1,25 @@
+barcode,product_name,department,qty_sold,sell_price,total_revenue,cost_price,total_cost,profit,margin_percent
+5391234567890,Barry's Gold Blend 80s,Grocery,12,4.49,53.88,2.85,34.20,19.68,36.53
+5391234567891,Tayto Cheese & Onion 6pk,Confectionery,24,3.29,78.96,1.95,46.80,32.16,40.73
+5391234567892,Brennans Family Pan,Grocery,35,2.15,75.25,1.42,49.70,25.55,33.95
+5391234567893,Kerrygold Butter 227g,Grocery,18,3.19,57.42,2.10,37.80,19.62,34.17
+5391234567895,Cadbury Dairy Milk 110g,Confectionery,30,2.30,69.00,1.45,43.50,25.50,36.96
+5391234567896,Lucozade Orange 500ml,Confectionery,42,1.95,81.90,1.10,46.20,35.70,43.59
+5391234567897,Denny Gold Medal Sausages 454g,Deli,10,3.99,39.90,2.30,23.00,16.90,42.36
+5391234567898,Avonmore Fresh Milk 2L,Grocery,40,2.29,91.60,1.75,70.00,21.60,23.58
+5391234567901,Silk Cut Purple 20s,Tobacco,45,16.50,742.50,15.50,697.50,45.00,6.06
+5391234567902,Irish Independent,Newspapers,60,2.40,144.00,2.00,120.00,24.00,16.67
+5391234567899,Bulmers Original 500ml,Off-Licence,14,3.50,49.00,2.15,30.10,18.90,38.57
+5391234567903,Fairy Liquid Original 450ml,Household,8,2.99,23.92,1.85,14.80,9.12,38.13
+5391234567904,Galtee Rashers 200g,Deli,11,3.49,38.39,2.45,26.95,11.44,29.80
+5391234567905,Club Orange 2L,Confectionery,15,2.49,37.35,1.30,19.50,17.85,47.79
+5391234567906,Flahavan's Porridge 1.5kg,Grocery,6,4.99,29.94,3.10,18.60,11.34,37.88
+5391234567910,Ballygowan Still Water 2L,Grocery,28,1.29,36.12,0.65,18.20,17.92,49.61
+5391234567911,Lyons Original 80s,Grocery,9,4.49,40.41,2.90,26.10,14.31,35.41
+5391234567912,King Crisps 6pk,Confectionery,20,3.19,63.80,1.90,38.00,25.80,40.44
+5391234567909,Clonakilty Black Pudding 200g,Deli,7,3.99,27.93,2.80,19.60,8.33,29.82
+5391234567914,Dairygold Spread 454g,Grocery,13,2.99,38.87,1.95,25.35,13.52,34.78
+5391234567900,Smithwick's Red Ale 4pk,Off-Licence,9,8.49,76.41,5.20,46.80,29.61,38.75
+5391234567894,Jacob's Cream Crackers 200g,Grocery,14,1.89,26.46,1.15,16.10,10.36,39.15
+5391234567908,Odlums Cream Flour 2kg,Grocery,5,2.39,11.95,1.60,8.00,3.95,33.05
+5391234567907,Paddy Irish Whiskey 700ml,Off-Licence,3,32.99,98.97,22.50,67.50,31.47,31.80
