@@ -181,15 +181,11 @@ export function runAnalysis(
 function App() {
   const [tab, setTab] = useState<InternalTab>("livedata");
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
-  const [loggedIn, setLoggedIn] = useState(isLoggedIn());
+  const [loggedIn, setLoggedIn] = useState(true);
   const [theme, setTheme] = useState<"light" | "dark">(() => {
     if (typeof window === "undefined") return "light";
     return (localStorage.getItem("rg-theme") as "light" | "dark") || "light";
   });
-
-  if (!loggedIn) {
-    return <LoginPage onLogin={() => setLoggedIn(true)} />;
-  }
 
   useEffect(() => {
     const root = document.documentElement;

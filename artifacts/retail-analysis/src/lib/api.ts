@@ -1,4 +1,5 @@
-export const API_BASE = "/api/store";
+// Use relative path when served from Oracle VM, or direct IP when on Cloudflare
+export const API_BASE = window.location.hostname === "143.47.254.68" ? "" : "http://143.47.254.68:8080";
 
 export async function apiCall(endpoint: string, options?: RequestInit) {
   const token = localStorage.getItem("rg-token");
