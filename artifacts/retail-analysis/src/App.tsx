@@ -10,10 +10,13 @@ import { SettingsPage } from "@/pages/SettingsPage";
 import { InvoiceScannerPage } from "@/pages/InvoiceScannerPage";
 import { InsightsPage } from "@/pages/InsightsPage";
 import { DepartmentsPage } from "@/pages/DepartmentsPage";
+import { LoginPage } from "@/pages/LoginPage";
+import { LiveDataPage } from "@/pages/LiveDataPage";
+import { isLoggedIn } from "@/lib/api";
 
 const queryClient = new QueryClient();
 
-export type NavTab = "dashboard" | "upload" | "issues" | "reports" | "insights" | "departments" | "invoices" | "settings";
+export type NavTab = "dashboard" | "upload" | "issues" | "reports" | "insights" | "departments" | "invoices" | "livedata" | "settings";
 type InternalTab = NavTab | "analyse";
 
 // ─── Core Types ───────────────────────────────────────────────────────────────
@@ -176,12 +179,17 @@ export function runAnalysis(
 // ─── App ──────────────────────────────────────────────────────────────────────
 
 function App() {
-  const [tab, setTab] = useState<InternalTab>("dashboard");
+  const [tab, setTab] = useState<InternalTab>("livedata");
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
+  const [loggedIn, setLoggedIn] = useState(isLoggedIn());
   const [theme, setTheme] = useState<"light" | "dark">(() => {
     if (typeof window === "undefined") return "light";
     return (localStorage.getItem("rg-theme") as "light" | "dark") || "light";
   });
+
+  if (!loggedIn) {
+    return <LoginPage onLogin={() => setLoggedIn(true)} />;
+  }
 
   useEffect(() => {
     const root = document.documentElement;
@@ -337,6 +345,7 @@ function App() {
           onThemeToggle={() => setTheme((t) => (t === "dark" ? "light" : "dark"))}
         />
         <main className="flex-1 overflow-y-auto">
+          {tab === "livedata" && <LiveDataPage />}
           {tab === "upload" && (
             <UploadPage
               onAnalyse={handleAnalyseMultiple}
