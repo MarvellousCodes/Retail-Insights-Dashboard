@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Demo Script — Patrick</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#1a1a2e;color:#e0e0e0;font-family:-apple-system,system-ui,sans-serif;font-size:18px;line-height:1.7;padding:24px;max-width:750px;margin:0 auto}
+h1{color:#00d4aa;font-size:26px;margin-bottom:4px}
+.sub{color:#888;font-size:14px;margin-bottom:32px}
+.step{margin-bottom:28px;padding-left:16px;border-left:3px solid #00d4aa}
+.step h2{color:#00d4aa;font-size:18px;margin-bottom:6px}
+.say{background:#16213e;padding:10px 14px;border-radius:8px;margin:6px 0;font-size:16px;color:#ccc}
+.do{color:#ffa502;font-size:15px;margin:4px 0}
+.killer{color:#00d4aa;font-weight:700;font-size:17px;margin:6px 0}
+.note{background:#2a1a1a;border:1px solid #e74c3c;border-radius:8px;padding:14px;margin-top:32px;font-size:15px}
+.note h2{color:#e74c3c;font-size:16px;margin-bottom:8px}
+.note li{margin:4px 0}
+a{color:#00d4aa}
+</style>
+</head>
+<body>
+
+<h1>Demo Script — Patrick</h1>
+<p class="sub">Centra Midleton. Follow-up. Show him what we built for his 6 pain points.</p>
+
+<div class="step">
+  <h2>1. Margin Monitoring</h2>
+  <p class="say">"You said you can't easily find products outside a specific margin per department. Watch this."</p>
+  <p class="do">Upload CSV → department filter → show items outside range</p>
+  <p class="do">Point out Off-Licence at 16% vs 18% target — his exact example</p>
+</div>
+
+<div class="step">
+  <h2>2. Non-Approved Supplier Invoices</h2>
+  <p class="say">"That Friday order that takes you an hour and a half — let me show you how long it takes now."</p>
+  <p class="do">Open Invoice Scanner → photo/PDF of sample invoice → OCR extracts items live</p>
+  <p class="do">Show progress bar, then extracted line items ready to import</p>
+</div>
+
+<div class="step">
+  <h2>3. Manual Data Entry</h2>
+  <p class="say">"8 hours a week on back office. That's a full day you're not on the shop floor."</p>
+  <p class="killer">"What would you do with that day back every week?"</p>
+</div>
+
+<div class="step">
+  <h2>4. No Morning Report → The Morning Report</h2>
+  <p class="say">"You said you want to walk in and see 'here's 150 items not within range.' This is exactly that."</p>
+  <p class="do">Show Page 2 — KPI cards, department health bars, 147 flagged items</p>
+</div>
+
+<div class="step">
+  <h2>5. Dashboard + KPI Cards</h2>
+  <p class="do">Walk through: Revenue, Margin %, Items Outside Range, Invoice Backlog</p>
+  <p class="do">Show department margin health — green/red bars with target ranges</p>
+</div>
+
+<div class="step">
+  <h2>6. Issues Page — Filtering, Sortable</h2>
+  <p class="say">"You gon' get instant visibility."</p>
+  <p class="do">Show sortable table → filter by department → sort by margin gap</p>
+  <p class="killer">"Those 147 items are drifting every day and nobody knows. We're just putting a net on it."</p>
+</div>
+
+<div class="note">
+  <h2>If things go wrong</h2>
+  <ul>
+    <li>WiFi fails → Morning Report is static HTML, works offline</li>
+    <li>OCR slow → "First scan loads the engine, subsequent ones are instant"</li>
+    <li>Retail Solutions integration? → "Phase 2 — direct API, no CSV export needed"</li>
+    <li>Cloudflare: <a href="https://retail-insights-dashboard.pages.dev">retail-insights-dashboard.pages.dev</a></li>
+    <li>Local: <a href="http://localhost:3000">localhost:3000</a></li>
+  </ul>
+</div>
+
+</body>
+</html>

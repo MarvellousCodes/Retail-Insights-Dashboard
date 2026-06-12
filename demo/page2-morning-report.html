@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Morning Report — Centra Midleton | RetailGuard</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f5f6fa;color:#2d3436}
+.container{max-width:1200px;margin:0 auto;padding:24px}
+header{display:flex;justify-content:space-between;align-items:center;margin-bottom:32px}
+header h1{font-size:28px;font-weight:600;color:#2d3436}
+header h1 span{color:#636e72;font-weight:400;font-size:16px;display:block;margin-top:4px}
+.badge{background:#dfe6e9;color:#636e72;padding:6px 14px;border-radius:20px;font-size:13px;font-weight:500}
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px}
+.kpi{background:#fff;border-radius:12px;padding:22px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.kpi-label{font-size:13px;color:#636e72;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px}
+.kpi-value{font-size:32px;font-weight:700}
+.kpi-sub{font-size:13px;margin-top:6px;display:flex;align-items:center;gap:4px}
+.up{color:#00b894}.down-amber{color:#e17055}.down-red{color:#e74c3c}
+.arrow-up::before{content:'';display:inline-block;width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-bottom:6px solid #00b894;margin-right:4px}
+.arrow-down::before{content:'';display:inline-block;width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:6px solid currentColor;margin-right:4px}
+.section{background:#fff;border-radius:12px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,.06);margin-bottom:28px}
+.section h2{font-size:18px;font-weight:600;margin-bottom:18px;color:#2d3436}
+.dept-row{display:flex;align-items:center;padding:10px 0;border-bottom:1px solid #f1f2f6}
+.dept-row:last-child{border-bottom:none}
+.dept-name{width:140px;font-weight:500;font-size:14px;flex-shrink:0}
+.dept-bar-wrap{flex:1;margin:0 16px;position:relative;height:28px;background:#f1f2f6;border-radius:6px;overflow:hidden}
+.dept-bar{height:100%;border-radius:6px;transition:width .3s}
+.dept-target{position:absolute;top:0;height:100%;border-left:2px dashed #636e72;opacity:.4}
+.dept-target-end{border-right:2px dashed #636e72;border-left:none}
+.dept-vals{width:200px;font-size:13px;color:#636e72;text-align:right;flex-shrink:0}
+.dept-vals .actual{font-weight:600;font-size:14px}
+.status-pill{display:inline-block;padding:2px 10px;border-radius:10px;font-size:11px;font-weight:600;text-transform:uppercase;margin-left:8px}
+.pill-green{background:#e6fff8;color:#00b894}
+.pill-red{background:#ffeaea;color:#e74c3c}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{text-align:left;padding:10px 12px;border-bottom:2px solid #dfe6e9;color:#636e72;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.5px;cursor:pointer;user-select:none}
+th:hover{color:#2d3436}
+th::after{content:' \25B4\25BE';font-size:9px;color:#b2bec3;margin-left:4px}
+td{padding:10px 12px;border-bottom:1px solid #f1f2f6}
+tr:hover td{background:#f8f9fa}
+.gap-neg{color:#e74c3c;font-weight:600}
+.actions-row{display:flex;gap:12px;flex-wrap:wrap}
+.btn{padding:12px 24px;border-radius:8px;font-size:14px;font-weight:600;border:none;cursor:pointer;transition:all .15s}
+.btn-primary{background:#00d4aa;color:#fff}.btn-primary:hover{background:#00b894}
+.btn-amber{background:#ffeaa7;color:#6c5b00}.btn-amber:hover{background:#fdcb6e}
+.btn-outline{background:#fff;color:#636e72;border:2px solid #dfe6e9}.btn-outline:hover{border-color:#b2bec3}
+footer{text-align:center;padding:24px 0;color:#b2bec3;font-size:13px}
+@media(max-width:900px){.kpi-row{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){.kpi-row{grid-template-columns:1fr}.dept-vals{width:auto}}
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>Good Morning, Patrick<span id="dateStr"></span></h1>
+    <div class="badge">Centra Midleton, Co. Cork</div>
+  </header>
+
+  <div class="kpi-row">
+    <div class="kpi">
+      <div class="kpi-label">Total Revenue Yesterday</div>
+      <div class="kpi-value" style="color:#2d3436">&euro;4,287.50</div>
+      <div class="kpi-sub up"><span class="arrow-up"></span>+3.2% vs last week</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Average Margin</div>
+      <div class="kpi-value" style="color:#e17055">31.4%</div>
+      <div class="kpi-sub down-amber"><span class="arrow-down"></span>-0.8% vs target</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Items Outside Target Range</div>
+      <div class="kpi-value" style="color:#e74c3c">147</div>
+      <div class="kpi-sub down-red">Needs Review</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Invoice Backlog</div>
+      <div class="kpi-value" style="color:#e17055">3</div>
+      <div class="kpi-sub down-amber">Pending processing</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Department Margin Health</h2>
+    <div id="depts"></div>
+  </div>
+
+  <div class="section">
+    <h2>Top 5 Problem Items</h2>
+    <table>
+      <thead><tr><th>Product</th><th>Department</th><th>Target</th><th>Actual</th><th>Gap</th><th>Weekly Rev</th></tr></thead>
+      <tbody>
+        <tr><td>Jameson 700ml</td><td>Off-Licence</td><td>18.0%</td><td>14.2%</td><td class="gap-neg">-3.8%</td><td>&euro;487.50</td></tr>
+        <tr><td>Brennans Bread</td><td>Grocery</td><td>25.0%</td><td>21.3%</td><td class="gap-neg">-3.7%</td><td>&euro;312.00</td></tr>
+        <tr><td>Rotisserie Chicken</td><td>Deli</td><td>55.0%</td><td>48.6%</td><td class="gap-neg">-6.4%</td><td>&euro;445.00</td></tr>
+        <tr><td>Cadbury Dairy Milk 200g</td><td>Confectionery</td><td>40.0%</td><td>36.1%</td><td class="gap-neg">-3.9%</td><td>&euro;198.50</td></tr>
+        <tr><td>Organic Bananas</td><td>Fresh Produce</td><td>35.0%</td><td>28.4%</td><td class="gap-neg">-6.6%</td><td>&euro;156.00</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <h2>Quick Actions</h2>
+    <div class="actions-row">
+      <button class="btn btn-primary">View All 147 Flagged Items</button>
+      <button class="btn btn-amber">Process Pending Invoices (3)</button>
+      <button class="btn btn-outline">Export Weekly Report</button>
+    </div>
+  </div>
+
+  <footer>RetailGuard — Your store, at a glance. Updated automatically from your Retail Solutions CSV export.</footer>
+</div>
+<script>
+document.getElementById('dateStr').textContent=new Date().toLocaleDateString('en-IE',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+const depts=[
+  {name:'Confectionery',lo:40,hi:60,actual:44.2},
+  {name:'Off-Licence',lo:18,hi:100,actual:16.3},
+  {name:'Deli',lo:55,hi:65,actual:58.1},
+  {name:'Grocery',lo:25,hi:35,actual:23.8},
+  {name:'Tobacco',lo:8,hi:12,actual:9.4},
+  {name:'Fresh Produce',lo:35,hi:45,actual:32.1}
+];
+const dc=document.getElementById('depts');
+depts.forEach(d=>{
+  const ok=d.actual>=d.lo&&d.actual<=(d.hi<100?d.hi:100);
+  const c=ok?'#00d4aa':'#e74c3c';
+  const pill=ok?'pill-green':'pill-red';
+  const label=ok?'On Target':'Below Target';
+  const tgt=d.hi<100?`${d.lo}-${d.hi}%`:`${d.lo}%+`;
+  dc.innerHTML+=`<div class="dept-row">
+    <div class="dept-name">${d.name}</div>
+    <div class="dept-bar-wrap">
+      <div class="dept-bar" style="width:${d.actual}%;background:${c}"></div>
+      <div class="dept-target" style="left:${d.lo}%"></div>
+      ${d.hi<100?`<div class="dept-target dept-target-end" style="left:${d.hi}%"></div>`:''}
+    </div>
+    <div class="dept-vals"><span class="actual" style="color:${c}">${d.actual}%</span> / ${tgt}<span class="status-pill ${pill}">${label}</span></div>
+  </div>`;
+});
+</script>
+</body>
+</html>

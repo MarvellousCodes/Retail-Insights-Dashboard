@@ -1,4 +1,4 @@
-export const API_BASE = "http://143.47.254.68:8080";
+export const API_BASE = "/api/store";
 
 export async function apiCall(endpoint: string, options?: RequestInit) {
   const token = localStorage.getItem("rg-token");
