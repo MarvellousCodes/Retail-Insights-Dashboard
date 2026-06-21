@@ -18,18 +18,17 @@ export function TransactionsPage() {
 
   const load = useCallback((f?: string, t?: string, first = false) => {
     setLoading(true);
-    const qs = `?from=${f || ""}&to=${t || ""}`;
-    apiCall(`/api/transactions/summary${qs}`).then((d) => {
+    apiCall(`/api/transactions/summary?from=${f || ""}&to=${t || ""}`).then((d) => {
       setData(d);
-      if (first) { setFrom(d.date_min || ""); setTo(d.date_max || ""); }
+      const ef = first ? (d.date_min || "") : (f || "");
+      const et = first ? (d.date_max || "") : (t || "");
+      if (first) { setFrom(ef); setTo(et); }
+      apiCall(`/api/transactions/by-department?from=${ef}&to=${et}`).then((dd) => setDepts(dd.departments || []));
       setLoading(false);
     });
   }, []);
 
-  useEffect(() => {
-    load("", "", true);
-    apiCall("/api/transactions/by-department").then((d) => setDepts(d.departments || []));
-  }, [load]);
+  useEffect(() => { load("", "", true); }, [load]);
 
   if (loading && !data) return <div className="p-8 text-center text-gray-400">Loading transactions...</div>;
 
@@ -137,7 +136,7 @@ export function TransactionsPage() {
       {/* Volume by department */}
       <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-200 dark:border-gray-700">
         <h2 className="font-semibold text-sm text-gray-900 dark:text-white mb-1 flex items-center gap-2"><Layers className="w-4 h-4 text-violet-600" /> Volume by department</h2>
-        <p className="text-[11px] text-gray-400 mb-3">Sales value and units per department over the last 12 trading periods. Transactions are basket level, so this is sales volume by department rather than a transaction count per department.</p>
+        <p className="text-[11px] text-gray-400 mb-3">Sales value and units per department for the selected dates. Transactions are basket level, so this is sales volume by department, not a transaction count per department.</p>
         <div className="space-y-2">
           {depts.slice(0, 14).map((d, i) => (
             <div key={i} className="flex items-center gap-3 text-sm">
