@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { apiCall } from "@/lib/api";
 import { TrendingUp, Package } from "lucide-react";
+import { useRevenueMask, RevenueMaskToggle, STARS } from "@/lib/privacy";
 
 function eur(v: number | null) { return v === null || v === undefined ? "—" : `€${Number(v).toFixed(2)}`; }
 function marginCls(m: number | null) {
@@ -8,7 +9,7 @@ function marginCls(m: number | null) {
   return m >= 25 ? "bg-green-50 text-green-700" : m >= 10 ? "bg-amber-50 text-amber-700" : "bg-red-50 text-red-700";
 }
 
-function PerfTable({ rows, metric }: { rows: any[]; metric: "revenue" | "qty" }) {
+function PerfTable({ rows, metric, masked }: { rows: any[]; metric: "revenue" | "qty"; masked: boolean }) {
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
       <table className="w-full text-sm">
@@ -27,7 +28,7 @@ function PerfTable({ rows, metric }: { rows: any[]; metric: "revenue" | "qty" })
               <td className="px-3 py-2 text-gray-400 text-xs">{i + 1}</td>
               <td className="px-3 py-2 text-gray-800 dark:text-gray-200 truncate max-w-[220px]">{p.name}</td>
               <td className={`px-3 py-2 text-right ${metric === "qty" ? "font-semibold text-violet-600" : "text-gray-500"}`}>{p.qty.toLocaleString()}</td>
-              <td className={`px-3 py-2 text-right ${metric === "revenue" ? "font-semibold text-violet-600" : "text-gray-500"}`}>{eur(p.revenue)}</td>
+              <td className={`px-3 py-2 text-right ${metric === "revenue" ? "font-semibold text-violet-600" : "text-gray-500"}`}>{masked ? STARS : eur(p.revenue)}</td>
               <td className="px-3 py-2 text-center"><span className={`px-2 py-0.5 rounded-full text-xs font-bold ${marginCls(p.margin)}`}>{p.margin === null ? "—" : p.margin + "%"}</span></td>
             </tr>
           ))}
@@ -41,6 +42,7 @@ export function TurnoverPage() {
   const [data, setData] = useState<any>({ top_value: [], top_volume: [] });
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<"revenue" | "volume">("revenue");
+  const { masked, toggle } = useRevenueMask();
 
   useEffect(() => {
     apiCall("/api/performance").then((d) => { setData(d || {}); setLoading(false); });
@@ -50,8 +52,13 @@ export function TurnoverPage() {
 
   return (
     <div className="p-4 md:p-6">
-      <h1 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">Sales — Product Performance</h1>
-      <p className="text-xs text-gray-500 mb-4">Best sellers over the last 12 months — by revenue and by units sold</p>
+      <div className="flex items-start justify-between gap-3 mb-4">
+        <div>
+          <h1 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">Sales, product performance</h1>
+          <p className="text-xs text-gray-500">Best sellers over the last 12 months, by revenue and by units sold</p>
+        </div>
+        <RevenueMaskToggle masked={masked} toggle={toggle} />
+      </div>
 
       <div className="flex gap-2 mb-4">
         <button onClick={() => setTab("revenue")} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium ${tab === "revenue" ? "bg-violet-600 text-white" : "bg-white dark:bg-gray-800 text-gray-600 border border-gray-200 dark:border-gray-700"}`}><TrendingUp className="w-3.5 h-3.5" /> Top by Revenue</button>
@@ -59,8 +66,8 @@ export function TurnoverPage() {
       </div>
 
       {tab === "revenue"
-        ? <PerfTable rows={data.top_value || []} metric="revenue" />
-        : <PerfTable rows={data.top_volume || []} metric="qty" />}
+        ? <PerfTable rows={data.top_value || []} metric="revenue" masked={masked} />
+        : <PerfTable rows={data.top_volume || []} metric="qty" masked={masked} />}
 
       <p className="text-xs text-gray-400 mt-3 text-center">Top 15 active products. Revenue & units summed from the last 12 months of turnover data.</p>
     </div>
