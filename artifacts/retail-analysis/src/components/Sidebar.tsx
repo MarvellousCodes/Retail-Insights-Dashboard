@@ -10,25 +10,57 @@ interface SidebarProps {
   onThemeToggle: () => void;
 }
 
-const NAV_ITEMS: { tab: NavTab; icon: React.ReactNode; label: string }[] = [
-  { tab: "livedata", icon: <Database className="w-5 h-5 shrink-0" />, label: "Products" },
-  { tab: "scanner", icon: <ScanBarcode className="w-5 h-5 shrink-0" />, label: "Scanner" },
-  { tab: "askshop", icon: <Sparkles className="w-5 h-5 shrink-0" />, label: "Ask" },
-  { tab: "turnover", icon: <TrendingUp className="w-5 h-5 shrink-0" />, label: "Sales" },
-  { tab: "transactions", icon: <Receipt className="w-5 h-5 shrink-0" />, label: "Transactions" },
-  { tab: "suppliers", icon: <Truck className="w-5 h-5 shrink-0" />, label: "Suppliers" },
-  { tab: "customers", icon: <Users className="w-5 h-5 shrink-0" />, label: "Customers" },
-  { tab: "depts", icon: <Layers className="w-5 h-5 shrink-0" />, label: "Departments" },
-  { tab: "margins", icon: <BarChart3 className="w-5 h-5 shrink-0" />, label: "Margins" },
-  { tab: "reports", icon: <AlertTriangle className="w-5 h-5 shrink-0" />, label: "Issues" },
-  { tab: "dashboard", icon: <LayoutDashboard className="w-5 h-5 shrink-0" />, label: "Dashboard" },
-  { tab: "issues", icon: <AlertCircle className="w-5 h-5 shrink-0" />, label: "Insights" },
-  { tab: "invoices", icon: <ScanLine className="w-5 h-5 shrink-0" />, label: "Invoices" },
-  { tab: "settings", icon: <Settings className="w-5 h-5 shrink-0" />, label: "Settings" },
+type NavItem = { tab: NavTab; icon: React.ReactNode; label: string };
+
+const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
+  { label: "Overview", items: [
+    { tab: "dashboard", icon: <LayoutDashboard className="w-5 h-5 shrink-0" />, label: "Dashboard" },
+    { tab: "reports", icon: <AlertTriangle className="w-5 h-5 shrink-0" />, label: "Issues" },
+    { tab: "depts", icon: <Layers className="w-5 h-5 shrink-0" />, label: "Departments" },
+  ] },
+  { label: "Scan & ask", items: [
+    { tab: "invoices", icon: <ScanLine className="w-5 h-5 shrink-0" />, label: "Invoices" },
+    { tab: "scanner", icon: <ScanBarcode className="w-5 h-5 shrink-0" />, label: "Scanner" },
+    { tab: "askshop", icon: <Sparkles className="w-5 h-5 shrink-0" />, label: "Ask" },
+  ] },
+  { label: "Know your shop", items: [
+    { tab: "turnover", icon: <TrendingUp className="w-5 h-5 shrink-0" />, label: "Sales" },
+    { tab: "margins", icon: <BarChart3 className="w-5 h-5 shrink-0" />, label: "Margins" },
+    { tab: "transactions", icon: <Receipt className="w-5 h-5 shrink-0" />, label: "Transactions" },
+    { tab: "suppliers", icon: <Truck className="w-5 h-5 shrink-0" />, label: "Suppliers" },
+    { tab: "issues", icon: <AlertCircle className="w-5 h-5 shrink-0" />, label: "Insights" },
+  ] },
+  { label: "Records", items: [
+    { tab: "livedata", icon: <Database className="w-5 h-5 shrink-0" />, label: "Products" },
+    { tab: "customers", icon: <Users className="w-5 h-5 shrink-0" />, label: "Customers" },
+  ] },
 ];
+const SETTINGS_ITEM: NavItem = { tab: "settings", icon: <Settings className="w-5 h-5 shrink-0" />, label: "Settings" };
 
 export function Sidebar({ activeTab, onTabChange, expanded, onToggle, theme, onThemeToggle }: SidebarProps) {
   const isDark = theme === "dark";
+  const renderItem = ({ tab, icon, label }: NavItem) => {
+    const active = activeTab === tab;
+    return (
+      <button
+        key={tab}
+        onClick={() => onTabChange(tab)}
+        title={!expanded ? label : undefined}
+        className={[
+          "flex items-center gap-3 rounded-xl px-2.5 transition-all duration-150 h-10 w-full mb-0.5",
+          active
+            ? "bg-violet-600 text-white shadow-md shadow-violet-600/25"
+            : "text-gray-500 hover:bg-violet-50 hover:text-violet-700",
+          expanded ? "" : "justify-center",
+        ].join(" ")}
+      >
+        {icon}
+        {expanded && (
+          <span className="text-sm font-semibold whitespace-nowrap">{label}</span>
+        )}
+      </button>
+    );
+  };
   return (
     <aside
       className="flex flex-col bg-white border-r border-gray-200 py-4 shrink-0 z-10 transition-all duration-200 ease-in-out"
@@ -52,29 +84,22 @@ export function Sidebar({ activeTab, onTabChange, expanded, onToggle, theme, onT
       </div>
 
       {/* Nav */}
-      <nav className="flex flex-col gap-1 flex-1 px-2">
-        {NAV_ITEMS.map(({ tab, icon, label }) => {
-          const active = activeTab === tab;
-          return (
-            <button
-              key={tab}
-              onClick={() => onTabChange(tab)}
-              title={!expanded ? label : undefined}
-              className={[
-                "flex items-center gap-3 rounded-xl px-2.5 transition-all duration-150 h-10 w-full",
-                active
-                  ? "bg-violet-600 text-white shadow-md shadow-violet-600/25"
-                  : "text-gray-500 hover:bg-violet-50 hover:text-violet-700",
-                expanded ? "" : "justify-center",
-              ].join(" ")}
-            >
-              {icon}
-              {expanded && (
-                <span className="text-sm font-semibold whitespace-nowrap">{label}</span>
-              )}
-            </button>
-          );
-        })}
+      <nav className="flex flex-col flex-1 px-2 overflow-y-auto">
+        {NAV_GROUPS.map((group, gi) => (
+          <div key={group.label} className="flex flex-col">
+            {expanded ? (
+              <div className="px-2.5 pt-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-gray-400 whitespace-nowrap">
+                {group.label}
+              </div>
+            ) : (
+              gi > 0 ? <div className="mx-2 my-2 border-t border-gray-100" /> : null
+            )}
+            {group.items.map(renderItem)}
+          </div>
+        ))}
+        <div className="flex-1 min-h-[8px]" />
+        <div className="mx-2 mb-1 border-t border-gray-100" />
+        {renderItem(SETTINGS_ITEM)}
       </nav>
 
       {/* Theme toggle */}
