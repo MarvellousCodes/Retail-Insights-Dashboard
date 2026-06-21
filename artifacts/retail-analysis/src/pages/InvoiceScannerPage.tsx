@@ -8,14 +8,15 @@ import {
 interface Line {
   invoice_desc: string; barcode: string; qty: number | null;
   invoice_cost: number | null; line_total: number | null;
-  status: "matched" | "new"; matched?: string;
+  status: "matched" | "review" | "new"; matched?: string;
+  matched_by?: "barcode" | "name"; confidence?: "high" | "low";
   old_cost?: number | null; cost_delta?: number | null; new_margin?: number | null;
   flag: string;
 }
 interface ScanResult {
   supplier: string; invoice_date: string; pages: number;
   lines: Line[];
-  summary: { matched: number; new: number; cost_up: number; below_target: number };
+  summary: { matched: number; review?: number; new: number; cost_up: number; below_target: number };
   usage: { today: number; daily_limit: number; month_cost: number; monthly_ceiling: number; est_cost_this_scan: number };
 }
 interface Usage { today: number; daily_limit: number; month_cost: number; monthly_ceiling: number; configured: boolean; }
@@ -26,8 +27,14 @@ function eur(v: number | null | undefined) {
 function flagCls(flag: string) {
   if (flag.includes("below target")) return "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300";
   if (flag.startsWith("cost up")) return "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300";
+  if (flag.includes("review") || flag.includes("units")) return "bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300";
   if (flag === "not on system") return "bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300";
   return "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300";
+}
+function statusBadge(s: string) {
+  if (s === "matched") return { label: "Matched", cls: "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300" };
+  if (s === "review") return { label: "Review", cls: "bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300" };
+  return { label: "New", cls: "bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300" };
 }
 
 export function InvoiceScannerPage(_props?: { existingProducts?: any[]; onAddToSystem?: (f: any) => void }) {
@@ -124,40 +131,59 @@ export function InvoiceScannerPage(_props?: { existingProducts?: any[]; onAddToS
           {/* summary chips */}
           <div className="flex flex-wrap gap-2 mb-4">
             <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300"><CheckCircle2 className="w-3.5 h-3.5" /> {result.summary.matched} matched</span>
+            {(result.summary.review ?? 0) > 0 && <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300"><AlertTriangle className="w-3.5 h-3.5" /> {result.summary.review} need review</span>}
             <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300"><Sparkles className="w-3.5 h-3.5" /> {result.summary.new} new</span>
-            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300"><TrendingUp className="w-3.5 h-3.5" /> {result.summary.cost_up} price change</span>
+            {result.summary.cost_up > 0 && <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300"><TrendingUp className="w-3.5 h-3.5" /> {result.summary.cost_up} price change</span>}
             {result.summary.below_target > 0 && <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300"><AlertTriangle className="w-3.5 h-3.5" /> {result.summary.below_target} below target</span>}
           </div>
           {/* table */}
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-gray-50 dark:bg-gray-900 border-b border-gray-100 dark:border-gray-700">
+            <table className="w-full text-sm border-collapse">
+              <thead className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
                 <tr>
-                  <th className="px-3 py-2 text-left text-xs text-gray-500">Invoice line</th>
-                  <th className="px-3 py-2 text-left text-xs text-gray-500">Matched product</th>
-                  <th className="px-3 py-2 text-right text-xs text-gray-500">Inv. cost</th>
-                  <th className="px-3 py-2 text-right text-xs text-gray-500">System</th>
-                  <th className="px-3 py-2 text-right text-xs text-gray-500">Δ</th>
-                  <th className="px-3 py-2 text-right text-xs text-gray-500">Margin now</th>
-                  <th className="px-3 py-2 text-left text-xs text-gray-500">Flag</th>
+                  <th className="px-4 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wide text-gray-500">Invoice item</th>
+                  <th className="px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wide text-gray-500">Barcode</th>
+                  <th className="px-3 py-2.5 text-right text-[11px] font-semibold uppercase tracking-wide text-gray-500">Qty</th>
+                  <th className="px-3 py-2.5 text-right text-[11px] font-semibold uppercase tracking-wide text-gray-500">Invoice cost</th>
+                  <th className="px-4 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wide text-gray-500">Matched product</th>
+                  <th className="px-3 py-2.5 text-right text-[11px] font-semibold uppercase tracking-wide text-gray-500">Your cost</th>
+                  <th className="px-3 py-2.5 text-right text-[11px] font-semibold uppercase tracking-wide text-gray-500">New margin</th>
+                  <th className="px-4 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wide text-gray-500">Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-50 dark:divide-gray-700">
-                {result.lines.map((l, i) => (
-                  <tr key={i} className="hover:bg-gray-50 dark:hover:bg-gray-800">
-                    <td className="px-3 py-2 text-gray-800 dark:text-gray-200 max-w-[200px] truncate">{l.invoice_desc}</td>
-                    <td className="px-3 py-2 text-gray-500 max-w-[180px] truncate">{l.status === "matched" ? l.matched : <span className="text-violet-500 text-xs">— not on system —</span>}</td>
-                    <td className="px-3 py-2 text-right text-gray-700 dark:text-gray-200">{eur(l.invoice_cost)}</td>
-                    <td className="px-3 py-2 text-right text-gray-400">{eur(l.old_cost)}</td>
-                    <td className={`px-3 py-2 text-right font-medium ${l.cost_delta && l.cost_delta > 0 ? "text-amber-600" : l.cost_delta && l.cost_delta < 0 ? "text-green-600" : "text-gray-400"}`}>{l.cost_delta === null || l.cost_delta === undefined ? "—" : (l.cost_delta > 0 ? "+" : "") + eur(l.cost_delta).replace("€", "€")}</td>
-                    <td className="px-3 py-2 text-right text-gray-600 dark:text-gray-300">{l.new_margin === null || l.new_margin === undefined ? "—" : l.new_margin + "%"}</td>
-                    <td className="px-3 py-2"><span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${flagCls(l.flag)}`}>{l.flag}</span></td>
-                  </tr>
-                ))}
+              <tbody className="divide-y divide-gray-100 dark:divide-gray-700/60">
+                {result.lines.map((l, i) => {
+                  const sb = statusBadge(l.status);
+                  return (
+                    <tr key={i} className="hover:bg-gray-50 dark:hover:bg-gray-800/60 align-top">
+                      <td className="px-4 py-2.5 text-gray-800 dark:text-gray-100 max-w-[230px] truncate" title={l.invoice_desc}>{l.invoice_desc}</td>
+                      <td className="px-3 py-2.5 font-mono text-[11px] text-gray-400 whitespace-nowrap">{l.barcode || "—"}</td>
+                      <td className="px-3 py-2.5 text-right text-gray-500 tabular-nums">{l.qty ?? "—"}</td>
+                      <td className="px-3 py-2.5 text-right text-gray-800 dark:text-gray-200 tabular-nums whitespace-nowrap">{eur(l.invoice_cost)}</td>
+                      <td className="px-4 py-2.5 max-w-[210px]">
+                        {l.status === "new"
+                          ? <span className="text-violet-500 text-xs italic">not on your system</span>
+                          : <span className="text-gray-600 dark:text-gray-300 block truncate" title={l.matched}>{l.matched}</span>}
+                      </td>
+                      <td className="px-3 py-2.5 text-right text-gray-400 tabular-nums whitespace-nowrap">{eur(l.old_cost)}</td>
+                      <td className={`px-3 py-2.5 text-right tabular-nums whitespace-nowrap font-medium ${l.new_margin == null ? "text-gray-300 dark:text-gray-600" : l.new_margin < 20 ? "text-red-600" : "text-green-600"}`}>{l.new_margin == null ? "—" : l.new_margin + "%"}</td>
+                      <td className="px-4 py-2.5 whitespace-nowrap">
+                        <span className={`inline-block px-2 py-0.5 rounded-full text-[11px] font-semibold ${sb.cls}`}>{sb.label}</span>
+                        <span className="block text-[10px] text-gray-400 mt-0.5">{l.flag}</span>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
-          <p className="text-[11px] text-gray-400 mt-2">This scan cost ~${result.usage.est_cost_this_scan.toFixed(4)}. Matching ran free against your live stock.</p>
+          {/* legend */}
+          <div className="flex flex-wrap gap-x-5 gap-y-1 mt-3 text-[11px] text-gray-500">
+            <span><span className="inline-block w-2 h-2 rounded-full bg-green-500 mr-1.5 align-middle"></span><b className="text-gray-600 dark:text-gray-300">Matched</b> barcode and name agree, cost and margin are reliable</span>
+            <span><span className="inline-block w-2 h-2 rounded-full bg-orange-500 mr-1.5 align-middle"></span><b className="text-gray-600 dark:text-gray-300">Review</b> matched product looks different, or the invoice price is a case/pack price, so the margin is not shown</span>
+            <span><span className="inline-block w-2 h-2 rounded-full bg-violet-500 mr-1.5 align-middle"></span><b className="text-gray-600 dark:text-gray-300">New</b> not in your system yet</span>
+          </div>
+          <p className="text-[11px] text-gray-400 mt-2">This scan cost about ${result.usage.est_cost_this_scan.toFixed(4)}. Matching ran free against your live stock. A margin is only shown when the match is reliable.</p>
         </div>
       )}
     </div>
