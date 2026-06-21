@@ -54,7 +54,10 @@ export function SuppliersPage() {
           <tbody className="divide-y divide-gray-50 dark:divide-gray-700">
             {rows.map((s, i) => (
               <tr key={i} className="hover:bg-violet-50/40">
-                <td className="px-3 py-2 font-mono text-xs text-gray-800 dark:text-gray-200">{s.code}</td>
+                <td className="px-3 py-2">
+                  <div className="font-medium text-gray-800 dark:text-gray-200">{s.name || s.code}</div>
+                  {s.name && <div className="font-mono text-[10px] text-gray-400 mt-0.5">{s.code}</div>}
+                </td>
                 <td className="px-3 py-2 text-right text-gray-600">{s.products.toLocaleString()}</td>
                 <td className="px-3 py-2 text-right text-gray-500">{s.active.toLocaleString()}</td>
                 <td className="px-3 py-2 text-center">

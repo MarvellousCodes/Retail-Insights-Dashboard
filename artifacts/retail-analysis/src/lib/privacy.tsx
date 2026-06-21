@@ -3,17 +3,19 @@ import { Eye, EyeOff } from "lucide-react";
 
 // Revenue privacy mask: lets the owner hide real euro figures (revenue, supplier
 // spend) behind stars so the dashboard can be shown to others without exposing them.
-// State lives in localStorage and is synced across pages via a window event.
+// State lives in sessionStorage (so figures start masked every fresh visit) and is synced across pages via a window event.
 const KEY = "rg-mask-revenue";
 const EVT = "rg-mask-change";
 export const STARS = "★★★";
 
 export function getMasked(): boolean {
-  // Masked by default; only an explicit reveal (stored "0") shows the real figures.
-  try { return localStorage.getItem(KEY) !== "0"; } catch { return true; }
+  // Masked by default, and a reveal is session-only (sessionStorage), so figures are
+  // starred from the beginning on every fresh visit. A reveal sticks while you navigate
+  // within the session, then resets to masked next time the app is opened.
+  try { return sessionStorage.getItem(KEY) !== "0"; } catch { return true; }
 }
 function applyMasked(v: boolean) {
-  try { localStorage.setItem(KEY, v ? "1" : "0"); } catch { /* ignore */ }
+  try { sessionStorage.setItem(KEY, v ? "1" : "0"); } catch { /* ignore */ }
   window.dispatchEvent(new CustomEvent(EVT));
 }
 
