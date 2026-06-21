@@ -1,5 +1,8 @@
-// Use relative path when served from Oracle VM, or direct IP when on Cloudflare
-export const API_BASE = window.location.hostname === "143.47.254.68" ? "" : "http://143.47.254.68:8080";
+// Same-origin: the frontend and the API share a host. nginx on the VM serves
+// the app and proxies /api to Flask; myretailguard.com (via Cloudflare) proxies
+// /api to that same nginx. Relative URLs work on both and avoid the mixed-content
+// block (HTTPS page -> HTTP IP) and the firewalled :8080 port.
+export const API_BASE = "";
 
 export async function apiCall(endpoint: string, options?: RequestInit) {
   const token = localStorage.getItem("rg-token");
