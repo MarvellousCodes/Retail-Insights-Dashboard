@@ -93,7 +93,7 @@ export function LiveDataPage() {
         </div>
         <select value={groupBy} onChange={e => setGroupBy(e.target.value)} className="px-2 py-2 border border-gray-200 rounded-lg text-xs bg-white dark:bg-gray-700">
           <option value="">No grouping</option>
-          <option value="Supplier">By Supplier</option>
+          <option value="SupplierName">By Supplier</option>
           <option value="Analysis1">By Category</option>
           <option value="VatCode">By VAT Rate</option>
           <option value="Active">Active / Inactive</option>
@@ -102,7 +102,7 @@ export function LiveDataPage() {
           <option value="Active">Active first</option>
           <option value="Retail1">Price ↓</option>
           <option value="Description">Name A-Z</option>
-          <option value="Supplier">Supplier</option>
+          <option value="SupplierName">Supplier</option>
         </select>
         <div className="flex rounded-lg overflow-hidden border border-gray-200">
           <button onClick={() => setActiveOnly(true)} className={`px-2.5 py-1.5 text-xs ${activeOnly?"bg-violet-600 text-white":"bg-white text-gray-600"}`}>Active only</button>
@@ -145,7 +145,7 @@ export function LiveDataPage() {
               <div className="flex justify-between items-start gap-2">
                 <div className="flex-1 min-w-0">
                   <h3 className="font-medium text-sm text-gray-900 dark:text-white truncate">{(p.Description||"").trim()}</h3>
-                  <p className="text-xs text-gray-400 mt-0.5">{(p.Supplier||"").trim()} {(p.BarCode||"").trim() ? `• ${(p.BarCode||"").trim()}` : ""}</p>
+                  <p className="text-xs text-gray-400 mt-0.5">{(p.SupplierName||p.Supplier||"").trim()} {(p.BarCode||"").trim() ? `• ${(p.BarCode||"").trim()}` : ""}</p>
                 </div>
                 <div className="text-right shrink-0">
                   <p className="text-lg font-bold text-violet-600">{fmtPrice(p.Retail1)}</p>
@@ -196,7 +196,12 @@ export function LiveDataPage() {
                   <td className="px-3 py-2.5 text-right text-gray-500">{fmtPrice(p.UnitCost||p.CurrentCost)}</td>
                   <td className="px-3 py-2.5 text-center"><MarginBadge p={p} /></td>
                   <td className="px-3 py-2.5 text-right text-gray-500 text-xs">{p.markup===null||p.markup===undefined?"—":p.markup+"%"}</td>
-                  <td className="px-3 py-2.5 text-gray-500 truncate max-w-[120px]">{(p.Supplier||"").trim()}</td>
+                  <td className="px-3 py-2.5 text-gray-500 truncate max-w-[180px]">
+                    <span className="text-gray-700 dark:text-gray-300">{(p.SupplierName||p.Supplier||"").trim()}</span>
+                    {(p.SupplierName||"").trim() && (p.SupplierName||"").trim() !== (p.Supplier||"").trim() && (
+                      <span className="ml-1.5 text-[10px] font-mono text-gray-400">{(p.Supplier||"").trim()}</span>
+                    )}
+                  </td>
                   <td className="px-3 py-2.5 text-center">{(p.Active||"").trim()==="Y"?<span className="text-green-500 text-xs">●&nbsp;Active</span>:<span className="text-gray-300 text-xs">○&nbsp;Inactive</span>}</td>
                   <td className="px-3 py-2.5 text-gray-400 text-xs font-mono">{(p.BarCode||"").trim()}</td>
                 </tr>
