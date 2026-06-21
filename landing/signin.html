@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign In - RetailGuard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/signin.css" />
+</head>
+<body>
+
+  <div class="signin-layout">
+
+    <!-- LEFT PANEL -->
+    <div class="signin-panel">
+      <div class="signin-panel__inner">
+
+        <!-- Logo -->
+        <a href="index.html" class="signin-logo">
+          <span class="wordmark">Retail<span class="wordmark__guard">Guard</span></span>
+        </a>
+
+        <!-- Heading -->
+        <div class="signin-heading">
+          <h1>Welcome back</h1>
+          <p>Sign in to your RetailGuard account</p>
+        </div>
+
+        <!-- Form -->
+        <form class="signin-form" id="signinForm" novalidate>
+          <div class="form-group">
+            <label for="email">Email address</label>
+            <input type="email" id="email" placeholder="you@yourstore.com" autocomplete="email" required />
+          </div>
+
+          <div class="form-group">
+            <div class="form-label-row">
+              <label for="password">Password</label>
+              <a href="#" class="forgot-link">Forgot password?</a>
+            </div>
+            <div class="input-wrap">
+              <input type="password" id="password" placeholder="••••••••" autocomplete="current-password" required />
+              <button type="button" class="toggle-pw" id="togglePw" aria-label="Show password">
+                <svg id="eyeIcon" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M1 12S5 5 12 5s11 7 11 7-4 7-11 7S1 12 1 12z" stroke="#9ca3af" stroke-width="2"/><circle cx="12" cy="12" r="3" stroke="#9ca3af" stroke-width="2"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="form-check">
+            <input type="checkbox" id="remember" />
+            <label for="remember">Keep me signed in</label>
+          </div>
+
+          <div class="form-error" id="formError">Incorrect email or password. Please try again.</div>
+
+          <button type="submit" class="signin-btn" id="signinBtn">
+            <span id="btnText">Sign in</span>
+            <span id="btnSpinner" class="spinner" style="display:none;"></span>
+          </button>
+        </form>
+
+        <div class="signin-divider"><span>or</span></div>
+
+        <div class="signin-no-account">
+          Don't have an account? <a href="index.html#contact">Request access →</a>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div class="signin-visual">
+      <div class="visual-glow visual-glow--1"></div>
+      <div class="visual-glow visual-glow--2"></div>
+      <div class="vis-grid"></div>
+      <div class="visual-content">
+
+        <!-- Wordmark -->
+        <div class="vis-brand">
+          <span class="wordmark wordmark--vis">Retail<span class="wordmark__guard">Guard</span></span>
+        </div>
+
+        <!-- Headline -->
+        <h2 class="vis-headline">Your store,<br>fully visible.</h2>
+        <p class="vis-sub">Real-time stock intelligence for retail owners who refuse to guess.</p>
+
+        <!-- Floating feature pills -->
+        <div class="vis-pills">
+          <div class="vis-pill vis-pill--a">
+            <span class="vis-pill__icon vis-pill__icon--violet">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 12L6 8l3 3 4-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+            Live margin tracking
+          </div>
+          <div class="vis-pill vis-pill--b">
+            <span class="vis-pill__icon vis-pill__icon--fuchsia">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 2h10a1 1 0 011 1v10a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z" stroke="currentColor" stroke-width="1.5"/><path d="M5 6h6M5 9h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            </span>
+            Invoice Scanner
+          </div>
+          <div class="vis-pill vis-pill--c">
+            <span class="vis-pill__icon vis-pill__icon--green">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.5"/><path d="M8 5v3.5l2 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            </span>
+            Instant pricing alerts
+          </div>
+          <div class="vis-pill vis-pill--d">
+            <span class="vis-pill__icon vis-pill__icon--amber">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="6" height="6" rx="1.5" fill="currentColor" opacity=".7"/><rect x="9" y="1" width="6" height="6" rx="1.5" fill="currentColor"/><rect x="1" y="9" width="6" height="6" rx="1.5" fill="currentColor"/><rect x="9" y="9" width="6" height="6" rx="1.5" fill="currentColor" opacity=".7"/></svg>
+            </span>
+            Department insights
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <script src="assets/signin.js"></script>
+</body>
+</html>

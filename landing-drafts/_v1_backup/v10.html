@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RetailGuard — A Tuesday in the Shop</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --v6: #7c3aed; --v5: #8b5cf6; --va: #a78bfa; --v2: #ddd6fe; --v1: #ede9fe;
+      --fu: #c026d3;
+      --g9: #0b0b14; --g8: #12121e; --g7: #1a1a2a;
+      --s9: #111827; --s8: #1f2937; --s7: #374151; --s6: #4b5563;
+      --s5: #6b7280; --s4: #9ca3af; --s3: #d1d5db; --s2: #e5e7eb; --s1: #f3f4f6; --s05: #f9fafb;
+      --gn: #16a34a; --gn05: #f0fdf4;
+      --am: #f59e0b; --am05: #fffbeb;
+      --rd: #ef4444; --rd05: #fef2f2;
+      --wh: #ffffff;
+      --grad: linear-gradient(135deg, var(--v6) 0%, var(--va) 100%);
+      --card-border: #ececf2;
+      --card-shadow: 0 2px 12px rgba(0,0,0,.04);
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', system-ui, sans-serif; color: var(--s8); background: var(--wh); -webkit-font-smoothing: antialiased; line-height: 1.6; }
+    .container { max-width: 1140px; margin: 0 auto; padding: 0 28px; }
+
+    /* NAV */
+    .nav { position: sticky; top: 0; z-index: 100; background: rgba(11,11,20,.92); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255,255,255,.06); }
+    .nav__inner { display: flex; align-items: center; justify-content: space-between; height: 64px; max-width: 1140px; margin: 0 auto; padding: 0 28px; }
+    .wordmark { font-weight: 800; font-size: 20px; color: var(--wh); text-decoration: none; }
+    .wordmark .accent { color: var(--va); }
+    .nav__links { display: flex; gap: 32px; list-style: none; }
+    .nav__links a { color: rgba(255,255,255,.7); text-decoration: none; font-size: 14px; font-weight: 500; transition: color .15s; }
+    .nav__links a:hover { color: var(--wh); }
+    .nav__cta { display: flex; align-items: center; gap: 16px; }
+    .nav__signin { color: rgba(255,255,255,.7); text-decoration: none; font-size: 14px; font-weight: 500; }
+    .nav__btn { background: var(--grad); color: var(--wh); font-size: 13px; font-weight: 600; padding: 9px 20px; border-radius: 8px; text-decoration: none; transition: opacity .15s; }
+    .nav__btn:hover { opacity: .85; }
+    .burger { display: none; background: none; border: none; cursor: pointer; flex-direction: column; gap: 5px; }
+    .burger span { display: block; width: 22px; height: 2px; background: var(--wh); border-radius: 2px; }
+    .nav__drawer { display: none; flex-direction: column; gap: 16px; padding: 20px 28px; }
+    .nav__drawer a { color: rgba(255,255,255,.8); text-decoration: none; font-size: 15px; }
+
+    /* HERO */
+    .hero { position: relative; background: var(--g9); padding: 110px 0 80px; overflow: hidden; text-align: center; }
+    .hero__orb { position: absolute; border-radius: 50%; filter: blur(100px); opacity: .15; }
+    .hero__orb--1 { width: 500px; height: 500px; background: var(--v6); top: -150px; right: -100px; }
+    .hero__orb--2 { width: 350px; height: 350px; background: var(--am); bottom: -80px; left: -60px; opacity: .08; }
+    .hero__pill { display: inline-flex; align-items: center; gap: 8px; background: rgba(124,58,237,.12); border: 1px solid rgba(124,58,237,.25); border-radius: 100px; padding: 6px 16px; font-size: 12px; font-weight: 600; color: var(--va); margin-bottom: 28px; }
+    .hero__title { font-size: clamp(32px, 5vw, 56px); font-weight: 900; color: var(--wh); line-height: 1.08; letter-spacing: -1.5px; margin-bottom: 20px; }
+    .hero__grad { background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .hero__desc { font-size: 17px; color: rgba(255,255,255,.6); max-width: 560px; margin: 0 auto 36px; line-height: 1.7; }
+    .hero__actions { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+    .btn-primary { display: inline-flex; align-items: center; gap: 8px; background: var(--grad); color: var(--wh); font-size: 15px; font-weight: 600; padding: 14px 30px; border-radius: 10px; border: none; cursor: pointer; text-decoration: none; transition: opacity .18s, transform .18s; }
+    .btn-primary:hover { opacity: .88; transform: translateY(-2px); }
+    .btn-ghost { display: inline-flex; align-items: center; background: transparent; color: rgba(255,255,255,.7); font-size: 15px; font-weight: 500; padding: 14px 30px; border-radius: 10px; border: 1.5px solid rgba(255,255,255,.15); text-decoration: none; transition: border-color .18s, color .18s; }
+    .btn-ghost:hover { border-color: rgba(255,255,255,.4); color: var(--wh); }
+
+    /* NARRATIVE BEAT */
+    .beat { padding: 72px 0; border-bottom: 1px solid var(--s1); }
+    .beat:last-of-type { border-bottom: none; }
+    .beat--dark { background: var(--g9); border-bottom-color: rgba(255,255,255,.06); }
+    .beat--gray { background: var(--s05); }
+    .beat__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; }
+    .beat__grid--reverse { direction: rtl; }
+    .beat__grid--reverse > * { direction: ltr; }
+    .beat__time { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--v6); margin-bottom: 12px; }
+    .beat__time--light { color: var(--va); }
+    .beat__title { font-size: clamp(20px, 2.4vw, 28px); font-weight: 800; color: var(--s9); line-height: 1.15; margin-bottom: 14px; letter-spacing: -0.4px; }
+    .beat__title--light { color: var(--wh); }
+    .beat__desc { font-size: 15px; color: var(--s5); line-height: 1.7; margin-bottom: 20px; }
+    .beat__desc--light { color: rgba(255,255,255,.6); }
+    .beat__card { background: var(--wh); border: 1px solid var(--card-border); border-radius: 14px; padding: 28px; box-shadow: var(--card-shadow); }
+    .beat__card--dark { background: var(--g7); border-color: rgba(255,255,255,.08); }
+    .beat__stat { font-size: 32px; font-weight: 900; color: var(--s9); letter-spacing: -1px; }
+    .beat__stat--red { color: var(--rd); }
+    .beat__stat--green { color: var(--gn); }
+    .beat__stat--light { color: var(--wh); }
+    .beat__stat-label { font-size: 13px; color: var(--s5); margin-top: 4px; }
+    .beat__stat-label--light { color: rgba(255,255,255,.5); }
+    .beat__highlight { display: inline-flex; align-items: center; gap: 8px; background: var(--rd05); border: 1px solid #fecaca; border-radius: 8px; padding: 10px 16px; font-size: 14px; font-weight: 600; color: var(--rd); }
+    .beat__highlight--green { background: var(--gn05); border-color: #bbf7d0; color: var(--gn); }
+    .beat__list { list-style: none; margin-top: 16px; }
+    .beat__list li { font-size: 14px; color: var(--s6); padding: 8px 0; border-bottom: 1px solid var(--s1); display: flex; justify-content: space-between; }
+    .beat__list li:last-child { border-bottom: none; }
+    .beat__list-val { font-weight: 700; color: var(--s9); }
+    .beat__list-val--red { color: var(--rd); }
+
+    /* RESOLUTION */
+    .resolution { padding: 80px 0; text-align: center; }
+    .resolution__title { font-size: clamp(24px, 3vw, 38px); font-weight: 900; color: var(--s9); line-height: 1.08; letter-spacing: -1px; margin-bottom: 16px; }
+    .resolution__desc { font-size: 16px; color: var(--s5); max-width: 540px; margin: 0 auto 40px; line-height: 1.7; }
+    .resolution__stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 24px; margin-bottom: 48px; }
+    .res-stat { background: var(--wh); border: 1px solid var(--card-border); border-radius: 14px; padding: 28px 20px; box-shadow: var(--card-shadow); }
+    .res-stat__num { font-size: 28px; font-weight: 900; color: var(--v6); letter-spacing: -1px; }
+    .res-stat__label { font-size: 13px; color: var(--s5); margin-top: 4px; }
+
+    /* PRICING */
+    .section { padding: 80px 0; }
+    .section--gray { background: var(--s05); }
+    .sec-eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; color: var(--v6); margin-bottom: 14px; display: block; }
+    .sec-title { font-size: clamp(22px, 2.8vw, 34px); font-weight: 800; color: var(--s9); line-height: 1.08; letter-spacing: -0.5px; margin-bottom: 16px; }
+    .sec-desc { font-size: 15px; color: var(--s5); line-height: 1.65; max-width: 540px; }
+    .center { text-align: center; margin-left: auto; margin-right: auto; }
+    .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; margin-top: 48px; }
+    .price-card { background: var(--wh); border: 1px solid var(--card-border); border-radius: 14px; padding: 32px 28px; box-shadow: var(--card-shadow); position: relative; }
+    .price-card--popular { border-color: var(--v6); box-shadow: 0 0 0 2px rgba(124,58,237,.15), var(--card-shadow); }
+    .price-card__badge { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--grad); color: var(--wh); font-size: 11px; font-weight: 700; padding: 4px 14px; border-radius: 100px; }
+    .price-card__name { font-size: 18px; font-weight: 700; color: var(--s9); margin-bottom: 4px; }
+    .price-card__price { font-size: 36px; font-weight: 900; color: var(--s9); margin-bottom: 4px; }
+    .price-card__price span { font-size: 15px; font-weight: 500; color: var(--s5); }
+    .price-card__desc { font-size: 13px; color: var(--s5); margin-bottom: 20px; }
+    .price-card__features { list-style: none; margin-bottom: 24px; }
+    .price-card__features li { font-size: 14px; color: var(--s7); padding: 6px 0; display: flex; align-items: center; gap: 8px; }
+    .price-card__features li svg { color: var(--gn); flex-shrink: 0; }
+    .price-card__btn { display: block; text-align: center; padding: 12px; border-radius: 8px; font-size: 14px; font-weight: 600; text-decoration: none; transition: opacity .15s; }
+    .price-card__btn--primary { background: var(--grad); color: var(--wh); }
+    .price-card__btn--outline { border: 1.5px solid var(--card-border); color: var(--s8); }
+
+    /* CTA */
+    .cta-band { background: var(--g9); padding: 72px 0; text-align: center; position: relative; overflow: hidden; }
+    .cta-band__orb { position: absolute; width: 400px; height: 400px; background: var(--v6); border-radius: 50%; filter: blur(120px); opacity: .12; top: -100px; left: -80px; }
+    .cta-band h2 { font-size: clamp(24px, 3vw, 36px); font-weight: 800; color: var(--wh); margin-bottom: 14px; letter-spacing: -0.5px; }
+    .cta-band p { font-size: 15px; color: rgba(255,255,255,.6); margin-bottom: 28px; max-width: 480px; margin-left: auto; margin-right: auto; }
+
+    /* CONTACT */
+    .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: start; }
+    .contact-form { display: flex; flex-direction: column; gap: 16px; }
+    .contact-form input, .contact-form textarea { font-family: inherit; font-size: 14px; padding: 14px 16px; border: 1px solid var(--s2); border-radius: 10px; outline: none; transition: border-color .15s; }
+    .contact-form input:focus, .contact-form textarea:focus { border-color: var(--v6); }
+    .contact-form textarea { resize: vertical; min-height: 100px; }
+
+    /* FOOTER */
+    footer { background: var(--s05); border-top: 1px solid var(--s2); padding: 40px 0; }
+    .footer__inner { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
+    .footer__copy { font-size: 13px; color: var(--s5); }
+    .footer__links { display: flex; gap: 24px; }
+    .footer__links a { font-size: 13px; color: var(--s5); text-decoration: none; }
+    .footer__links a:hover { color: var(--s8); }
+
+    @media (max-width: 768px) {
+      .nav__links, .nav__cta { display: none; }
+      .burger { display: flex; }
+      .nav__drawer.open { display: flex; }
+      .beat__grid, .beat__grid--reverse { grid-template-columns: 1fr; }
+      .contact-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav class="nav" aria-label="Main navigation">
+    <div class="nav__inner">
+      <a href="#" class="wordmark">Retail<span class="accent">Guard</span></a>
+      <ul class="nav__links">
+        <li><a href="#story">The story</a></li>
+        <li><a href="#pricing">Pricing</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+      <div class="nav__cta">
+        <a href="signin.html" class="nav__signin">Sign in</a>
+        <a href="#contact" class="nav__btn">Get access</a>
+      </div>
+      <button class="burger" id="burger" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+    </div>
+    <div class="nav__drawer" id="drawer">
+      <a href="#story">The story</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#contact">Contact</a>
+      <a href="signin.html">Sign in</a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero__orb hero__orb--1" aria-hidden="true"></div>
+    <div class="hero__orb hero__orb--2" aria-hidden="true"></div>
+    <div class="container">
+      <div class="hero__pill">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        A day you will recognise
+      </div>
+      <h1 class="hero__title">It is Tuesday.<br/>A delivery just <span class="hero__grad">arrived.</span></h1>
+      <p class="hero__desc">You have 6,422 products across 42 departments. Somewhere in that delivery, a supplier just raised prices without telling you. This is how your day goes.</p>
+      <div class="hero__actions">
+        <a href="#story" class="btn-primary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 4v16l12-8L6 4z" fill="currentColor"/></svg>
+          Read the story
+        </a>
+        <a href="#contact" class="btn-ghost">Skip to the fix</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- BEAT 1: THE DELIVERY -->
+  <section class="beat" id="story">
+    <div class="container">
+      <div class="beat__grid">
+        <div>
+          <span class="beat__time">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            7:15 AM
+          </span>
+          <h2 class="beat__title">The GALA delivery arrives. 47 crates.</h2>
+          <p class="beat__desc">You sign off the invoice and get back to opening up. There is no time to check every line. The invoice goes in a drawer. It will not be looked at again.</p>
+          <p class="beat__desc">Somewhere in those 47 crates, 12 products have silently increased in cost since your last order. You do not know which ones. Your till still sells them at the old margin.</p>
+        </div>
+        <div class="beat__card">
+          <div class="beat__highlight">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 9v4m0 4h.01M12 2a10 10 0 100 20 10 10 0 000-20z" stroke="currentColor" stroke-width="2"/></svg>
+            12 cost increases hidden in today's invoice
+          </div>
+          <ul class="beat__list" style="margin-top:20px">
+            <li><span>Goodfellas Deep Pepperoni</span><span class="beat__list-val beat__list-val--red">&minus;16.5% margin</span></li>
+            <li><span>Haribo Yellow Bellies 20pk</span><span class="beat__list-val beat__list-val--red">&minus;8.2% margin</span></li>
+            <li><span>Brennans Sliced Pan</span><span class="beat__list-val beat__list-val--red">&minus;4.1% margin</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BEAT 2: THE SPREADSHEET -->
+  <section class="beat beat--gray">
+    <div class="container">
+      <div class="beat__grid beat__grid--reverse">
+        <div>
+          <span class="beat__time">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            11:30 AM
+          </span>
+          <h2 class="beat__title">You try the spreadsheet. Again.</h2>
+          <p class="beat__desc">Between customers, you open the price list CSV your POS exports. 150,556 rows. You scroll. You squint. You give up after ten minutes because a queue has formed.</p>
+          <p class="beat__desc">This happens every week. The spreadsheet is always there. It never tells you what is wrong. It just shows you everything.</p>
+        </div>
+        <div class="beat__card">
+          <div class="beat__stat beat__stat--red">150,556</div>
+          <div class="beat__stat-label">rows in your export spreadsheet</div>
+          <div style="margin-top:20px; font-size:14px; color:var(--s5)">Of these, 423 have a margin problem. But which 423? The spreadsheet will not tell you. You would need 3&ndash;5 hours to find them manually.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BEAT 3: END OF DAY -->
+  <section class="beat">
+    <div class="container">
+      <div class="beat__grid">
+        <div>
+          <span class="beat__time">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            9:00 PM
+          </span>
+          <h2 class="beat__title">You close up. Another day, another unknown.</h2>
+          <p class="beat__desc">The till says you did &euro;2,148 today. Was that good? Are you losing money on half your chilled section? Is the Tobacco markup still right after the March duty increase? You just do not know.</p>
+          <p class="beat__desc">The average Irish forecourt loses &euro;7,500&ndash;&euro;10,000 per year in margin it could have recovered. Not from theft. From prices that drifted and nobody noticed.</p>
+        </div>
+        <div class="beat__card">
+          <div class="beat__stat beat__stat--red">&euro;7,500&ndash;&euro;10,000</div>
+          <div class="beat__stat-label">lost margin per year (recoverable)</div>
+          <ul class="beat__list" style="margin-top:16px">
+            <li><span>Avg basket</span><span class="beat__list-val">2.4 items, &euro;16.96</span></li>
+            <li><span>Best day this year</span><span class="beat__list-val">Friday: &euro;648k</span></li>
+            <li><span>Top department</span><span class="beat__list-val">Tobacco: &euro;9.18M</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BEAT 4: THE FIX (DARK) -->
+  <section class="beat beat--dark">
+    <div class="container">
+      <div class="beat__grid beat__grid--reverse">
+        <div>
+          <span class="beat__time beat__time--light">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            Wednesday 7:00 AM
+          </span>
+          <h2 class="beat__title beat__title--light">Wednesday. RetailGuard is connected.</h2>
+          <p class="beat__desc beat__desc--light">Overnight, RetailGuard read your POS data (read-only, it cannot change anything). It found 423 pricing issues, ranked them by how much money you are losing, and surfaced the worst offenders at the top.</p>
+          <p class="beat__desc beat__desc--light">No spreadsheets. No scrolling. No guessing. You open your phone and the dashboard loads in under 2 seconds.</p>
+        </div>
+        <div class="beat__card beat__card--dark">
+          <div class="beat__highlight beat__highlight--green">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            423 issues found automatically
+          </div>
+          <ul class="beat__list" style="margin-top:20px; border-color: rgba(255,255,255,.08)">
+            <li style="color:rgba(255,255,255,.7); border-color:rgba(255,255,255,.08)"><span>Fix top 20 issues</span><span class="beat__list-val" style="color:var(--gn)">+&euro;3,200/yr</span></li>
+            <li style="color:rgba(255,255,255,.7); border-color:rgba(255,255,255,.08)"><span>Fix all 423</span><span class="beat__list-val" style="color:var(--gn)">+&euro;7,500&ndash;10k/yr</span></li>
+            <li style="color:rgba(255,255,255,.7); border-color:rgba(255,255,255,.08)"><span>Time to review</span><span class="beat__list-val" style="color:var(--wh)">15 minutes</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BEAT 5: ASK YOUR SHOP -->
+  <section class="beat beat--gray">
+    <div class="container">
+      <div class="beat__grid">
+        <div>
+          <span class="beat__time">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            Thursday 2:00 PM
+          </span>
+          <h2 class="beat__title">You ask a question. You get an answer in 2 seconds.</h2>
+          <p class="beat__desc">"Which 5 products am I losing the most money on?" The AI searches 150,556 records and answers in plain English. It cost $0.001. It cannot change your data. It just reads.</p>
+          <p class="beat__desc">Next week you will scan your GALA invoice with one photo. Every line matched to your catalogue. Cost rises flagged in red. 30 seconds instead of a drawer.</p>
+        </div>
+        <div class="beat__card">
+          <div style="background:var(--s05); border-radius:10px; padding:16px; margin-bottom:16px">
+            <div style="font-size:13px; font-weight:600; color:var(--v6); margin-bottom:8px">You asked:</div>
+            <div style="font-size:14px; color:var(--s8)">"Which 5 products am I losing the most money on?"</div>
+          </div>
+          <div style="background:var(--gn05); border-radius:10px; padding:16px">
+            <div style="font-size:13px; font-weight:600; color:var(--gn); margin-bottom:8px">Answer (1.8s):</div>
+            <ol style="font-size:13px; color:var(--s7); padding-left:18px; line-height:1.8">
+              <li>Haribo Yellow Bellies &mdash; &minus;&euro;1,346.90/yr</li>
+              <li>Goodfellas Deep Pepperoni &mdash; &minus;&euro;892.40/yr</li>
+              <li>Monster Energy 4pk &mdash; &minus;&euro;634.20/yr</li>
+              <li>Brennans Sliced Pan &mdash; &minus;&euro;521.80/yr</li>
+              <li>Dairygold Spread 454g &mdash; &minus;&euro;487.30/yr</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BEAT 6: THE THREE TOOLS -->
+  <section class="beat">
+    <div class="container">
+      <div style="text-align:center; margin-bottom:40px">
+        <span class="beat__time" style="justify-content:center">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          Every day from now on
+        </span>
+        <h2 class="beat__title" style="text-align:center; margin-top:8px">Three AI tools that read but never write</h2>
+        <p class="beat__desc" style="text-align:center; max-width:540px; margin:0 auto">Each tool is read-only-safe, cost-capped, and GDPR compliant. Your data stays in-region and is never used for model training.</p>
+      </div>
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:24px">
+        <div class="beat__card">
+          <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style="color:var(--v6)" aria-hidden="true"><rect x="3" y="4" width="2" height="16" fill="currentColor"/><rect x="7" y="4" width="1" height="16" fill="currentColor"/><rect x="10" y="4" width="2" height="16" fill="currentColor"/><rect x="14" y="4" width="1" height="16" fill="currentColor"/><rect x="17" y="4" width="3" height="16" fill="currentColor"/><rect x="22" y="4" width="1" height="16" fill="currentColor"/></svg>
+            <strong style="font-size:15px; color:var(--s9)">Barcode Scanner</strong>
+          </div>
+          <p style="font-size:14px; color:var(--s5); line-height:1.6">Point your camera at any product. Instant margin lookup. Image never leaves your device. Free, unlimited.</p>
+        </div>
+        <div class="beat__card">
+          <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style="color:var(--v6)" aria-hidden="true"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6z" stroke="currentColor" stroke-width="2"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            <strong style="font-size:15px; color:var(--s9)">Invoice Scanner</strong>
+          </div>
+          <p style="font-size:14px; color:var(--s5); line-height:1.6">Upload a supplier invoice. Every line matched to your catalogue. Cost rises and new margin leaks flagged. ~$0.001 per scan.</p>
+        </div>
+        <div class="beat__card">
+          <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style="color:var(--v6)" aria-hidden="true"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2v10z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            <strong style="font-size:15px; color:var(--s9)">Ask Your Shop</strong>
+          </div>
+          <p style="font-size:14px; color:var(--s5); line-height:1.6">Ask in plain English. Answer in ~2 seconds. Read-only: the AI can never change your data. ~$0.001 per question, 100/day cap.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- RESOLUTION -->
+  <section class="resolution">
+    <div class="container">
+      <h2 class="resolution__title">That is the difference.</h2>
+      <p class="resolution__desc">Same shop. Same POS. Same products. But now you see everything that was hidden in that spreadsheet. And you did not spend a single extra hour to find it.</p>
+      <div class="resolution__stats">
+        <div class="res-stat"><div class="res-stat__num">3&ndash;5 hrs</div><div class="res-stat__label">saved per week</div></div>
+        <div class="res-stat"><div class="res-stat__num">423</div><div class="res-stat__label">issues found for you</div></div>
+        <div class="res-stat"><div class="res-stat__num">&euro;10k</div><div class="res-stat__label">recoverable margin/yr</div></div>
+        <div class="res-stat"><div class="res-stat__num">~2s</div><div class="res-stat__label">to load your dashboard</div></div>
+      </div>
+      <a href="#contact" class="btn-primary">See what you are missing</a>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section class="section section--gray" id="pricing">
+    <div class="container">
+      <span class="sec-eyebrow center">Pricing</span>
+      <h2 class="sec-title center">Simple plans. Huge return.</h2>
+      <p class="sec-desc center">Cost &euro;1,188/year. Recovers &euro;7,500&ndash;&euro;10,000. That is a 6&ndash;8x return.</p>
+      <div class="pricing-grid">
+        <div class="price-card">
+          <div class="price-card__name">Starter</div>
+          <div class="price-card__price">&euro;49<span>/mo</span></div>
+          <p class="price-card__desc">Dashboard + issue alerts + barcode scanner.</p>
+          <ul class="price-card__features">
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Live margin dashboard</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>423 issues auto-detected</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Barcode Scanner (free)</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>42 departments tracked</li>
+          </ul>
+          <a href="#contact" class="price-card__btn price-card__btn--outline">Get started</a>
+        </div>
+        <div class="price-card price-card--popular">
+          <div class="price-card__badge">Most popular</div>
+          <div class="price-card__name">Pro</div>
+          <div class="price-card__price">&euro;99<span>/mo</span></div>
+          <p class="price-card__desc">Dashboard + Ask Your Shop AI.</p>
+          <ul class="price-card__features">
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Everything in Starter</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Ask Your Shop (100/day)</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Trading patterns</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Supplier analytics</li>
+          </ul>
+          <a href="#contact" class="price-card__btn price-card__btn--primary">Get Pro</a>
+        </div>
+        <div class="price-card">
+          <div class="price-card__name">Premium</div>
+          <div class="price-card__price">&euro;149<span>/mo</span></div>
+          <p class="price-card__desc">Full suite: Invoice Scanner + Ask + all tools.</p>
+          <ul class="price-card__features">
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Everything in Pro</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Invoice Scanner (50/day)</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Department drill-down</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Priority support</li>
+          </ul>
+          <a href="#contact" class="price-card__btn price-card__btn--outline">Get Premium</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-band">
+    <div class="cta-band__orb" aria-hidden="true"></div>
+    <div class="container" style="position:relative">
+      <h2>Next Tuesday does not have to be like this one.</h2>
+      <p>Connect your POS in minutes. See your first margin report within 24 hours. No changes to your system.</p>
+      <a href="#contact" class="btn-primary">Get early access</a>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section class="section" id="contact">
+    <div class="container">
+      <div class="contact-grid">
+        <div>
+          <span class="sec-eyebrow">Get in touch</span>
+          <h2 class="sec-title">See what Tuesday looks like with RetailGuard.</h2>
+          <p class="sec-desc">We connect to your POS read-only. You will see your first issues report within 24 hours. No spreadsheets. No risk. No changes to your system.</p>
+        </div>
+        <form class="contact-form" aria-label="Contact form">
+          <input type="text" placeholder="Your name" aria-label="Your name" required />
+          <input type="email" placeholder="Email address" aria-label="Email address" required />
+          <input type="text" placeholder="Shop name" aria-label="Shop name" />
+          <textarea placeholder="What POS system do you use? How many products do you carry?" aria-label="Message"></textarea>
+          <button type="submit" class="btn-primary" style="align-self:flex-start">Send message</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="container">
+      <div class="footer__inner">
+        <span class="footer__copy">RetailGuard 2026. All rights reserved.</span>
+        <div class="footer__links">
+          <a href="#">Privacy</a>
+          <a href="#">Terms</a>
+          <a href="#">Security</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById('burger').addEventListener('click', function() {
+      document.getElementById('drawer').classList.toggle('open');
+    });
+  </script>
+</body>
+</html>

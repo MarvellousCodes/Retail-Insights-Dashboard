@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RetailGuard - Know Your Store. Grow Your Margins.</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/style.css" />
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav class="nav" id="navbar">
+    <div class="nav__inner">
+      <a href="#" class="nav__logo">
+        <span class="wordmark">Retail<span class="wordmark__guard">Guard</span></span>
+      </a>
+      <ul class="nav__links">
+        <li><a href="#features">Features</a></li>
+        <li><a href="#how">How it works</a></li>
+        <li><a href="#pricing">Pricing</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+      <div class="nav__cta">
+        <a href="signin.html" class="nav__signin">Sign in</a>
+        <a href="#contact" class="nav__btn">Get access</a>
+      </div>
+      <button class="burger" id="burger"><span></span><span></span><span></span></button>
+    </div>
+    <div class="nav__drawer" id="drawer">
+      <a href="#features">Features</a>
+      <a href="#how">How it works</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#contact">Contact</a>
+      <a href="signin.html">Sign in</a>
+      <a href="#contact" class="drawer__btn">Get access</a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero__bg">
+      <div class="hero__orb hero__orb--1"></div>
+      <div class="hero__orb hero__orb--2"></div>
+      <div class="hero__orb hero__orb--3"></div>
+      <div class="hero__grid"></div>
+    </div>
+    <div class="container">
+      <div class="hero__pill">
+        <span class="hero__pill-dot"></span> Live retail intelligence platform
+      </div>
+      <h1 class="hero__title">
+        Know your store.<br/>Grow your <span class="hero__grad">margins.</span>
+      </h1>
+      <p class="hero__desc">
+        RetailGuard connects to your Point of Sale and turns raw stock data into a live dashboard: pricing, margins, alerts, and department insights, all in one place.
+      </p>
+      <div class="hero__actions">
+        <a href="#contact" class="btn-primary">Get early access</a>
+        <a href="#how" class="btn-ghost">See how it works</a>
+      </div>
+
+      <!-- Dashboard card -->
+      <div class="dash-card">
+        <div class="dash-card__topbar">
+          <div class="topbar__dots"><span></span><span></span><span></span></div>
+          <div class="topbar__title">RetailGuard &nbsp;/&nbsp; Dashboard</div>
+          <div class="topbar__badge"><span class="live-dot"></span> Live</div>
+        </div>
+        <div class="dash-card__body">
+
+          <!-- Sidebar — white bg, violet active items matching real app -->
+          <div class="dash-sidebar">
+            <div class="ds-brand">
+              <span class="wordmark wordmark--sm">Retail<span class="wordmark__guard">Guard</span></span>
+            </div>
+            <div class="ds-item ds-active">
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="6" height="6" rx="1.5" fill="currentColor"/><rect x="9" y="1" width="6" height="6" rx="1.5" fill="currentColor" opacity=".6"/><rect x="1" y="9" width="6" height="6" rx="1.5" fill="currentColor" opacity=".6"/><rect x="9" y="9" width="6" height="6" rx="1.5" fill="currentColor"/></svg>
+              Dashboard
+            </div>
+            <div class="ds-item">
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="6" r="3" stroke="currentColor" stroke-width="1.5"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+              Products
+            </div>
+            <div class="ds-item">
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M2 4h12M2 8h12M2 12h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+              Departments
+            </div>
+            <div class="ds-item">
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 12L6 8l3 3 4-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Insights
+            </div>
+            <div class="ds-item">
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M8 1v5l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.5"/></svg>
+              Turnover
+            </div>
+          </div>
+
+          <!-- Main content — white bg, light gray cards like real app -->
+          <div class="dash-main">
+            <div class="dm-header">
+              <div>
+                <div class="dm-title">Dashboard</div>
+                <div class="dm-sub">150,556 stock records &nbsp;·&nbsp; Synced just now</div>
+              </div>
+              <div class="dm-sync">
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M14 8A6 6 0 102 8" stroke="#7c3aed" stroke-width="1.8" stroke-linecap="round"/><path d="M14 5v3h-3" stroke="#7c3aed" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                Sync Now
+              </div>
+            </div>
+
+            <div class="dm-kpis">
+              <div class="kpi kpi--violet">
+                <div class="kpi__l">Active Products</div>
+                <div class="kpi__n">6,422</div>
+                <div class="kpi__d kpi__d--up">↑ 14 this week</div>
+              </div>
+              <div class="kpi kpi--green">
+                <div class="kpi__l">Avg Markup</div>
+                <div class="kpi__n">34.2%</div>
+                <div class="kpi__d kpi__d--up">↑ 1.3% vs last month</div>
+              </div>
+              <div class="kpi kpi--amber">
+                <div class="kpi__l">Pricing Issues</div>
+                <div class="kpi__n">10</div>
+                <div class="kpi__d kpi__d--warn">Needs attention</div>
+              </div>
+              <div class="kpi">
+                <div class="kpi__l">Departments</div>
+                <div class="kpi__n">42</div>
+                <div class="kpi__d">All categories</div>
+              </div>
+            </div>
+
+            <div class="dm-section-title">Products by Department</div>
+            <div class="dm-table">
+              <div class="dt-row dt-head">
+                <span>Department</span><span>Active</span><span>Avg Markup</span><span>Status</span>
+              </div>
+              <div class="dt-row">
+                <span>Grocery &amp; Dry Goods</span><span>1,240</span><span class="dt-green">34.2%</span>
+                <span><em class="dt-badge dt-badge--ok">OK</em></span>
+              </div>
+              <div class="dt-row dt-alt">
+                <span>Dairy &amp; Chilled</span><span>890</span><span class="dt-green">28.7%</span>
+                <span><em class="dt-badge dt-badge--ok">OK</em></span>
+              </div>
+              <div class="dt-row">
+                <span>Confectionery</span><span>760</span><span class="dt-green">41.1%</span>
+                <span><em class="dt-badge dt-badge--ok">OK</em></span>
+              </div>
+              <div class="dt-row dt-alt">
+                <span>Soft Drinks</span><span>680</span><span class="dt-green">38.5%</span>
+                <span><em class="dt-badge dt-badge--warn">1 alert</em></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="features" id="features">
+    <div class="container">
+      <div class="sec-eyebrow">Features</div>
+      <h2 class="sec-title">Everything your POS never showed you</h2>
+      <p class="sec-desc">Six tools that replace hours of manual spreadsheet work every week.</p>
+      <div class="feat-grid">
+
+        <div class="feat-card feat-card--wide">
+          <div class="feat-card__icon" style="background:linear-gradient(135deg,#7c3aed,#a78bfa)">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M3 17L9 11L13 15L21 7" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <h3>Live Stock Dashboard</h3>
+          <p>Every active product, price, and margin in one screen. Filter by department, supplier, or price band instantly.</p>
+        </div>
+
+        <div class="feat-card">
+          <div class="feat-card__icon" style="background:linear-gradient(135deg,#f59e0b,#fbbf24)">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 3L4 20h16L12 3z" stroke="white" stroke-width="2" stroke-linejoin="round"/><path d="M12 10v4" stroke="white" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="17" r="1" fill="white"/></svg>
+          </div>
+          <h3>Pricing Alerts</h3>
+          <p>Flags products with bad prices before they cost you money at the till.</p>
+        </div>
+
+        <div class="feat-card">
+          <div class="feat-card__icon" style="background:linear-gradient(135deg,#16a34a,#22c55e)">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="white" stroke-width="2"/><path d="M8 12l3 3 5-5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <h3>Margin Tracking</h3>
+          <p>Per-product markup calculated correctly, with pack sizes factored in automatically.</p>
+        </div>
+
+        <div class="feat-card">
+          <div class="feat-card__icon" style="background:linear-gradient(135deg,#c026d3,#e879f9)">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="7" rx="1.5" fill="white"/><rect x="14" y="3" width="7" height="7" rx="1.5" fill="white" opacity=".6"/><rect x="3" y="14" width="7" height="7" rx="1.5" fill="white" opacity=".6"/><rect x="14" y="14" width="7" height="7" rx="1.5" fill="white"/></svg>
+          </div>
+          <h3>Department Drill-down</h3>
+          <p>Browse every department and sub-category, exactly as set up in your POS.</p>
+        </div>
+
+        <div class="feat-card">
+          <div class="feat-card__icon" style="background:linear-gradient(135deg,#0ea5e9,#38bdf8)">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 3v12M8 11l4 4 4-4" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" stroke="white" stroke-width="2.5" stroke-linecap="round"/></svg>
+          </div>
+          <h3>One-click Reports</h3>
+          <p>Export clean PDF reports for any department or product range in seconds.</p>
+        </div>
+
+        <div class="feat-card feat-card--wide">
+          <div class="feat-card__icon" style="background:linear-gradient(135deg,#ef4444,#f87171)">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M9 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V9l-6-6z" stroke="white" stroke-width="2" stroke-linejoin="round"/><path d="M9 3v6h6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <h3>Data Quality Monitoring</h3>
+          <p>Catches corrupted imports, missing cost fields, and ghost records that break your reports before you even open them.</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- INVOICE SCANNER PREMIUM FEATURE -->
+  <section class="invoice-section">
+    <div class="container">
+      <div class="invoice-inner">
+
+        <div class="invoice-text">
+          <div class="invoice-label">
+            <span class="invoice-label__badge">Premium Feature</span>
+          </div>
+          <h2 class="invoice-title">Invoice Scanner</h2>
+          <p class="invoice-desc">
+            Every time a delivery arrives, your staff spend hours going through sheets of barcodes, manually checking what is already on the system, what is missing, and what has changed. RetailGuard's Invoice Scanner does all of that in seconds.
+          </p>
+          <ul class="invoice-list">
+            <li>
+              <span class="il-icon il-icon--green">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8l4 4 6-7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </span>
+              <div>
+                <strong>Scan the invoice, not every barcode</strong>
+                <span>Upload or photograph a supplier invoice and RetailGuard reads every product line automatically.</span>
+              </div>
+            </li>
+            <li>
+              <span class="il-icon il-icon--green">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8l4 4 6-7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </span>
+              <div>
+                <strong>Instant match against your live stock</strong>
+                <span>See exactly which products are already in your system, which are new, and which have a price discrepancy.</span>
+              </div>
+            </li>
+            <li>
+              <span class="il-icon il-icon--violet">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 3v5l3 3" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
+              </span>
+              <div>
+                <strong>Add missing products in one click</strong>
+                <span>New items on the invoice get flagged immediately. Approve them straight from the scanner. No manual data entry.</span>
+              </div>
+            </li>
+            <li>
+              <span class="il-icon il-icon--violet">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8l4 4 6-7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </span>
+              <div>
+                <strong>Catch cost price changes automatically</strong>
+                <span>If a supplier has changed a price on their invoice, RetailGuard flags it so you can update your margin before the product hits the shelf.</span>
+              </div>
+            </li>
+          </ul>
+        </div>
+
+        <div class="invoice-visual">
+          <div class="inv-card">
+            <div class="inv-card__header">
+              <div class="inv-card__title">
+                <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M3 2h10a1 1 0 011 1v10a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z" stroke="#7c3aed" stroke-width="1.5"/><path d="M5 6h6M5 9h4" stroke="#7c3aed" stroke-width="1.5" stroke-linecap="round"/></svg>
+                Invoice Scan, Centra Wholesale
+              </div>
+              <span class="inv-card__date">Today, 09:14</span>
+            </div>
+            <div class="inv-card__summary">
+              <div class="inv-sum inv-sum--green"><span>48</span>Matched</div>
+              <div class="inv-sum inv-sum--amber"><span>6</span>Price change</div>
+              <div class="inv-sum inv-sum--violet"><span>3</span>New products</div>
+            </div>
+            <div class="inv-divider"></div>
+            <div class="inv-rows">
+              <div class="inv-row-head"><span>Product</span><span>Invoice</span><span>System</span><span>Status</span></div>
+              <div class="inv-row">
+                <span>Tayto C&O 45g (x48)</span>
+                <span>€0.62</span>
+                <span>€0.62</span>
+                <span><em class="inv-badge inv-badge--ok">Matched</em></span>
+              </div>
+              <div class="inv-row inv-row--alt">
+                <span>Cadbury Dairy Milk 200g</span>
+                <span>€1.98</span>
+                <span>€1.90</span>
+                <span><em class="inv-badge inv-badge--warn">Price up</em></span>
+              </div>
+              <div class="inv-row">
+                <span>Haribo Starmix 160g</span>
+                <span>€0.98</span>
+                <span>€0.98</span>
+                <span><em class="inv-badge inv-badge--ok">Matched</em></span>
+              </div>
+              <div class="inv-row inv-row--alt">
+                <span>Ribena Blackcurrant 500ml</span>
+                <span>€0.74</span>
+                <span class="inv-missing">Not on system</span>
+                <span><em class="inv-badge inv-badge--new">New</em></span>
+              </div>
+              <div class="inv-row">
+                <span>Lucozade Energy 380ml</span>
+                <span>€1.05</span>
+                <span>€0.98</span>
+                <span><em class="inv-badge inv-badge--warn">Price up</em></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- PROBLEM -->
+  <section class="problem" id="problem">
+    <div class="container">
+      <div class="problem__grid">
+        <div class="problem__left">
+          <div class="sec-eyebrow">The problem</div>
+          <h2 class="sec-title">Your POS holds everything. You can see almost nothing.</h2>
+          <p class="sec-desc">Getting useful answers out of your stock system means exporting CSVs, wrestling with Excel, and manually matching columns. Every single week.</p>
+          <ul class="problem__list">
+            <li>Hours lost on exports that should take seconds</li>
+            <li>Wrong prices live in your system for months unnoticed</li>
+            <li>No visibility on which departments are actually profitable</li>
+            <li>Margin calculated by hand and often wrong</li>
+            <li>Discontinued products cluttering every view</li>
+          </ul>
+        </div>
+        <div class="problem__right">
+          <div class="before-block">
+            <div class="before-block__label">Before RetailGuard</div>
+            <div class="before-block__steps">
+              <div class="bs"><span class="bs__n">1</span><span>Export CSV from your POS</span></div>
+              <div class="bs__arrow">↓</div>
+              <div class="bs"><span class="bs__n">2</span><span>Open in Excel, fix the formatting</span></div>
+              <div class="bs__arrow">↓</div>
+              <div class="bs"><span class="bs__n">3</span><span>Manually calculate margins</span></div>
+              <div class="bs__arrow">↓</div>
+              <div class="bs"><span class="bs__n">4</span><span>Try to spot pricing errors</span></div>
+              <div class="bs__arrow">↓</div>
+              <div class="bs"><span class="bs__n">5</span><span>Do it all again next week</span></div>
+            </div>
+            <div class="before-block__footer">3 to 5 hours every week, wasted</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="how" id="how">
+    <div class="container">
+      <div class="sec-eyebrow center">How it works</div>
+      <h2 class="sec-title center">Set up in an afternoon. Saves hours every week.</h2>
+      <p class="sec-desc center">No new hardware. No changes to your POS. Just connect and go.</p>
+      <div class="steps-row">
+        <div class="step-item">
+          <div class="step-num">01</div>
+          <h3>Export your POS data</h3>
+          <p>Run a standard data export from your POS system. The same files you already generate. RetailGuard reads them directly.</p>
+        </div>
+        <div class="step-line"></div>
+        <div class="step-item">
+          <div class="step-num">02</div>
+          <h3>RetailGuard syncs and cleans</h3>
+          <p>Our engine validates, repairs, and loads your data, fixing common import errors automatically on the way in.</p>
+        </div>
+        <div class="step-line"></div>
+        <div class="step-item">
+          <div class="step-num">03</div>
+          <h3>Open your dashboard</h3>
+          <p>Live pricing, margins, and alerts are ready in your browser. Any device, no installation needed.</p>
+        </div>
+      </div>
+      <div class="how-stats">
+        <div class="hs-item"><strong>3 to 5 hrs</strong><span>saved per store each week</span></div>
+        <div class="hs-div"></div>
+        <div class="hs-item"><strong>Under 2s</strong><span>dashboard load time</span></div>
+        <div class="hs-div"></div>
+        <div class="hs-item"><strong>150k+</strong><span>stock records processed</span></div>
+        <div class="hs-div"></div>
+        <div class="hs-item"><strong>Zero</strong><span>spreadsheets needed</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section class="pricing" id="pricing">
+    <div class="container">
+      <div class="pricing-box">
+        <div>
+          <div class="sec-eyebrow">Pricing</div>
+          <h2 class="sec-title">Tailored to your store</h2>
+          <p class="sec-desc">Pricing depends on your setup and store size. Get in touch and we will put together the right plan for you.</p>
+        </div>
+        <a href="#contact" class="btn-primary">Contact us for pricing</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-band">
+    <div class="cta-band__glow"></div>
+    <div class="container cta-band__inner">
+      <h2>Ready to stop flying blind?</h2>
+      <p>Join the early access list and be the first to get RetailGuard for your store.</p>
+      <a href="#contact" class="btn-white">Request early access</a>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section class="contact" id="contact">
+    <div class="container contact__grid">
+      <div class="contact__info">
+        <div class="sec-eyebrow">Get in touch</div>
+        <h2 class="sec-title">Request a demo</h2>
+        <p class="sec-desc">Tell us about your store and we will walk you through what RetailGuard would look like with your own data.</p>
+        <div class="contact__details">
+          <div class="cd"><span>✉</span><span>hello@retailguard.app</span></div>
+          <div class="cd"><span>🌍</span><span>Serving retailers worldwide</span></div>
+          <div class="cd"><span>🔒</span><span>Your data never leaves your premises</span></div>
+        </div>
+      </div>
+      <form class="contact__form" id="contactForm" novalidate>
+        <div class="fg-row">
+          <div class="fg">
+            <label>Full name</label>
+            <input type="text" placeholder="Jane Smith" required />
+          </div>
+          <div class="fg">
+            <label>Email</label>
+            <input type="email" placeholder="jane@yourstore.com" required />
+          </div>
+        </div>
+        <div class="fg">
+          <label>Store name</label>
+          <input type="text" placeholder="e.g. Smith's Convenience Store" />
+        </div>
+        <div class="fg">
+          <label>POS system</label>
+          <select>
+            <option value="">Select your system</option>
+            <option>Retail Solutions</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label>Anything else?</label>
+          <textarea placeholder="Number of products, locations, what's causing you the most pain right now..." rows="3"></textarea>
+        </div>
+        <button type="submit" class="btn-primary btn-full">Send request</button>
+        <div class="form-ok" id="formOk">Got it. We will be in touch within 24 hours.</div>
+      </form>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="container footer__inner">
+      <a href="#" class="footer__logo">
+        <span class="wordmark">Retail<span class="wordmark__guard">Guard</span></span>
+      </a>
+      <div class="footer__links">
+        <a href="#features">Features</a>
+        <a href="#how">How it works</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#contact">Contact</a>
+      </div>
+      <div class="footer__copy">© 2026 RetailGuard. All rights reserved.</div>
+    </div>
+  </footer>
+
+  <script src="assets/main.js"></script>
+</body>
+</html>

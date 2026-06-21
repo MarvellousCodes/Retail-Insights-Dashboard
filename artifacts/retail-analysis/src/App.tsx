@@ -12,11 +12,22 @@ import { InsightsPage } from "@/pages/InsightsPage";
 import { DepartmentsPage } from "@/pages/DepartmentsPage";
 import { LoginPage } from "@/pages/LoginPage";
 import { LiveDataPage } from "@/pages/LiveDataPage";
+import { SuppliersPage } from "@/pages/SuppliersPage";
+import { CustomersPage } from "@/pages/CustomersPage";
+import { TurnoverPage } from "@/pages/TurnoverPage";
+import { TransactionsPage } from "@/pages/TransactionsPage";
+import { DashboardInsights } from "@/pages/DashboardInsights";
+import { DeptPage } from "@/pages/DeptPage";
+import { MarginsPage } from "@/pages/MarginsPage";
+import { InsightsLivePage } from "@/pages/InsightsLivePage";
+import { IssuesLivePage } from "@/pages/IssuesLivePage";
+import { BarcodeScannerPage } from "@/pages/BarcodeScannerPage";
+import { AskPage } from "@/pages/AskPage";
 import { isLoggedIn } from "@/lib/api";
 
 const queryClient = new QueryClient();
 
-export type NavTab = "dashboard" | "upload" | "issues" | "reports" | "insights" | "departments" | "invoices" | "livedata" | "settings";
+export type NavTab = "dashboard" | "upload" | "issues" | "reports" | "insights" | "departments" | "invoices" | "scanner" | "askshop" | "livedata" | "turnover" | "transactions" | "suppliers" | "customers" | "depts" | "margins" | "settings";
 type InternalTab = NavTab | "analyse";
 
 // ─── Core Types ───────────────────────────────────────────────────────────────
@@ -342,6 +353,13 @@ function App() {
         />
         <main className="flex-1 overflow-y-auto">
           {tab === "livedata" && <LiveDataPage />}
+          {tab === "turnover" && <TurnoverPage />}
+          {tab === "transactions" && <TransactionsPage />}
+          {tab === "suppliers" && <SuppliersPage />}
+          {tab === "customers" && <CustomersPage />}
+          {tab === "depts" && <DeptPage />}
+          {tab === "margins" && <MarginsPage />}
+          {tab === "reports" && <IssuesLivePage />}
           {tab === "upload" && (
             <UploadPage
               onAnalyse={handleAnalyseMultiple}
@@ -352,49 +370,13 @@ function App() {
             />
           )}
           {tab === "analyse" && <AnalysePage analyzing={analyzing} fileName={lastFileNames} />}
-          {tab === "dashboard" && (
-            <DashboardPage
-              products={activeProducts}
-              marginAlerts={marginAlerts}
-              priceAnomalies={priceAnomalies}
-              thresholds={thresholds}
-              fixedIds={fixedIds}
-              onNewUpload={() => setTab("upload")}
-              sourceControls={sourceControls}
-            />
-          )}
-          {tab === "issues" && (
-            <IssuesPage
-              products={activeProducts}
-              marginAlerts={marginAlerts}
-              priceAnomalies={priceAnomalies}
-              fixedIds={fixedIds}
-              productOverrides={productOverrides}
-              onMarkFixed={handleMarkFixed}
-              onSetProductOverride={handleSetProductOverride}
-              onNewUpload={() => setTab("upload")}
-              sourceControls={sourceControls}
-            />
-          )}
-          {tab === "reports" && (
-            <ReportsPage
-              products={activeProducts}
-              marginAlerts={marginAlerts}
-              priceAnomalies={priceAnomalies}
-              fixedIds={fixedIds}
-              onNewUpload={() => setTab("upload")}
-              sourceControls={sourceControls}
-            />
-          )}
+          {tab === "dashboard" && <DashboardInsights />}
+          {tab === "issues" && <InsightsLivePage />}
+          {tab === "invoices" && <InvoiceScannerPage existingProducts={activeProducts} onAddToSystem={handleAnalyseMultiple} />}
+          {tab === "scanner" && <BarcodeScannerPage />}
+          {tab === "askshop" && <AskPage />}
           {tab === "settings" && (
             <SettingsPage thresholds={thresholds} onUpdate={handleThresholdUpdate} />
-          )}
-          {tab === "invoices" && <InvoiceScannerPage existingProducts={activeProducts} onAddToSystem={handleAnalyseMultiple} />}
-          {tab === "insights" && (
-            <InsightsPage products={activeProducts} onNewUpload={() => setTab("upload")} />
-          )}
-          {tab === "departments" && (
-            <DepartmentsPage products={activeProducts} thresholds={thresholds} onNewUpload={() => setTab("upload")} />
           )}
         </main>
       </div>

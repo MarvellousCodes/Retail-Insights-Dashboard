@@ -1,4 +1,4 @@
-import { Upload, LayoutDashboard, AlertCircle, FileText, Settings, ChevronRight, ChevronLeft, Shield, Sun, Moon, ScanLine, BarChart3, Building2, Database } from "lucide-react";
+import { Upload, LayoutDashboard, AlertCircle, FileText, Settings, ChevronRight, ChevronLeft, Shield, Sun, Moon, ScanLine, ScanBarcode, Sparkles, BarChart3, Building2, Database, TrendingUp, Receipt, Truck, Users, Layers, AlertTriangle } from "lucide-react";
 import type { NavTab } from "@/App";
 
 interface SidebarProps {
@@ -11,14 +11,19 @@ interface SidebarProps {
 }
 
 const NAV_ITEMS: { tab: NavTab; icon: React.ReactNode; label: string }[] = [
-  { tab: "livedata", icon: <Database className="w-5 h-5 shrink-0" />, label: "Live Data" },
+  { tab: "livedata", icon: <Database className="w-5 h-5 shrink-0" />, label: "Products" },
+  { tab: "scanner", icon: <ScanBarcode className="w-5 h-5 shrink-0" />, label: "Scanner" },
+  { tab: "askshop", icon: <Sparkles className="w-5 h-5 shrink-0" />, label: "Ask" },
+  { tab: "turnover", icon: <TrendingUp className="w-5 h-5 shrink-0" />, label: "Sales" },
+  { tab: "transactions", icon: <Receipt className="w-5 h-5 shrink-0" />, label: "Transactions" },
+  { tab: "suppliers", icon: <Truck className="w-5 h-5 shrink-0" />, label: "Suppliers" },
+  { tab: "customers", icon: <Users className="w-5 h-5 shrink-0" />, label: "Customers" },
+  { tab: "depts", icon: <Layers className="w-5 h-5 shrink-0" />, label: "Departments" },
+  { tab: "margins", icon: <BarChart3 className="w-5 h-5 shrink-0" />, label: "Margins" },
+  { tab: "reports", icon: <AlertTriangle className="w-5 h-5 shrink-0" />, label: "Issues" },
   { tab: "dashboard", icon: <LayoutDashboard className="w-5 h-5 shrink-0" />, label: "Dashboard" },
-  { tab: "issues", icon: <AlertCircle className="w-5 h-5 shrink-0" />, label: "Issues" },
-  { tab: "insights", icon: <BarChart3 className="w-5 h-5 shrink-0" />, label: "Insights" },
-  { tab: "departments", icon: <Building2 className="w-5 h-5 shrink-0" />, label: "Departments" },
-  { tab: "reports", icon: <FileText className="w-5 h-5 shrink-0" />, label: "Reports" },
+  { tab: "issues", icon: <AlertCircle className="w-5 h-5 shrink-0" />, label: "Insights" },
   { tab: "invoices", icon: <ScanLine className="w-5 h-5 shrink-0" />, label: "Invoices" },
-  { tab: "upload", icon: <Upload className="w-5 h-5 shrink-0" />, label: "Upload" },
   { tab: "settings", icon: <Settings className="w-5 h-5 shrink-0" />, label: "Settings" },
 ];
 

@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Plus, Trash2, Save, RotateCcw } from "lucide-react";
+import { Plus, Trash2, Save, RotateCcw, RefreshCw, Database } from "lucide-react";
 import type { DeptThreshold } from "@/App";
 import { DEFAULT_THRESHOLDS } from "@/App";
+import { apiCall } from "@/lib/api";
 
 interface SettingsPageProps {
   thresholds: DeptThreshold[];
@@ -13,6 +14,15 @@ export function SettingsPage({ thresholds, onUpdate }: SettingsPageProps) {
   const [saved, setSaved] = useState(false);
   const [newDept, setNewDept] = useState("");
   const [newMargin, setNewMargin] = useState("");
+  const [syncing, setSyncing] = useState(false);
+  const [syncMsg, setSyncMsg] = useState("");
+
+  const handleSync = async () => {
+    setSyncing(true); setSyncMsg("");
+    try { await apiCall("/api/sync", { method: "POST" }); setSyncMsg("Sync triggered — fresh data lands within ~10 min."); }
+    catch { setSyncMsg("Could not reach the server."); }
+    setSyncing(false);
+  };
 
   const update = (idx: number, val: string) => {
     const n = parseFloat(val);
@@ -41,7 +51,28 @@ export function SettingsPage({ thresholds, onUpdate }: SettingsPageProps) {
       <div className="px-7 py-6 max-w-[680px] mx-auto">
         <div className="mb-6">
           <h1 className="text-xl font-black text-gray-900">Settings</h1>
-          <p className="text-sm text-gray-400 mt-0.5">Configure minimum margin targets per department or category</p>
+          <p className="text-sm text-gray-400 mt-0.5">Data pipeline, sync, and margin targets</p>
+        </div>
+
+        {/* Data Pipeline & Sync (moved off Dashboard) */}
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-4">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Database className="w-4 h-4 text-violet-600" />
+              <h2 className="text-sm font-black text-gray-900">Data Pipeline & Sync</h2>
+            </div>
+            <button onClick={handleSync} disabled={syncing}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-violet-600 hover:bg-violet-700 text-white rounded-lg text-xs font-semibold disabled:opacity-50">
+              <RefreshCw className={`w-3.5 h-3.5 ${syncing ? "animate-spin" : ""}`} /> {syncing ? "Triggering…" : "Sync now"}
+            </button>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+            <div><p className="text-gray-400">Source</p><p className="text-gray-800 font-medium">Pervasive + SQL Server</p></div>
+            <div><p className="text-gray-400">Cloud DB</p><p className="text-gray-800 font-medium">Oracle PostgreSQL</p></div>
+            <div><p className="text-gray-400">Schedule</p><p className="text-gray-800 font-medium">Every 6 hours</p></div>
+            <div><p className="text-gray-400">Transport</p><p className="text-gray-800 font-medium">SCP + auto-rebuild</p></div>
+          </div>
+          {syncMsg && <p className="text-xs text-violet-600 mt-3">{syncMsg}</p>}
         </div>
 
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-4">

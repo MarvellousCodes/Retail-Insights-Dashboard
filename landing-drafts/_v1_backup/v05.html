@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RetailGuard — A Full-Time Margin Analyst for €99/month</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --v6: #7c3aed; --v5: #8b5cf6; --v4: #a78bfa; --v1: #ede9fe;
+      --g9: #0b0b14; --g8: #111118; --g7: #1a1a24;
+      --s9: #111827; --s8: #1f2937; --s5: #6b7280; --s4: #9ca3af;
+      --s2: #e5e7eb; --s1: #f3f4f6; --s05: #f8f8fb;
+      --gn: #16a34a; --am: #f59e0b; --rd: #ef4444;
+      --wh: #ffffff;
+      --grad: linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%);
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', system-ui, sans-serif; color: var(--s8); background: var(--wh); -webkit-font-smoothing: antialiased; line-height: 1.6; }
+    .container { max-width: 1140px; margin: 0 auto; padding: 0 28px; }
+
+    /* NAV */
+    .nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: rgba(11,11,20,.92); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255,255,255,.06); }
+    .nav__inner { display: flex; align-items: center; justify-content: space-between; max-width: 1140px; margin: 0 auto; padding: 14px 28px; }
+    .wordmark { font-size: 18px; font-weight: 800; color: var(--wh); text-decoration: none; }
+    .wordmark .accent { color: var(--v4); }
+    .nav__links { display: flex; gap: 28px; list-style: none; }
+    .nav__links a { color: rgba(255,255,255,.7); text-decoration: none; font-size: 14px; font-weight: 500; transition: color .15s; }
+    .nav__links a:hover { color: var(--wh); }
+    .nav__cta { display: flex; align-items: center; gap: 16px; }
+    .nav__signin { color: rgba(255,255,255,.7); text-decoration: none; font-size: 14px; font-weight: 500; }
+    .nav__btn { background: var(--grad); color: var(--wh); font-size: 13px; font-weight: 600; padding: 9px 20px; border-radius: 8px; text-decoration: none; }
+    .burger { display: none; background: none; border: none; cursor: pointer; flex-direction: column; gap: 4px; }
+    .burger span { display: block; width: 20px; height: 2px; background: var(--wh); border-radius: 2px; }
+    .nav__drawer { display: none; flex-direction: column; gap: 16px; padding: 20px 28px; }
+    .nav__drawer a { color: rgba(255,255,255,.8); text-decoration: none; font-size: 15px; }
+
+    @media (max-width: 768px) {
+      .nav__links, .nav__cta { display: none; }
+      .burger { display: flex; }
+      .nav__drawer.open { display: flex; }
+    }
+
+    /* HERO */
+    .hero { background: var(--g9); padding: 140px 0 80px; position: relative; overflow: hidden; text-align: center; }
+    .hero__orb { position: absolute; border-radius: 50%; filter: blur(100px); opacity: .3; }
+    .hero__orb--1 { width: 500px; height: 500px; background: var(--v6); top: -200px; left: -100px; }
+    .hero__orb--2 { width: 400px; height: 400px; background: var(--v4); bottom: -150px; right: -80px; }
+    .hero__pill { display: inline-flex; align-items: center; gap: 8px; background: rgba(124,58,237,.15); border: 1px solid rgba(124,58,237,.3); border-radius: 20px; padding: 6px 16px; font-size: 12px; font-weight: 600; color: var(--v4); margin-bottom: 24px; }
+    .hero__pill-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gn); }
+    .hero__title { font-size: clamp(32px, 5vw, 56px); font-weight: 900; color: var(--wh); line-height: 1.05; letter-spacing: -1.5px; margin-bottom: 20px; }
+    .hero__grad { background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .hero__desc { font-size: 17px; color: rgba(255,255,255,.6); max-width: 560px; margin: 0 auto 32px; line-height: 1.7; }
+    .hero__actions { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+    .btn-primary { display: inline-flex; align-items: center; gap: 8px; background: var(--grad); color: var(--wh); font-size: 15px; font-weight: 600; padding: 14px 28px; border-radius: 10px; border: none; cursor: pointer; text-decoration: none; transition: opacity .18s, transform .18s; }
+    .btn-primary:hover { opacity: .88; transform: translateY(-2px); }
+    .btn-ghost { display: inline-flex; align-items: center; background: transparent; color: rgba(255,255,255,.7); font-size: 15px; font-weight: 500; padding: 14px 28px; border-radius: 10px; border: 1.5px solid rgba(255,255,255,.15); text-decoration: none; transition: border-color .18s; }
+    .btn-ghost:hover { border-color: rgba(255,255,255,.4); color: var(--wh); }
+
+    /* ROI BAND */
+    .roi { background: var(--s05); padding: 60px 0; border-bottom: 1px solid var(--s2); }
+    .roi__inner { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 32px; text-align: center; }
+    .roi__item { padding: 24px; }
+    .roi__num { font-size: 36px; font-weight: 900; color: var(--v6); letter-spacing: -1px; }
+    .roi__label { font-size: 14px; color: var(--s5); margin-top: 6px; }
+    @media (max-width: 640px) { .roi__inner { grid-template-columns: 1fr; } }
+
+    /* PRICING */
+    .pricing { padding: 80px 0; background: var(--wh); }
+    .pricing__head { text-align: center; margin-bottom: 48px; }
+    .pricing__title { font-size: clamp(24px, 3vw, 36px); font-weight: 800; color: var(--s9); letter-spacing: -0.5px; }
+    .pricing__sub { font-size: 15px; color: var(--s5); margin-top: 10px; max-width: 480px; margin-left: auto; margin-right: auto; }
+    .pricing__grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+    .price-card { background: var(--wh); border: 1px solid var(--s2); border-radius: 16px; padding: 36px 28px; position: relative; transition: transform .2s, box-shadow .2s; }
+    .price-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,0,0,.08); }
+    .price-card--pop { border-color: var(--v6); box-shadow: 0 0 0 2px var(--v6), 0 12px 40px rgba(124,58,237,.12); }
+    .price-card__badge { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--grad); color: var(--wh); font-size: 11px; font-weight: 700; padding: 4px 14px; border-radius: 12px; letter-spacing: .5px; }
+    .price-card__name { font-size: 16px; font-weight: 700; color: var(--s9); margin-bottom: 4px; }
+    .price-card__price { font-size: 42px; font-weight: 900; color: var(--s9); letter-spacing: -1px; }
+    .price-card__price span { font-size: 16px; font-weight: 500; color: var(--s5); }
+    .price-card__desc { font-size: 13px; color: var(--s5); margin: 12px 0 20px; line-height: 1.5; }
+    .price-card__features { list-style: none; margin-bottom: 28px; }
+    .price-card__features li { font-size: 13px; color: var(--s8); padding: 7px 0; display: flex; align-items: flex-start; gap: 8px; }
+    .price-card__features li svg { flex-shrink: 0; margin-top: 2px; }
+    .price-card__cta { display: block; text-align: center; padding: 12px; border-radius: 8px; font-size: 14px; font-weight: 600; text-decoration: none; transition: opacity .15s; }
+    .price-card__cta--fill { background: var(--grad); color: var(--wh); }
+    .price-card__cta--outline { border: 1.5px solid var(--s2); color: var(--s9); }
+    .price-card__cta:hover { opacity: .85; }
+    @media (max-width: 768px) { .pricing__grid { grid-template-columns: 1fr; max-width: 380px; margin: 0 auto; } }
+
+    /* ROI MATH */
+    .roi-math { padding: 80px 0; background: var(--s05); }
+    .roi-math__inner { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; }
+    .roi-math__content h2 { font-size: clamp(22px, 2.5vw, 30px); font-weight: 800; color: var(--s9); letter-spacing: -0.5px; margin-bottom: 16px; }
+    .roi-math__content p { font-size: 15px; color: var(--s5); line-height: 1.7; margin-bottom: 20px; }
+    .roi-math__table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .roi-math__table th { text-align: left; font-weight: 600; color: var(--s9); padding: 10px 0; border-bottom: 2px solid var(--s2); }
+    .roi-math__table td { padding: 10px 0; border-bottom: 1px solid var(--s2); color: var(--s8); }
+    .roi-math__table .highlight { color: var(--gn); font-weight: 700; }
+    .roi-math__card { background: var(--wh); border: 1px solid var(--s2); border-radius: 16px; padding: 32px; }
+    .roi-math__card h3 { font-size: 14px; font-weight: 700; color: var(--s5); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; }
+    .roi-math__big { font-size: 48px; font-weight: 900; color: var(--gn); letter-spacing: -1px; }
+    .roi-math__big span { font-size: 20px; color: var(--s5); font-weight: 500; }
+    .roi-math__note { font-size: 13px; color: var(--s5); margin-top: 12px; }
+    @media (max-width: 768px) { .roi-math__inner { grid-template-columns: 1fr; } }
+
+    /* AI TOOLS */
+    .ai-tools { padding: 80px 0; background: var(--wh); }
+    .ai-tools__head { text-align: center; margin-bottom: 48px; }
+    .ai-tools__title { font-size: clamp(22px, 2.8vw, 34px); font-weight: 800; color: var(--s9); letter-spacing: -0.5px; }
+    .ai-tools__sub { font-size: 15px; color: var(--s5); margin-top: 10px; }
+    .ai-tools__grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+    .ai-card { background: var(--wh); border: 1px solid var(--s2); border-radius: 14px; padding: 28px 24px; }
+    .ai-card__icon { width: 44px; height: 44px; border-radius: 10px; background: var(--v1); display: flex; align-items: center; justify-content: center; margin-bottom: 16px; }
+    .ai-card__icon svg { color: var(--v6); }
+    .ai-card__name { font-size: 16px; font-weight: 700; color: var(--s9); margin-bottom: 8px; }
+    .ai-card__desc { font-size: 13px; color: var(--s5); line-height: 1.6; margin-bottom: 12px; }
+    .ai-card__cost { font-size: 12px; font-weight: 600; color: var(--gn); background: rgba(22,163,74,.08); padding: 4px 10px; border-radius: 6px; display: inline-block; }
+    @media (max-width: 768px) { .ai-tools__grid { grid-template-columns: 1fr; } }
+
+    /* FEATURES */
+    .features { padding: 80px 0; background: var(--s05); }
+    .features__head { text-align: center; margin-bottom: 48px; }
+    .features__title { font-size: clamp(22px, 2.8vw, 34px); font-weight: 800; color: var(--s9); }
+    .features__grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .feat-card { background: var(--wh); border: 1px solid var(--s2); border-radius: 12px; padding: 24px; }
+    .feat-card__icon { width: 36px; height: 36px; border-radius: 8px; background: var(--v1); display: flex; align-items: center; justify-content: center; margin-bottom: 12px; }
+    .feat-card__icon svg { color: var(--v6); width: 18px; height: 18px; }
+    .feat-card__name { font-size: 14px; font-weight: 700; color: var(--s9); margin-bottom: 6px; }
+    .feat-card__desc { font-size: 13px; color: var(--s5); line-height: 1.5; }
+    @media (max-width: 768px) { .features__grid { grid-template-columns: 1fr; } }
+
+    /* STATS */
+    .stats { padding: 60px 0; background: var(--g9); }
+    .stats__inner { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; text-align: center; }
+    .stats__num { font-size: 28px; font-weight: 900; color: var(--wh); }
+    .stats__label { font-size: 13px; color: rgba(255,255,255,.5); margin-top: 4px; }
+    @media (max-width: 640px) { .stats__inner { grid-template-columns: repeat(2, 1fr); } }
+
+    /* HOW */
+    .how { padding: 80px 0; background: var(--wh); }
+    .how__head { text-align: center; margin-bottom: 48px; }
+    .how__title { font-size: clamp(22px, 2.8vw, 34px); font-weight: 800; color: var(--s9); }
+    .how__steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; }
+    .how__step { text-align: center; }
+    .how__num { width: 44px; height: 44px; border-radius: 50%; background: var(--v1); color: var(--v6); font-size: 18px; font-weight: 800; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; }
+    .how__step-title { font-size: 15px; font-weight: 700; color: var(--s9); margin-bottom: 8px; }
+    .how__step-desc { font-size: 13px; color: var(--s5); line-height: 1.6; }
+    @media (max-width: 640px) { .how__steps { grid-template-columns: 1fr; } }
+
+    /* CTA BAND */
+    .cta-band { padding: 80px 0; background: var(--g9); text-align: center; position: relative; overflow: hidden; }
+    .cta-band__orb { position: absolute; width: 400px; height: 400px; border-radius: 50%; background: var(--v6); filter: blur(120px); opacity: .15; top: -100px; left: 50%; transform: translateX(-50%); }
+    .cta-band h2 { font-size: clamp(24px, 3vw, 36px); font-weight: 800; color: var(--wh); margin-bottom: 12px; position: relative; }
+    .cta-band p { font-size: 15px; color: rgba(255,255,255,.6); margin-bottom: 28px; position: relative; }
+    .cta-band .btn-primary { position: relative; }
+
+    /* CONTACT */
+    .contact { padding: 80px 0; background: var(--wh); }
+    .contact__inner { max-width: 520px; margin: 0 auto; text-align: center; }
+    .contact__title { font-size: 24px; font-weight: 800; color: var(--s9); margin-bottom: 8px; }
+    .contact__desc { font-size: 14px; color: var(--s5); margin-bottom: 32px; }
+    .contact__form { display: flex; flex-direction: column; gap: 14px; text-align: left; }
+    .contact__form label { font-size: 13px; font-weight: 600; color: var(--s8); }
+    .contact__form input, .contact__form textarea { width: 100%; padding: 12px 14px; border: 1px solid var(--s2); border-radius: 8px; font-size: 14px; font-family: inherit; background: var(--s05); }
+    .contact__form textarea { resize: vertical; min-height: 100px; }
+    .contact__form button { background: var(--grad); color: var(--wh); font-size: 15px; font-weight: 600; padding: 14px; border: none; border-radius: 10px; cursor: pointer; }
+
+    /* FOOTER */
+    .footer { padding: 40px 0; border-top: 1px solid var(--s2); text-align: center; }
+    .footer__text { font-size: 13px; color: var(--s5); }
+
+    /* TRUST */
+    .trust { padding: 60px 0; background: var(--s05); border-top: 1px solid var(--s2); }
+    .trust__inner { display: flex; justify-content: center; gap: 48px; flex-wrap: wrap; }
+    .trust__item { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--s5); }
+    .trust__item svg { color: var(--gn); flex-shrink: 0; }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav class="nav" aria-label="Main navigation">
+    <div class="nav__inner">
+      <a href="#" class="wordmark">Retail<span class="accent">Guard</span></a>
+      <ul class="nav__links">
+        <li><a href="#pricing">Pricing</a></li>
+        <li><a href="#features">Features</a></li>
+        <li><a href="#how">How it works</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+      <div class="nav__cta">
+        <a href="signin.html" class="nav__signin">Sign in</a>
+        <a href="#contact" class="nav__btn">Get access</a>
+      </div>
+      <button class="burger" id="burger" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+    </div>
+    <div class="nav__drawer" id="drawer">
+      <a href="#pricing">Pricing</a>
+      <a href="#features">Features</a>
+      <a href="#how">How it works</a>
+      <a href="#contact">Contact</a>
+      <a href="signin.html">Sign in</a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="hero__orb hero__orb--1" aria-hidden="true"></div>
+    <div class="hero__orb hero__orb--2" aria-hidden="true"></div>
+    <div class="container">
+      <div class="hero__pill"><span class="hero__pill-dot" aria-hidden="true"></span> Live margin intelligence</div>
+      <h1 id="hero-title" class="hero__title">A full-time margin analyst<br/>for <span class="hero__grad">€99 a month.</span></h1>
+      <p class="hero__desc">RetailGuard connects to your POS, analyses 150,556 stock records, and finds the margin leaks costing you €7,500&ndash;€10,000 every year. No spreadsheets. No consultants. Just answers.</p>
+      <div class="hero__actions">
+        <a href="#pricing" class="btn-primary">See pricing</a>
+        <a href="#contact" class="btn-ghost">Get early access</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ROI BAND -->
+  <section class="roi" aria-label="Key statistics">
+    <div class="container">
+      <div class="roi__inner">
+        <div class="roi__item">
+          <div class="roi__num">€99/mo</div>
+          <div class="roi__label">Pro plan (most popular)</div>
+        </div>
+        <div class="roi__item">
+          <div class="roi__num">€7.5&ndash;10k</div>
+          <div class="roi__label">Recovered per year</div>
+        </div>
+        <div class="roi__item">
+          <div class="roi__num">6&ndash;8x</div>
+          <div class="roi__label">Return on investment</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section class="pricing" id="pricing" aria-labelledby="pricing-title">
+    <div class="container">
+      <div class="pricing__head">
+        <h2 id="pricing-title" class="pricing__title">Simple, transparent pricing</h2>
+        <p class="pricing__sub">Every plan includes the live dashboard, 42-department breakdown, and 423-issue worklist. Cancel any time.</p>
+      </div>
+      <div class="pricing__grid">
+        <!-- Starter -->
+        <div class="price-card">
+          <div class="price-card__name">Starter</div>
+          <div class="price-card__price">€49<span>/mo</span></div>
+          <p class="price-card__desc">Dashboard essentials for one store.</p>
+          <ul class="price-card__features">
+            <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="8" fill="#16a34a" opacity=".12"/><path d="M5 8l2 2 4-4" stroke="#16a34a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Live margin dashboard</li>
+            <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="8" fill="#16a34a" opacity=".12"/><path d="M5 8l2 2 4-4" stroke="#16a34a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>6,422 active products tracked</li>
+            <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="8" fill="#16a34a" opacity=".12"/><path d="M5 8l2 2 4-4" stroke="#16a34a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Pricing issues worklist</li>
+            <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="8" fill="#16a34a" opacity=".12"/><path d="M5 8l2 2 4-4" stroke="#16a34a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Barcode Scanner (free)</li>
+            <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="8" fill="#16a34a" opacity=".12"/><path d="M5 8l2 2 4-4" stroke="#16a34a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Supplier analytics</li>
+          </ul>
+          <a href="#contact" class="price-card__cta price-card__cta--outline">Get started</a>
+        </div>
+        <!-- Pro -->
+        <div class="price-card price-card--pop">
+          <div class="price-card__badge">Most popular</div>
+          <div class="price-card__name">Pro</div>
+          <div class="price-card__price">€99<span>/mo</span></div>
+          <p class="price-card__desc">Everything in Starter, plus trading intelligence.</p>
+          <ul class="price-card__features">
+            <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="8" fill="#16a34a" opacity=".12"/><path d="M5 8l2 2 4-4" stroke="#16a34a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>All Starter features</li>
+            <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="8" fill="#16a34a" opacity=".12"/><path d="M5 8l2 2 4-4" stroke="#16a34a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Trading patterns (day/time)</li>
+            <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="8" fill="#16a34a" opacity=".12"/><path d="M5 8l2 2 4-4" stroke="#16a34a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Department performance</li>
+            <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="8" fill="#16a34a" opacity=".12"/><path d="M5 8l2 2 4-4" stroke="#16a34a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Product performance</li>
+            <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="8" fill="#16a34a" opacity=".12"/><path d="M5 8l2 2 4-4" stroke="#16a34a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Priority support</li>
+          </ul>
+          <a href="#contact" class="price-card__cta price-card__cta--fill">Get started</a>
+        </div>
+        <!-- Premium -->
+        <div class="price-card">
+          <div class="price-card__name">Premium</div>
+          <div class="price-card__price">€149<span>/mo</span></div>
+          <p class="price-card__desc">Full AI suite for complete control.</p>
+          <ul class="price-card__features">
+            <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="8" fill="#16a34a" opacity=".12"/><path d="M5 8l2 2 4-4" stroke="#16a34a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>All Pro features</li>
+            <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="8" fill="#16a34a" opacity=".12"/><path d="M5 8l2 2 4-4" stroke="#16a34a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Invoice Scanner AI</li>
+            <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="8" fill="#16a34a" opacity=".12"/><path d="M5 8l2 2 4-4" stroke="#16a34a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Ask Your Shop AI</li>
+            <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="8" fill="#16a34a" opacity=".12"/><path d="M5 8l2 2 4-4" stroke="#16a34a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Automated morning reports</li>
+            <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="8" fill="#16a34a" opacity=".12"/><path d="M5 8l2 2 4-4" stroke="#16a34a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Dedicated onboarding</li>
+          </ul>
+          <a href="#contact" class="price-card__cta price-card__cta--outline">Get started</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ROI MATH -->
+  <section class="roi-math" aria-labelledby="roi-title">
+    <div class="container">
+      <div class="roi-math__inner">
+        <div class="roi-math__content">
+          <h2 id="roi-title">The maths speaks for itself</h2>
+          <p>A 0.5 percentage-point margin improvement on non-fuel turnover of €1.5&ndash;2M recovers thousands every year. RetailGuard finds the leaks automatically.</p>
+          <table class="roi-math__table">
+            <thead><tr><th>Item</th><th>Amount</th></tr></thead>
+            <tbody>
+              <tr><td>Pro plan (annual)</td><td>€1,188</td></tr>
+              <tr><td>One-off setup</td><td>€500&ndash;€1,500</td></tr>
+              <tr><td>Margin recovered (year 1)</td><td class="highlight">€7,500&ndash;€10,000</td></tr>
+              <tr><td>Net ROI</td><td class="highlight">6&ndash;8x</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="roi-math__card">
+          <h3>Your annual recovery</h3>
+          <div class="roi-math__big">€7.5&ndash;10k <span>/ year</span></div>
+          <p class="roi-math__note">Based on 423 pricing issues detected across 6,422 products in a single Irish forecourt. A 0.5pp margin lift on €1.5&ndash;2M non-fuel turnover.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- AI TOOLS -->
+  <section class="ai-tools" id="features" aria-labelledby="ai-title">
+    <div class="container">
+      <div class="ai-tools__head">
+        <h2 id="ai-title" class="ai-tools__title">3 AI tools included</h2>
+        <p class="ai-tools__sub">Read-only, cost-capped, GDPR-compliant. Your data never trains a model.</p>
+      </div>
+      <div class="ai-tools__grid">
+        <div class="ai-card">
+          <div class="ai-card__icon" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div>
+          <div class="ai-card__name">Barcode Scanner</div>
+          <p class="ai-card__desc">Scan any barcode in your store. Instantly see if it is in stock, its margin, and its department. Image never leaves the device.</p>
+          <span class="ai-card__cost">Free &mdash; on-device</span>
+        </div>
+        <div class="ai-card">
+          <div class="ai-card__icon" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+          <div class="ai-card__name">Invoice Scanner</div>
+          <p class="ai-card__desc">Photograph a supplier invoice. AI reads every line, matches to your catalogue, flags cost rises and new margin leaks instantly.</p>
+          <span class="ai-card__cost">~€0.001 per scan</span>
+        </div>
+        <div class="ai-card">
+          <div class="ai-card__icon" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+          <div class="ai-card__name">Ask Your Shop</div>
+          <p class="ai-card__desc">Ask in plain English: "Which 5 products am I losing money on?" Get an answer in 2 seconds with the SQL to prove it. Read-only-safe.</p>
+          <span class="ai-card__cost">~€0.001 per question</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES GRID -->
+  <section class="features" aria-labelledby="feat-title">
+    <div class="container">
+      <div class="features__head">
+        <h2 id="feat-title" class="features__title">Everything you need, nothing you don't</h2>
+      </div>
+      <div class="features__grid">
+        <div class="feat-card">
+          <div class="feat-card__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h18v18H3z"/><path d="M3 9h18M9 3v18"/></svg></div>
+          <div class="feat-card__name">42-Department Breakdown</div>
+          <p class="feat-card__desc">Revenue, margin, and product count by department. Tobacco, Wines, Fuel, Dairy, Frozen, and more.</p>
+        </div>
+        <div class="feat-card">
+          <div class="feat-card__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div>
+          <div class="feat-card__name">Trading Patterns</div>
+          <p class="feat-card__desc">See which days and hours drive revenue. Busiest: Friday (€648k), Thursday (€606k). Average basket: 2.4 items, €16.96.</p>
+        </div>
+        <div class="feat-card">
+          <div class="feat-card__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
+          <div class="feat-card__name">Pricing Issues Worklist</div>
+          <p class="feat-card__desc">423 issues auto-detected: loss-makers, zero-margin, missing prices. Sorted by impact for fast action.</p>
+        </div>
+        <div class="feat-card">
+          <div class="feat-card__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6M23 11h-6"/></svg></div>
+          <div class="feat-card__name">Supplier Analytics</div>
+          <p class="feat-card__desc">Top supplier: GALA (€6.33M spend, 47.7% margin, 38,790 products). Know your leverage before you negotiate.</p>
+        </div>
+        <div class="feat-card">
+          <div class="feat-card__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+          <div class="feat-card__name">Read-Only AI</div>
+          <p class="feat-card__desc">Triple-locked: database role, SQL validation, and transaction guard. AI can never modify your data.</p>
+        </div>
+        <div class="feat-card">
+          <div class="feat-card__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+          <div class="feat-card__name">GDPR Compliant</div>
+          <p class="feat-card__desc">Data stays in-region. No model training on your information. Cost-capped so you never get a surprise bill.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <section class="stats" aria-label="Platform statistics">
+    <div class="container">
+      <div class="stats__inner">
+        <div><div class="stats__num">150,556</div><div class="stats__label">Stock records analysed</div></div>
+        <div><div class="stats__num">6,422</div><div class="stats__label">Active products</div></div>
+        <div><div class="stats__num">423</div><div class="stats__label">Issues auto-detected</div></div>
+        <div><div class="stats__num">&lt;2s</div><div class="stats__label">Dashboard load time</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="how" id="how" aria-labelledby="how-title">
+    <div class="container">
+      <div class="how__head">
+        <h2 id="how-title" class="how__title">Up and running in 3 steps</h2>
+      </div>
+      <div class="how__steps">
+        <div class="how__step">
+          <div class="how__num">1</div>
+          <div class="how__step-title">We connect to your POS</div>
+          <p class="how__step-desc">A one-time read-only link to your Pervasive or PSQL database. We never write to your till.</p>
+        </div>
+        <div class="how__step">
+          <div class="how__num">2</div>
+          <div class="how__step-title">Data flows automatically</div>
+          <p class="how__step-desc">150,556 stock records analysed. 42 departments mapped. 423 margin leaks surfaced in minutes.</p>
+        </div>
+        <div class="how__step">
+          <div class="how__num">3</div>
+          <div class="how__step-title">Fix what matters first</div>
+          <p class="how__step-desc">A prioritised worklist shows exactly which products to reprice. Saves 3&ndash;5 hours a week vs spreadsheets.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TRUST -->
+  <section class="trust" aria-label="Trust indicators">
+    <div class="container">
+      <div class="trust__inner">
+        <div class="trust__item"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Read-only AI</div>
+        <div class="trust__item"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>Data stays in-region (GDPR)</div>
+        <div class="trust__item"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="1" y="4" width="22" height="16" rx="2"/><path d="M1 10h22"/></svg>Cost-capped billing</div>
+        <div class="trust__item"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>No model training on your data</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA BAND -->
+  <section class="cta-band" aria-label="Call to action">
+    <div class="cta-band__orb" aria-hidden="true"></div>
+    <div class="container">
+      <h2>Start recovering margin today</h2>
+      <p>Join Irish forecourts and convenience stores saving €7,500&ndash;€10,000 a year.</p>
+      <a href="#contact" class="btn-primary">Get early access</a>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section class="contact" id="contact" aria-labelledby="contact-title">
+    <div class="container">
+      <div class="contact__inner">
+        <h2 id="contact-title" class="contact__title">Get in touch</h2>
+        <p class="contact__desc">Tell us about your store and we will set up your dashboard within 48 hours.</p>
+        <form class="contact__form" action="#" method="POST">
+          <label for="name">Name</label>
+          <input type="text" id="name" name="name" placeholder="Your name" required />
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" placeholder="you@example.com" required />
+          <label for="store">Store name &amp; location</label>
+          <input type="text" id="store" name="store" placeholder="e.g. Gala Lucan, Co. Dublin" />
+          <label for="message">Message (optional)</label>
+          <textarea id="message" name="message" placeholder="How many tills? POS system?"></textarea>
+          <button type="submit">Send request</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="container">
+      <p class="footer__text">RetailGuard &copy; 2026. Built for Irish retailers.</p>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById('burger').addEventListener('click', function() {
+      document.getElementById('drawer').classList.toggle('open');
+    });
+  </script>
+</body>
+</html>

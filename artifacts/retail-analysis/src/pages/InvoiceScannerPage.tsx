@@ -1,377 +1,163 @@
-import { useState, useCallback, useRef, useMemo } from "react";
-import { Upload, Plus, Trash2, Download, Calculator, FileText, Image, Loader2, AlertTriangle, CheckCircle2, XCircle, PlusCircle } from "lucide-react";
-import { extractFromImage, extractFromPdf } from "../lib/invoiceParser";
-import { track, uploadFile } from "../lib/analytics";
-import type { Product } from "@/App";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { apiCall } from "@/lib/api";
+import {
+  ScanLine, UploadCloud, Loader2, CheckCircle2, AlertTriangle, Sparkles,
+  FileText, TrendingUp, Gauge,
+} from "lucide-react";
 
-const DEPARTMENTS = [
-  "Off Licence", "Bread and Cakes", "Biscuits", "Confectionery", "Dairy Wall",
-  "Soft Drinks", "Frozen Food", "Ice Cream N Cones", "Grocery", "Health and Beauty",
-  "Newspapers", "Deli Cold", "Deli Hot", "Instore Bakery", "Tea/Coffee Machine",
-  "Non Food", "Fresh Produce", "Tobacco", "Newsagents", "Prepared Meals",
-  "Breakfast Meats", "Cooked Meats", "Crisps and Snacks", "Sports and Nutrition",
-  "Fresh Meat", "Forecourt Services", "General",
-];
+interface Line {
+  invoice_desc: string; barcode: string; qty: number | null;
+  invoice_cost: number | null; line_total: number | null;
+  status: "matched" | "new"; matched?: string;
+  old_cost?: number | null; cost_delta?: number | null; new_margin?: number | null;
+  flag: string;
+}
+interface ScanResult {
+  supplier: string; invoice_date: string; pages: number;
+  lines: Line[];
+  summary: { matched: number; new: number; cost_up: number; below_target: number };
+  usage: { today: number; daily_limit: number; month_cost: number; monthly_ceiling: number; est_cost_this_scan: number };
+}
+interface Usage { today: number; daily_limit: number; month_cost: number; monthly_ceiling: number; configured: boolean; }
 
-interface InvoiceItem {
-  id: string;
-  productName: string;
-  barcode: string;
-  qty: string;
-  unitCost: string;
-  totalCost: string;
-  vatRate: string;
-  sellPrice: string;
-  department: string;
-  matchStatus: "exists" | "new" | "unknown";
-  matchedProduct?: Product;
+function eur(v: number | null | undefined) {
+  return v === null || v === undefined ? "—" : `€${Number(v).toFixed(2)}`;
+}
+function flagCls(flag: string) {
+  if (flag.includes("below target")) return "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300";
+  if (flag.startsWith("cost up")) return "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300";
+  if (flag === "not on system") return "bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300";
+  return "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300";
 }
 
-interface Props {
-  existingProducts: Product[];
-  onAddToSystem: (files: { fileName: string; products: Product[] }[]) => void;
-}
-
-const empty = (): InvoiceItem => ({
-  id: crypto.randomUUID(), productName: "", barcode: "", qty: "1",
-  unitCost: "", totalCost: "", vatRate: "0", sellPrice: "", department: "",
-  matchStatus: "unknown",
-});
-
-export function InvoiceScannerPage({ existingProducts, onAddToSystem }: Props) {
-  const [items, setItems] = useState<InvoiceItem[]>([]);
-  const [supplier, setSupplier] = useState("");
-  const [targetMargin, setTargetMargin] = useState(30);
-  const [dragOver, setDragOver] = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const [ocrProgress, setOcrProgress] = useState(0);
+export function InvoiceScannerPage(_props?: { existingProducts?: any[]; onAddToSystem?: (f: any) => void }) {
+  const [usage, setUsage] = useState<Usage | null>(null);
+  const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const [lastFile, setLastFile] = useState("");
-  const [addedIds, setAddedIds] = useState<Set<string>>(new Set());
-  const fileRef = useRef<HTMLInputElement>(null);
+  const [fileName, setFileName] = useState("");
+  const [result, setResult] = useState<ScanResult | null>(null);
+  const fileRef = useRef<HTMLInputElement | null>(null);
 
-  // Build lookup maps from existing products
-  // Normalize barcodes: strip leading zeros, store both full and stripped versions
-  const barcodeMap = useMemo(() => {
-    const m = new Map<string, Product>();
-    for (const p of existingProducts) {
-      if (p.sku) {
-        const raw = p.sku.trim();
-        m.set(raw, p);
-        m.set(raw.replace(/^0+/, ""), p); // stripped leading zeros
-        // EAN-13 with leading 0 = EAN-8 padded — store the 8-digit version too
-        if (raw.length === 13 && raw.startsWith("0")) m.set(raw.slice(1), p);
+  const loadUsage = useCallback(() => { apiCall("/api/invoice/usage").then(setUsage).catch(() => {}); }, []);
+  useEffect(() => { loadUsage(); }, [loadUsage]);
+
+  const onFile = useCallback(async (file: File | undefined) => {
+    if (!file) return;
+    setError(""); setResult(null); setFileName(file.name);
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const dataUrl = reader.result as string;
+      setBusy(true);
+      try {
+        const d = await apiCall("/api/invoice/scan", { method: "POST", body: JSON.stringify({ image: dataUrl }) });
+        if (d.error) { setError(d.error); }
+        else { setResult(d); if (d.usage) setUsage((u) => ({ ...(u as Usage), ...d.usage, configured: true })); }
+      } catch {
+        setError("Scan failed - please try again.");
       }
-    }
-    return m;
-  }, [existingProducts]);
+      setBusy(false);
+    };
+    reader.readAsDataURL(file);
+  }, []);
 
-  const nameMap = useMemo(() => {
-    const m = new Map<string, Product>();
-    for (const p of existingProducts) {
-      if (p.name) m.set(p.name.toLowerCase().trim(), p);
-    }
-    return m;
-  }, [existingProducts]);
-
-  function matchProduct(barcode: string, name: string): { status: InvoiceItem["matchStatus"]; product?: Product } {
-    if (barcode) {
-      const raw = barcode.trim();
-      // Try exact, then stripped leading zeros, then padded to EAN-13
-      const byExact = barcodeMap.get(raw);
-      if (byExact) return { status: "exists", product: byExact };
-      const byStripped = barcodeMap.get(raw.replace(/^0+/, ""));
-      if (byStripped) return { status: "exists", product: byStripped };
-      // Pad short barcodes to 13 digits with leading zeros
-      if (raw.length < 13) {
-        const padded = raw.padStart(13, "0");
-        const byPadded = barcodeMap.get(padded);
-        if (byPadded) return { status: "exists", product: byPadded };
-      }
-    }
-    if (name) {
-      const key = name.toLowerCase().trim();
-      const byName = nameMap.get(key);
-      if (byName) return { status: "exists", product: byName };
-      // Fuzzy: check if any existing product name contains the invoice name or vice versa
-      for (const [existingName, product] of nameMap) {
-        if (key.length > 4 && (existingName.includes(key) || key.includes(existingName))) {
-          return { status: "exists", product };
-        }
-      }
-    }
-    return existingProducts.length > 0 ? { status: "new" } : { status: "unknown" };
-  }
-
-  const handleFile = useCallback(async (file: File) => {
-    setError("");
-    setUploading(true);
-    setOcrProgress(0);
-    setLastFile(file.name);
-    try {
-      const ext = file.name.split(".").pop()?.toLowerCase() ?? "";
-      const rawItems = ext === "pdf"
-        ? await extractFromPdf(file, setOcrProgress)
-        : await extractFromImage(file, setOcrProgress);
-      const parsed: InvoiceItem[] = rawItems.map((i) => {
-        const match = matchProduct(i.barcode, i.product_name);
-        return {
-          id: crypto.randomUUID(),
-          productName: i.product_name || "",
-          barcode: i.barcode || "",
-          qty: i.qty || "1",
-          unitCost: i.unit_cost || "",
-          totalCost: i.total_cost || "",
-          vatRate: i.vat_rate || "0",
-          sellPrice: match.product?.sellingPrice?.toString() || "",
-          department: match.product?.department || "",
-          matchStatus: match.status,
-          matchedProduct: match.product,
-        };
-      });
-      if (!parsed.length) setError("No line items detected. Try a clearer image or add rows manually.");
-      setItems((prev) => [...prev, ...parsed]);
-      track("invoice_scan", { file: file.name, type: ext, items: parsed.length, newProducts: parsed.filter(i => i.matchStatus === "new").length });
-      uploadFile(file, "invoice");
-    } catch (e: any) {
-      setError(`OCR processing failed: ${e.message}`);
-    } finally {
-      setUploading(false);
-    }
-  }, [barcodeMap, nameMap, existingProducts.length]);
-
-  const onDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault(); setDragOver(false);
-    if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
-  }, [handleFile]);
-
-  const update = (id: string, field: keyof InvoiceItem, value: string) =>
-    setItems((prev) => prev.map((i) => (i.id === id ? { ...i, [field]: value } : i)));
-
-  const remove = (id: string) => setItems((prev) => prev.filter((i) => i.id !== id));
-
-  const autoPrice = () => {
-    setItems((prev) => prev.map((i) => {
-      const cost = parseFloat(i.unitCost) || 0;
-      return cost > 0 && targetMargin > 0 && targetMargin < 100
-        ? { ...i, sellPrice: (cost / (1 - targetMargin / 100)).toFixed(2) }
-        : i;
-    }));
-  };
-
-  const exportCSV = () => {
-    const header = "barcode,product_name,department,cost_price,sell_price,vat_rate,supplier,qty";
-    const rows = items.map((i) => {
-      const cost = parseFloat(i.unitCost) || 0;
-      let sell = parseFloat(i.sellPrice) || 0;
-      if (!sell && cost > 0) sell = +(cost / (1 - targetMargin / 100)).toFixed(2);
-      return [i.barcode, `"${i.productName}"`, i.department, cost.toFixed(2), sell.toFixed(2), i.vatRate, supplier, i.qty].join(",");
-    });
-    const blob = new Blob([header + "\n" + rows.join("\n")], { type: "text/csv" });
-    const a = document.createElement("a"); a.href = URL.createObjectURL(blob);
-    a.download = "invoice_import.csv"; a.click();
-    track("invoice_export", { items: items.length, supplier });
-  };
-
-  // Add NEW items to the main product system
-  const addNewToSystem = () => {
-    const newItems = items.filter((i) => i.matchStatus === "new" && !addedIds.has(i.id));
-    if (!newItems.length) return;
-    const products: Product[] = newItems.map((i) => {
-      const cost = parseFloat(i.unitCost) || 0;
-      let sell = parseFloat(i.sellPrice) || 0;
-      if (!sell && cost > 0) sell = +(cost / (1 - targetMargin / 100)).toFixed(2);
-      const margin = sell > 0 ? +((1 - cost / sell) * 100).toFixed(1) : 0;
-      return {
-        id: crypto.randomUUID(),
-        name: i.productName,
-        sku: i.barcode,
-        category: i.department || "General",
-        department: i.department || "General",
-        costPrice: cost,
-        sellingPrice: sell,
-        margin,
-        supplier,
-        isManualEntry: false,
-      };
-    });
-    onAddToSystem([{ fileName: `Invoice: ${supplier || lastFile || "Scanned"}`, products }]);
-    setAddedIds((prev) => { const n = new Set(prev); newItems.forEach((i) => n.add(i.id)); return n; });
-    // Update match status to reflect they're now in the system
-    setItems((prev) => prev.map((i) => newItems.find((n) => n.id === i.id) ? { ...i, matchStatus: "exists" as const } : i));
-    track("add_to_csv", { count: newItems.length, supplier });
-  };
-
-  const newCount = items.filter((i) => i.matchStatus === "new" && !addedIds.has(i.id)).length;
-  const existsCount = items.filter((i) => i.matchStatus === "exists").length;
-  const hasProducts = existingProducts.length > 0;
+  const u = usage;
+  const pctBudget = u ? Math.min(100, Math.round((u.month_cost / u.monthly_ceiling) * 100)) : 0;
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-          <FileText className="w-6 h-6 text-violet-600" />
-          Invoice Scanner
-        </h1>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-          Upload supplier invoices (PDF, JPG, PNG) — products are auto-matched against your existing data.
-        </p>
+    <div className="p-4 md:p-6 max-w-4xl mx-auto">
+      <div className="flex items-center gap-2.5 mb-1">
+        <ScanLine className="w-6 h-6 text-violet-600" />
+        <h1 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">Invoice Scanner</h1>
       </div>
+      <p className="text-xs text-gray-500 mb-5">Upload a supplier invoice (photo or PDF). It reads every line, matches against your stock, and flags cost rises &amp; new margin leaks.</p>
+
+      {/* Usage meter */}
+      {u && (
+        <div className="flex flex-wrap items-center gap-4 mb-4 text-xs">
+          <span className="inline-flex items-center gap-1.5 text-gray-500"><Gauge className="w-3.5 h-3.5" /> <b className="text-gray-700 dark:text-gray-200">{u.today}/{u.daily_limit}</b> scans today</span>
+          <span className="inline-flex items-center gap-2 text-gray-500">
+            ${u.month_cost.toFixed(3)} / ${u.monthly_ceiling.toFixed(0)} this month
+            <span className="inline-block w-24 h-1.5 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden align-middle">
+              <span className="block h-full bg-violet-500" style={{ width: `${pctBudget}%` }} />
+            </span>
+          </span>
+          {!u.configured && <span className="text-red-600">⚠ not configured</span>}
+        </div>
+      )}
 
       {/* Upload zone */}
-      <div
-        className={`border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-all mb-6 ${
-          dragOver ? "border-violet-500 bg-violet-50 dark:bg-violet-950/20 scale-[1.01]"
-            : "border-gray-300 dark:border-gray-600 hover:border-violet-400 bg-white dark:bg-gray-900"
-        }`}
-        onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-        onDragLeave={() => setDragOver(false)}
-        onDrop={onDrop}
-        onClick={() => !uploading && fileRef.current?.click()}
-      >
-        <input ref={fileRef} type="file" accept=".pdf,.jpg,.jpeg,.png,.bmp,.tiff" className="hidden"
-          onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])} />
-        {uploading ? (
-          <>
-            <Loader2 className="w-10 h-10 text-violet-500 mx-auto mb-3 animate-spin" />
-            <p className="font-semibold text-violet-600 dark:text-violet-400">Processing {lastFile}...</p>
-            <p className="text-xs text-gray-400 mt-1">
-              {ocrProgress > 0 ? `OCR: ${Math.round(ocrProgress * 100)}%` : "Extracting line items via OCR (runs in your browser)"}
-            </p>
-          </>
+      <div onClick={() => fileRef.current?.click()}
+        className="border-2 border-dashed border-violet-300 dark:border-violet-800 rounded-2xl p-8 text-center cursor-pointer hover:bg-violet-50/50 dark:hover:bg-violet-900/10 transition">
+        {busy ? (
+          <div className="flex flex-col items-center gap-2 text-violet-600">
+            <Loader2 className="w-8 h-8 animate-spin" />
+            <span className="text-sm font-semibold">Reading {fileName}…</span>
+            <span className="text-xs text-gray-400">extracting line items &amp; matching your stock</span>
+          </div>
         ) : (
-          <>
-            <div className="flex items-center justify-center gap-3 mb-3">
-              <Upload className="w-8 h-8 text-violet-500" />
-              <Image className="w-8 h-8 text-violet-400" />
-            </div>
-            <p className="font-semibold text-gray-700 dark:text-gray-300">Drop invoice here or click to browse</p>
-            <div className="flex items-center justify-center gap-2 mt-2">
-              {["PDF", "JPG", "PNG"].map((fmt) => (
-                <span key={fmt} className="px-2 py-0.5 bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 rounded text-xs font-medium">{fmt}</span>
-              ))}
-            </div>
-          </>
+          <div className="flex flex-col items-center gap-2">
+            <UploadCloud className="w-9 h-9 text-violet-500" />
+            <span className="text-sm font-semibold text-gray-800 dark:text-gray-100">Tap to upload or photograph an invoice</span>
+            <span className="text-xs text-gray-400">JPG / PNG / PDF · one invoice at a time</span>
+          </div>
         )}
       </div>
+      <input ref={fileRef} type="file" accept="image/*,application/pdf" capture="environment" className="hidden"
+        onChange={(e) => onFile(e.target.files?.[0] ?? undefined)} />
 
+      {/* Error */}
       {error && (
-        <div className="flex items-start gap-2 p-3 mb-4 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-lg">
-          <AlertTriangle className="w-4 h-4 text-red-500 mt-0.5 shrink-0" />
-          <pre className="text-sm text-red-700 dark:text-red-400 whitespace-pre-wrap">{error}</pre>
+        <div className="mt-4 flex items-start gap-2 p-3 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300 text-sm">
+          <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" /> <span>{error}</span>
         </div>
       )}
 
-      {/* Match summary banner */}
-      {items.length > 0 && hasProducts && (
-        <div className="flex items-center gap-4 p-3 mb-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
-          <div className="flex items-center gap-1.5 text-sm">
-            <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-            <span className="text-emerald-700 dark:text-emerald-400 font-medium">{existsCount} existing</span>
+      {/* Result */}
+      {result && (
+        <div className="mt-5">
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+            <div>
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2"><FileText className="w-4 h-4 text-violet-600" /> {result.supplier || "Invoice"}</h2>
+              {result.invoice_date && <p className="text-xs text-gray-400">{result.invoice_date} · {result.lines.length} lines · {result.pages} page(s)</p>}
+            </div>
           </div>
-          <div className="flex items-center gap-1.5 text-sm">
-            <XCircle className="w-4 h-4 text-amber-500" />
-            <span className="text-amber-700 dark:text-amber-400 font-medium">{newCount} new</span>
+          {/* summary chips */}
+          <div className="flex flex-wrap gap-2 mb-4">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300"><CheckCircle2 className="w-3.5 h-3.5" /> {result.summary.matched} matched</span>
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300"><Sparkles className="w-3.5 h-3.5" /> {result.summary.new} new</span>
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300"><TrendingUp className="w-3.5 h-3.5" /> {result.summary.cost_up} price change</span>
+            {result.summary.below_target > 0 && <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300"><AlertTriangle className="w-3.5 h-3.5" /> {result.summary.below_target} below target</span>}
           </div>
-          {newCount > 0 && (
-            <button onClick={addNewToSystem}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-500 text-white rounded-lg text-sm font-medium hover:bg-amber-600 transition-colors ml-auto">
-              <PlusCircle className="w-4 h-4" /> Add {newCount} New to System
-            </button>
-          )}
-        </div>
-      )}
-
-      {/* Controls */}
-      {items.length > 0 && (
-        <div className="flex flex-wrap items-center gap-3 mb-4">
-          <div className="flex items-center gap-2">
-            <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Supplier:</label>
-            <input value={supplier} onChange={(e) => setSupplier(e.target.value)} placeholder="e.g. S&W Wholesale"
-              className="px-3 py-1.5 border rounded-lg text-sm w-56 dark:bg-gray-800 dark:border-gray-600 dark:text-white" />
-          </div>
-          <div className="flex items-center gap-2">
-            <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Target Margin:</label>
-            <input type="number" value={targetMargin} onChange={(e) => setTargetMargin(Number(e.target.value))}
-              className="px-3 py-1.5 border rounded-lg text-sm w-20 dark:bg-gray-800 dark:border-gray-600 dark:text-white" min={0} max={80} />
-            <span className="text-sm text-gray-400">%</span>
-          </div>
-          <button onClick={autoPrice} className="flex items-center gap-1.5 px-3 py-1.5 bg-violet-100 text-violet-700 rounded-lg text-sm font-medium hover:bg-violet-200 transition-colors dark:bg-violet-900/30 dark:text-violet-300">
-            <Calculator className="w-4 h-4" /> Auto-Price
-          </button>
-          <button onClick={() => setItems((p) => [...p, empty()])} className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors dark:bg-gray-800 dark:text-gray-300">
-            <Plus className="w-4 h-4" /> Add Row
-          </button>
-          <button onClick={exportCSV} className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700 transition-colors ml-auto">
-            <Download className="w-4 h-4" /> Export CSV
-          </button>
-        </div>
-      )}
-
-      {items.length > 0 && <p className="text-xs text-gray-400 mb-2">{items.length} item{items.length !== 1 ? "s" : ""} — edit any cell to correct OCR errors</p>}
-
-      {/* Table */}
-      {items.length > 0 ? (
-        <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 text-xs uppercase">
-                {(hasProducts ? ["Status"] : []).concat(["Product Name", "Barcode", "Qty", "Unit Cost €", "Total €", "VAT%", "Sell Price €", "Dept", ""]).map((h) => (
-                  <th key={h} className="px-3 py-2.5 text-left font-semibold">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {items.map((item) => (
-                <tr key={item.id} className={`border-t border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/50 ${
-                  item.matchStatus === "new" && !addedIds.has(item.id) ? "bg-amber-50/50 dark:bg-amber-950/10" : ""
-                }`}>
-                  {hasProducts && (
-                    <td className="px-2 py-1.5">
-                      {item.matchStatus === "exists" ? (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 rounded-full text-xs font-medium">
-                          <CheckCircle2 className="w-3 h-3" /> Exists
-                        </span>
-                      ) : item.matchStatus === "new" ? (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded-full text-xs font-medium">
-                          <XCircle className="w-3 h-3" /> New
-                        </span>
-                      ) : (
-                        <span className="text-xs text-gray-400">—</span>
-                      )}
-                    </td>
-                  )}
-                  {(["productName", "barcode", "qty", "unitCost", "totalCost", "vatRate", "sellPrice"] as const).map((field) => (
-                    <td key={field} className="px-2 py-1.5">
-                      <input value={item[field]} onChange={(e) => update(item.id, field, e.target.value)}
-                        className="w-full px-2 py-1 border border-transparent rounded text-sm hover:border-gray-300 focus:border-violet-500 focus:outline-none dark:bg-transparent dark:text-white dark:hover:border-gray-600 dark:focus:border-violet-400" />
-                    </td>
-                  ))}
-                  <td className="px-2 py-1.5">
-                    <select value={item.department} onChange={(e) => update(item.id, "department", e.target.value)}
-                      className="w-full px-1 py-1 border border-transparent rounded text-sm hover:border-gray-300 focus:border-violet-500 focus:outline-none dark:bg-transparent dark:text-white dark:hover:border-gray-600 dark:focus:border-violet-400 bg-transparent">
-                      <option value="">—</option>
-                      {DEPARTMENTS.map((d) => <option key={d} value={d}>{d}</option>)}
-                    </select>
-                  </td>
-                  <td className="px-2 py-1.5">
-                    <button onClick={() => remove(item.id)} className="text-gray-400 hover:text-red-500 transition-colors"><Trash2 className="w-4 h-4" /></button>
-                  </td>
+          {/* table */}
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50 dark:bg-gray-900 border-b border-gray-100 dark:border-gray-700">
+                <tr>
+                  <th className="px-3 py-2 text-left text-xs text-gray-500">Invoice line</th>
+                  <th className="px-3 py-2 text-left text-xs text-gray-500">Matched product</th>
+                  <th className="px-3 py-2 text-right text-xs text-gray-500">Inv. cost</th>
+                  <th className="px-3 py-2 text-right text-xs text-gray-500">System</th>
+                  <th className="px-3 py-2 text-right text-xs text-gray-500">Δ</th>
+                  <th className="px-3 py-2 text-right text-xs text-gray-500">Margin now</th>
+                  <th className="px-3 py-2 text-left text-xs text-gray-500">Flag</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      ) : !uploading && (
-        <div className="text-center py-16 text-gray-400 dark:text-gray-500">
-          <FileText className="w-12 h-12 mx-auto mb-3 opacity-40" />
-          <p className="font-medium">No invoice items yet</p>
-          <p className="text-sm mt-1">Upload a PDF, photo, or image of a supplier invoice</p>
-          {!hasProducts && (
-            <p className="text-xs mt-3 text-amber-500">
-              💡 Upload a CSV first (via Upload page) to enable product matching
-            </p>
-          )}
+              </thead>
+              <tbody className="divide-y divide-gray-50 dark:divide-gray-700">
+                {result.lines.map((l, i) => (
+                  <tr key={i} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                    <td className="px-3 py-2 text-gray-800 dark:text-gray-200 max-w-[200px] truncate">{l.invoice_desc}</td>
+                    <td className="px-3 py-2 text-gray-500 max-w-[180px] truncate">{l.status === "matched" ? l.matched : <span className="text-violet-500 text-xs">— not on system —</span>}</td>
+                    <td className="px-3 py-2 text-right text-gray-700 dark:text-gray-200">{eur(l.invoice_cost)}</td>
+                    <td className="px-3 py-2 text-right text-gray-400">{eur(l.old_cost)}</td>
+                    <td className={`px-3 py-2 text-right font-medium ${l.cost_delta && l.cost_delta > 0 ? "text-amber-600" : l.cost_delta && l.cost_delta < 0 ? "text-green-600" : "text-gray-400"}`}>{l.cost_delta === null || l.cost_delta === undefined ? "—" : (l.cost_delta > 0 ? "+" : "") + eur(l.cost_delta).replace("€", "€")}</td>
+                    <td className="px-3 py-2 text-right text-gray-600 dark:text-gray-300">{l.new_margin === null || l.new_margin === undefined ? "—" : l.new_margin + "%"}</td>
+                    <td className="px-3 py-2"><span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${flagCls(l.flag)}`}>{l.flag}</span></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p className="text-[11px] text-gray-400 mt-2">This scan cost ~${result.usage.est_cost_this_scan.toFixed(4)}. Matching ran free against your live stock.</p>
         </div>
       )}
     </div>

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>RetailGuard — 10 Landing Concepts</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:Inter,system-ui,sans-serif;background:#0b0b14;color:#fff;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1320px;margin:0 auto;padding:48px 24px 80px}
+  header{margin-bottom:40px}
+  .pill{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:#c4b5fd;background:rgba(124,58,237,.15);border:1px solid rgba(124,58,237,.35);padding:6px 14px;border-radius:999px;margin-bottom:18px}
+  .pill span{width:7px;height:7px;border-radius:999px;background:#a78bfa;display:inline-block}
+  h1{font-size:clamp(28px,4vw,44px);font-weight:900;letter-spacing:-.02em;line-height:1.05}
+  h1 .g{background:linear-gradient(135deg,#7c3aed,#a78bfa);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .sub{margin-top:14px;color:#a1a1b5;font-size:16px;max-width:680px;line-height:1.55}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:26px;margin-top:44px}
+  .card{display:block;text-decoration:none;color:inherit;background:#13131f;border:1px solid #26263a;border-radius:16px;overflow:hidden;transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}
+  .card:hover{transform:translateY(-4px);border-color:#7c3aed;box-shadow:0 18px 44px -18px rgba(124,58,237,.55)}
+  .thumb{position:relative;height:250px;overflow:hidden;background:#fff;border-bottom:1px solid #26263a}
+  .thumb iframe{width:1280px;height:900px;border:0;transform:scale(.30);transform-origin:top left;pointer-events:none}
+  .thumb .open{position:absolute;top:12px;right:12px;font-size:11px;font-weight:700;color:#fff;background:rgba(11,11,20,.78);border:1px solid rgba(255,255,255,.18);padding:5px 10px;border-radius:8px;backdrop-filter:blur(4px)}
+  .meta{padding:18px 20px 22px}
+  .vnum{display:inline-block;font-size:12px;font-weight:800;letter-spacing:.06em;color:#a78bfa;margin-bottom:6px}
+  .name{font-size:18px;font-weight:800;letter-spacing:-.01em}
+  .desc{margin-top:7px;font-size:13.5px;line-height:1.5;color:#9b9bb0}
+  footer{margin-top:56px;color:#6b6b80;font-size:13px;text-align:center;border-top:1px solid #26263a;padding-top:24px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="pill"><span></span> 10 concepts · pick the direction</div>
+    <h1>RetailGuard landing, <span class="g">ten ways</span></h1>
+    <p class="sub">Ten distinct takes on the front page, all built from the same brand system and your real shop data (150,556 records · 423 margin leaks · 3 AI tools). Click any card to open it full-screen, then tell me which to ship — or to mix.</p>
+  </header>
+  <a href="flagship.html" target="_blank" rel="noopener" style="display:grid;grid-template-columns:1.1fr 1fr;text-decoration:none;color:inherit;background:#13131f;border:1px solid #7c3aed;border-radius:18px;overflow:hidden;margin-bottom:44px;box-shadow:0 20px 60px -24px rgba(124,58,237,.6)">
+    <div style="position:relative;height:380px;overflow:hidden;background:#fff"><span class="open">Open full</span><iframe src="flagship.html" loading="lazy" tabindex="-1" aria-hidden="true" style="width:1280px;height:1480px;border:0;transform:scale(.42);transform-origin:top left;pointer-events:none"></iframe></div>
+    <div style="padding:34px;display:flex;flex-direction:column;justify-content:center">
+      <span style="display:inline-block;align-self:flex-start;font-size:12px;font-weight:800;letter-spacing:.04em;color:#0b0b14;background:linear-gradient(135deg,#7c3aed,#a78bfa);padding:6px 12px;border-radius:999px;margin-bottom:14px">RECOMMENDED — THE DEFINITIVE PAGE</span>
+      <div style="font-size:27px;font-weight:900;letter-spacing:-.02em">Flagship</div>
+      <div style="margin-top:10px;font-size:14.5px;line-height:1.6;color:#b4b4c6">Built from the research (Shopify's five pillars + the "Without" headline formula) and the sharper positioning: provable claims (423 leaks found, not an unprovable €10k), the free-scan wedge, painkiller-first, Irish trust, and an honest FAQ that even names the repricing gap. This is the one I'd ship.</div>
+    </div>
+  </a>
+  <h2 style="font-size:13px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#6b6b80;margin:0 0 20px">The 10 concepts</h2>
+  <div class="grid" id="grid"></div>
+  <footer>RetailGuard landing drafts · served locally · all 10 QC-passed (valid HTML, no emojis, responsive)</footer>
+</div>
+<script>
+  const V=[
+    ["v01","AI Co-Pilot",'"Ask your shop anything." Dark, AI-forward hero with a live chat mock answering a real margin question. Leads with the 3 AI tools.'],
+    ["v02","ROI / Loss-aversion",'Giant "€10,000 a year" hero, a real margin-leaks table, and the recovery maths (6–8× ROI). Money-first.'],
+    ["v03","Visibility","\"Your POS holds everything. You see nothing.\" Dashboard-led with a full KPI + department mock. Evolves the current page."],
+    ["v04","Irish vertical","Green-accented, built for Irish forecourts & convenience stores. GALA/BWG/Musgrave, fuel + tobacco, data-stays-in-Ireland trust."],
+    ["v05","Price-anchored",'"A full-time margin analyst for €99/month." Pricing tiers up top + ROI maths. Qualifies leads.'],
+    ["v06","Product tour","Guided walkthrough — alternating screenshot sections for the dashboard and each AI tool. Demo-style."],
+    ["v07","Minimal editorial",'Ultra-clean, big typography, one hero stat ("423 margin leaks, found while you slept"). Premium and restrained.'],
+    ["v08","Bold dark","Neon-violet on near-black, glowing cards, gradient headlines. Energetic startup-launch vibe."],
+    ["v09","Trust / security-led",'"Read-only AI. Your data never leaves your shop." Leads with the triple-lock safety + GDPR story.'],
+    ["v10","Narrative scroll",'"A Tuesday in the shop." Storytelling — delivery chaos and spreadsheet hell, solved beat by beat.'],
+  ];
+  document.getElementById('grid').innerHTML = V.map(([id,name,desc])=>`
+    <a class="card" href="${id}.html" target="_blank" rel="noopener">
+      <div class="thumb"><span class="open">Open full</span><iframe src="${id}.html" loading="lazy" tabindex="-1" aria-hidden="true"></iframe></div>
+      <div class="meta"><span class="vnum">${id.toUpperCase()}</span><div class="name">${name}</div><div class="desc">${desc}</div></div>
+    </a>`).join('');
+</script>
+</body>
+</html>

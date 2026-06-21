@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RetailGuard. A Tuesday in Your Shop (Before and After)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --v6: #7c3aed; --v5: #8b5cf6; --va: #a78bfa; --v2: #ddd6fe; --v1: #ede9fe;
+      --g9: #0b0b14; --g8: #12121e; --g7: #1a1a2a;
+      --s9: #111827; --s8: #1f2937; --s7: #374151; --s6: #4b5563;
+      --s5: #6b7280; --s4: #9ca3af; --s3: #d1d5db; --s2: #e5e7eb; --s1: #f3f4f6; --s05: #f9fafb;
+      --gn: #16a34a; --gn05: #f0fdf4;
+      --am: #f59e0b; --am05: #fffbeb;
+      --rd: #ef4444; --rd05: #fef2f2;
+      --wh: #ffffff;
+      --grad: linear-gradient(135deg, var(--v6) 0%, var(--va) 100%);
+      --card-border: #ececf2;
+      --card-shadow: 0 2px 12px rgba(0,0,0,.04);
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', system-ui, sans-serif; color: var(--s8); background: var(--wh); -webkit-font-smoothing: antialiased; line-height: 1.6; }
+    .container { max-width: 1140px; margin: 0 auto; padding: 0 28px; }
+
+    /* NAV */
+    .nav { position: sticky; top: 0; z-index: 100; background: rgba(11,11,20,.94); backdrop-filter: blur(14px); border-bottom: 1px solid rgba(255,255,255,.06); }
+    .nav__inner { display: flex; align-items: center; justify-content: space-between; height: 64px; max-width: 1140px; margin: 0 auto; padding: 0 28px; }
+    .wordmark { font-weight: 800; font-size: 20px; color: var(--wh); text-decoration: none; }
+    .wordmark .accent { color: var(--va); }
+    .nav__links { display: flex; gap: 28px; list-style: none; }
+    .nav__links a { color: rgba(255,255,255,.7); text-decoration: none; font-size: 14px; font-weight: 500; transition: color .15s; }
+    .nav__links a:hover { color: var(--wh); }
+    .nav__cta { display: flex; align-items: center; gap: 16px; }
+    .nav__signin { color: rgba(255,255,255,.7); text-decoration: none; font-size: 14px; font-weight: 500; }
+    .nav__btn { background: var(--grad); color: var(--wh); font-size: 13px; font-weight: 600; padding: 9px 20px; border-radius: 8px; text-decoration: none; transition: opacity .15s; }
+    .nav__btn:hover { opacity: .85; }
+    .burger { display: none; background: none; border: none; cursor: pointer; flex-direction: column; gap: 5px; }
+    .burger span { display: block; width: 22px; height: 2px; background: var(--wh); border-radius: 2px; }
+    .nav__drawer { display: none; flex-direction: column; gap: 16px; padding: 20px 28px; background: var(--g9); }
+    .nav__drawer a { color: rgba(255,255,255,.8); text-decoration: none; font-size: 15px; }
+
+    /* HERO */
+    .hero { position: relative; background: var(--g9); padding: 100px 0 80px; overflow: hidden; text-align: center; }
+    .hero__orb { position: absolute; border-radius: 50%; filter: blur(110px); pointer-events: none; }
+    .hero__orb--1 { width: 480px; height: 480px; background: var(--v6); opacity: .14; top: -140px; right: -80px; }
+    .hero__orb--2 { width: 320px; height: 320px; background: var(--am); opacity: .07; bottom: -80px; left: -60px; }
+    .hero__pill { display: inline-flex; align-items: center; gap: 8px; background: rgba(124,58,237,.1); border: 1px solid rgba(124,58,237,.22); border-radius: 100px; padding: 6px 16px; font-size: 12px; font-weight: 600; color: var(--va); margin-bottom: 28px; }
+    .hero__title { font-size: clamp(34px, 5.2vw, 58px); font-weight: 900; color: var(--wh); line-height: 1.06; letter-spacing: -1.8px; margin-bottom: 20px; }
+    .hero__grad { background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .hero__sub { font-size: 18px; color: rgba(255,255,255,.65); max-width: 600px; margin: 0 auto 14px; line-height: 1.7; }
+    .hero__proof { font-size: 14px; color: rgba(255,255,255,.4); max-width: 520px; margin: 0 auto 36px; }
+    .hero__proof strong { color: #4ade80; font-weight: 700; }
+    .hero__actions { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+    .btn-primary { display: inline-flex; align-items: center; gap: 8px; background: var(--grad); color: var(--wh); font-size: 15px; font-weight: 600; padding: 14px 30px; border-radius: 10px; border: none; cursor: pointer; text-decoration: none; transition: opacity .18s, transform .18s; }
+    .btn-primary:hover { opacity: .88; transform: translateY(-2px); }
+    .btn-ghost { display: inline-flex; align-items: center; gap: 8px; background: transparent; color: rgba(255,255,255,.7); font-size: 15px; font-weight: 500; padding: 14px 30px; border-radius: 10px; border: 1.5px solid rgba(255,255,255,.15); text-decoration: none; transition: border-color .18s, color .18s; }
+    .btn-ghost:hover { border-color: rgba(255,255,255,.4); color: var(--wh); }
+
+    /* CREDIBILITY STRIP */
+    .cred-strip { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; margin-top: 48px; padding-top: 32px; border-top: 1px solid rgba(255,255,255,.06); }
+    .cred-item { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; color: rgba(255,255,255,.5); }
+    .cred-item svg { color: #4ade80; flex-shrink: 0; }
+
+    /* NARRATIVE BEATS */
+    .beat { padding: 80px 0; border-bottom: 1px solid var(--s1); }
+    .beat:last-of-type { border-bottom: none; }
+    .beat--dark { background: var(--g9); border-bottom-color: rgba(255,255,255,.06); }
+    .beat--gray { background: var(--s05); }
+    .beat--solution { background: linear-gradient(180deg, var(--gn05) 0%, var(--wh) 100%); }
+    .beat__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; }
+    .beat__grid--reverse { direction: rtl; }
+    .beat__grid--reverse > * { direction: ltr; }
+    .beat__time { display: inline-flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; margin-bottom: 12px; }
+    .beat__time--problem { color: var(--rd); }
+    .beat__time--neutral { color: var(--s5); }
+    .beat__time--solution { color: var(--gn); }
+    .beat__time--light { color: var(--va); }
+    .beat__title { font-size: clamp(21px, 2.6vw, 30px); font-weight: 800; color: var(--s9); line-height: 1.15; margin-bottom: 14px; letter-spacing: -0.5px; }
+    .beat__title--light { color: var(--wh); }
+    .beat__desc { font-size: 15px; color: var(--s5); line-height: 1.7; margin-bottom: 16px; }
+    .beat__desc--light { color: rgba(255,255,255,.6); }
+    .beat__card { background: var(--wh); border: 1px solid var(--card-border); border-radius: 14px; padding: 28px; box-shadow: var(--card-shadow); }
+    .beat__card--dark { background: var(--g7); border-color: rgba(255,255,255,.08); }
+    .beat__card--problem { border-color: #fecaca; background: var(--rd05); }
+    .beat__card--solution { border-color: #bbf7d0; background: var(--gn05); }
+    .beat__stat { font-size: 32px; font-weight: 900; letter-spacing: -1px; }
+    .beat__stat--red { color: var(--rd); }
+    .beat__stat--green { color: var(--gn); }
+    .beat__stat--light { color: var(--wh); }
+    .beat__stat-label { font-size: 13px; color: var(--s5); margin-top: 4px; }
+    .beat__stat-label--light { color: rgba(255,255,255,.5); }
+    .beat__highlight { display: inline-flex; align-items: center; gap: 8px; border-radius: 8px; padding: 10px 16px; font-size: 14px; font-weight: 600; }
+    .beat__highlight--red { background: var(--rd05); border: 1px solid #fecaca; color: var(--rd); }
+    .beat__highlight--green { background: var(--gn05); border: 1px solid #bbf7d0; color: var(--gn); }
+    .beat__list { list-style: none; margin-top: 16px; }
+    .beat__list li { font-size: 14px; color: var(--s6); padding: 8px 0; border-bottom: 1px solid var(--s1); display: flex; justify-content: space-between; align-items: center; }
+    .beat__list li:last-child { border-bottom: none; }
+    .beat__list-val { font-weight: 700; color: var(--s9); }
+    .beat__list-val--red { color: var(--rd); }
+    .beat__list-val--green { color: var(--gn); }
+
+    /* SECTION UTILITIES */
+    .section { padding: 80px 0; }
+    .section--gray { background: var(--s05); }
+    .sec-eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; color: var(--v6); margin-bottom: 14px; display: block; }
+    .sec-title { font-size: clamp(24px, 3vw, 38px); font-weight: 800; color: var(--s9); line-height: 1.1; letter-spacing: -0.8px; margin-bottom: 16px; }
+    .sec-desc { font-size: 15px; color: var(--s5); line-height: 1.7; max-width: 560px; }
+    .center { text-align: center; margin-left: auto; margin-right: auto; }
+
+    /* RESOLUTION STATS */
+    .resolution { padding: 88px 0; text-align: center; background: var(--wh); }
+    .resolution__stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 24px; margin: 40px 0; }
+    .res-stat { background: var(--wh); border: 1px solid var(--card-border); border-radius: 14px; padding: 28px 20px; box-shadow: var(--card-shadow); }
+    .res-stat__num { font-size: 28px; font-weight: 900; color: var(--v6); letter-spacing: -1px; }
+    .res-stat__label { font-size: 13px; color: var(--s5); margin-top: 4px; }
+
+    /* SMART TOOLS COMPACT */
+    .tools-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-top: 40px; }
+    .tool-compact { background: var(--wh); border: 1px solid var(--card-border); border-radius: 12px; padding: 24px; box-shadow: var(--card-shadow); }
+    .tool-compact__header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .tool-compact__icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; background: var(--v1); color: var(--v6); }
+    .tool-compact__name { font-size: 15px; font-weight: 700; color: var(--s9); }
+    .tool-compact__desc { font-size: 13px; color: var(--s5); line-height: 1.6; }
+    .tool-compact__meta { margin-top: 10px; font-size: 11px; font-weight: 600; color: var(--gn); }
+
+    /* FAQ */
+    .faq-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; margin-top: 36px; }
+    .faq-item { background: var(--wh); border: 1px solid var(--card-border); border-radius: 10px; padding: 20px; }
+    .faq-item__q { font-size: 14px; font-weight: 700; color: var(--s9); margin-bottom: 6px; }
+    .faq-item__a { font-size: 13px; color: var(--s5); line-height: 1.55; }
+
+    /* PRICING */
+    .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 24px; margin-top: 40px; }
+    .price-card { background: var(--wh); border: 1px solid var(--card-border); border-radius: 14px; padding: 32px 24px; box-shadow: var(--card-shadow); position: relative; }
+    .price-card--popular { border-color: var(--v6); box-shadow: 0 0 0 2px rgba(124,58,237,.12), var(--card-shadow); }
+    .price-card__badge { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--grad); color: var(--wh); font-size: 11px; font-weight: 700; padding: 4px 14px; border-radius: 100px; }
+    .price-card__name { font-size: 18px; font-weight: 700; color: var(--s9); margin-bottom: 4px; }
+    .price-card__price { font-size: 36px; font-weight: 900; color: var(--s9); margin-bottom: 4px; }
+    .price-card__price span { font-size: 15px; font-weight: 500; color: var(--s5); }
+    .price-card__desc { font-size: 13px; color: var(--s5); margin-bottom: 20px; }
+    .price-card__features { list-style: none; margin-bottom: 24px; }
+    .price-card__features li { font-size: 14px; color: var(--s7); padding: 6px 0; display: flex; align-items: center; gap: 8px; }
+    .price-card__features li svg { color: var(--gn); flex-shrink: 0; }
+    .price-card__btn { display: block; text-align: center; padding: 12px; border-radius: 8px; font-size: 14px; font-weight: 600; text-decoration: none; transition: opacity .15s; }
+    .price-card__btn--primary { background: var(--grad); color: var(--wh); }
+    .price-card__btn--outline { border: 1.5px solid var(--card-border); color: var(--s8); }
+
+    /* CTA BAND */
+    .cta-band { background: var(--g9); padding: 80px 0; text-align: center; position: relative; overflow: hidden; }
+    .cta-band__orb { position: absolute; width: 400px; height: 400px; background: var(--v6); border-radius: 50%; filter: blur(120px); opacity: .1; top: -100px; left: -80px; pointer-events: none; }
+    .cta-band h2 { font-size: clamp(24px, 3.2vw, 38px); font-weight: 800; color: var(--wh); margin-bottom: 14px; letter-spacing: -0.5px; }
+    .cta-band p { font-size: 15px; color: rgba(255,255,255,.6); margin-bottom: 28px; max-width: 500px; margin-left: auto; margin-right: auto; }
+
+    /* CONTACT */
+    .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: start; }
+    .contact-form { display: flex; flex-direction: column; gap: 16px; }
+    .contact-form input, .contact-form textarea { font-family: inherit; font-size: 14px; padding: 14px 16px; border: 1px solid var(--s2); border-radius: 10px; outline: none; transition: border-color .15s; background: var(--wh); }
+    .contact-form input:focus, .contact-form textarea:focus { border-color: var(--v6); }
+    .contact-form textarea { resize: vertical; min-height: 100px; }
+
+    /* FOOTER */
+    footer { background: var(--s05); border-top: 1px solid var(--s2); padding: 40px 0; }
+    .footer__inner { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
+    .footer__copy { font-size: 13px; color: var(--s5); }
+    .footer__links { display: flex; gap: 24px; }
+    .footer__links a { font-size: 13px; color: var(--s5); text-decoration: none; }
+    .footer__links a:hover { color: var(--s8); }
+
+    /* RESPONSIVE */
+    @media (max-width: 768px) {
+      .nav__links, .nav__cta { display: none; }
+      .burger { display: flex; }
+      .nav__drawer.open { display: flex; }
+      .beat__grid, .beat__grid--reverse { grid-template-columns: 1fr; direction: ltr; }
+      .contact-grid { grid-template-columns: 1fr; }
+      .cred-strip { gap: 12px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav class="nav" aria-label="Main navigation">
+    <div class="nav__inner">
+      <a href="#" class="wordmark">Retail<span class="accent">Guard</span></a>
+      <ul class="nav__links">
+        <li><a href="#story">The story</a></li>
+        <li><a href="#tools">Tools</a></li>
+        <li><a href="#pricing">Pricing</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+      <div class="nav__cta">
+        <a href="signin.html" class="nav__signin">Sign in</a>
+        <a href="#contact" class="nav__btn">Book a free margin scan</a>
+      </div>
+      <button class="burger" id="burger" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+    </div>
+    <div class="nav__drawer" id="drawer">
+      <a href="#story">The story</a>
+      <a href="#tools">Tools</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#contact">Contact</a>
+      <a href="signin.html">Sign in</a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero__orb hero__orb--1" aria-hidden="true"></div>
+    <div class="hero__orb hero__orb--2" aria-hidden="true"></div>
+    <div class="container">
+      <div class="hero__pill">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        A day you will recognise
+      </div>
+      <h1 class="hero__title">Know exactly what is losing you money,<br/><span class="hero__grad">in one afternoon.</span></h1>
+      <p class="hero__sub">Your POS records everything. But it never tells you which products are quietly bleeding margin. This is what a Tuesday looks like, before and after RetailGuard.</p>
+      <p class="hero__proof"><strong>423 margin leaks found</strong> in one Irish forecourt. &euro;7,500 to &euro;10,000/year recovered. No new hardware.</p>
+      <div class="hero__actions">
+        <a href="#contact" class="btn-primary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2L3 7v5c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z" stroke="currentColor" stroke-width="2"/></svg>
+          Book a free margin scan
+        </a>
+        <a href="#story" class="btn-ghost">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 4v16l12-8L6 4z" fill="currentColor"/></svg>
+          Read the story
+        </a>
+      </div>
+
+      <!-- Credibility strip -->
+      <div class="cred-strip">
+        <div class="cred-item">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+          CBE / Pervasive POS
+        </div>
+        <div class="cred-item">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+          GALA / BWG / Musgrave
+        </div>
+        <div class="cred-item">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+          Data stays in Ireland
+        </div>
+        <div class="cred-item">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+          In pilot with an Irish forecourt
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BEAT 1: THE DELIVERY (PROBLEM) -->
+  <section class="beat" id="story">
+    <div class="container">
+      <div class="beat__grid">
+        <div>
+          <span class="beat__time beat__time--problem">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            Tuesday 7:15 AM. The problem
+          </span>
+          <h2 class="beat__title">A GALA delivery arrives. 47 crates. You sign and move on.</h2>
+          <p class="beat__desc">There is no time to check every line. The invoice goes in a drawer. Somewhere in those crates, 12 products just increased in cost. Your till still sells them at the old price. You will not know for weeks.</p>
+          <p class="beat__desc">This is how invisible margin leaks start. Not from theft. From prices that drift while nobody is looking.</p>
+        </div>
+        <div class="beat__card beat__card--problem">
+          <div class="beat__highlight beat__highlight--red">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 9v4m0 4h.01M12 2a10 10 0 100 20 10 10 0 000-20z" stroke="currentColor" stroke-width="2"/></svg>
+            12 hidden cost increases in one delivery
+          </div>
+          <ul class="beat__list" style="margin-top:18px">
+            <li><span>Goodfellas Deep Pepperoni</span><span class="beat__list-val beat__list-val--red">&minus;16.5% margin</span></li>
+            <li><span>Haribo Yellow Bellies 20pk</span><span class="beat__list-val beat__list-val--red">&minus;8.2% margin</span></li>
+            <li><span>Brennans Sliced Pan</span><span class="beat__list-val beat__list-val--red">&minus;4.1% margin</span></li>
+          </ul>
+          <p style="font-size:12px; color:var(--rd); margin-top:14px; font-weight:600">You will not see these until end of month, if ever.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BEAT 2: THE SPREADSHEET (PROBLEM) -->
+  <section class="beat beat--gray">
+    <div class="container">
+      <div class="beat__grid beat__grid--reverse">
+        <div>
+          <span class="beat__time beat__time--problem">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            Tuesday 11:30 AM. The spreadsheet
+          </span>
+          <h2 class="beat__title">150,556 rows. Which 423 have a problem? The spreadsheet will not tell you.</h2>
+          <p class="beat__desc">Between customers, you open the price list CSV. You scroll. You squint. A queue forms. You close the laptop. This happens every week. The spreadsheet shows everything but tells you nothing.</p>
+          <p class="beat__desc">You would need 3 to 5 hours to find the problems manually. Hours you do not have.</p>
+        </div>
+        <div class="beat__card">
+          <div class="beat__stat beat__stat--red">150,556</div>
+          <div class="beat__stat-label">rows in your weekly CSV export</div>
+          <div style="margin-top:18px; padding:14px; background:var(--am05); border:1px solid #fde68a; border-radius:8px; font-size:13px; color:var(--s7)">
+            <strong style="color:var(--am)">423 margin problems</strong> hidden in there. Your POS recorded them all. It just never told you which ones.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BEAT 3: END OF DAY (PROBLEM) -->
+  <section class="beat">
+    <div class="container">
+      <div class="beat__grid">
+        <div>
+          <span class="beat__time beat__time--neutral">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            Tuesday 9:00 PM. Closing up
+          </span>
+          <h2 class="beat__title">Another day, another unknown. Are you making money or losing it?</h2>
+          <p class="beat__desc">The till says &euro;2,148 today. Was that good? Is half the chilled section below target margin? Is tobacco still right after the March duty rise? You genuinely do not know.</p>
+          <p class="beat__desc">The average Irish forecourt loses &euro;7,500 to &euro;10,000 per year in margin it could have recovered. Not from theft. From prices that quietly drifted.</p>
+          <p style="font-size:12px; color:var(--s4); margin-top:8px;">Coresight Research finds retailers lose 6.4% of gross sales to store inefficiencies (out-of-stocks, pricing errors, shelf gaps).</p>
+        </div>
+        <div class="beat__card">
+          <div class="beat__stat beat__stat--red">&euro;7,500 to &euro;10,000</div>
+          <div class="beat__stat-label">lost recoverable margin per year</div>
+          <ul class="beat__list" style="margin-top:16px">
+            <li><span>Active products</span><span class="beat__list-val">6,422 across 42 depts</span></li>
+            <li><span>Avg basket</span><span class="beat__list-val">2.4 items, &euro;16.96</span></li>
+            <li><span>Busiest day</span><span class="beat__list-val">Friday &euro;648k revenue</span></li>
+            <li><span>Top supplier</span><span class="beat__list-val">GALA &euro;6.33M, 47.7% margin</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BEAT 4: THE FIX (SOLUTION - DARK) -->
+  <section class="beat beat--dark">
+    <div class="container">
+      <div class="beat__grid beat__grid--reverse">
+        <div>
+          <span class="beat__time beat__time--solution">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            Wednesday 7:00 AM. The fix
+          </span>
+          <h2 class="beat__title beat__title--light">Wednesday. RetailGuard found 423 problems overnight. You did nothing.</h2>
+          <p class="beat__desc beat__desc--light">While you slept, RetailGuard read your POS data (read-only, it cannot change anything). It ranked every pricing issue by how much money it costs you. The worst offenders are at the top.</p>
+          <p class="beat__desc beat__desc--light">No spreadsheet. No scrolling. No guessing. Open your phone, dashboard loads in under 2 seconds.</p>
+        </div>
+        <div class="beat__card beat__card--dark">
+          <div class="beat__highlight beat__highlight--green">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            423 issues found, ranked by cost
+          </div>
+          <ul class="beat__list" style="margin-top:18px">
+            <li style="color:rgba(255,255,255,.7); border-color:rgba(255,255,255,.08)"><span>Fix top 20 in 15 min</span><span class="beat__list-val beat__list-val--green">+&euro;3,200/yr</span></li>
+            <li style="color:rgba(255,255,255,.7); border-color:rgba(255,255,255,.08)"><span>Fix all 423</span><span class="beat__list-val beat__list-val--green">+&euro;7,500 to 10k/yr</span></li>
+            <li style="color:rgba(255,255,255,.7); border-color:rgba(255,255,255,.08)"><span>Time investment</span><span style="font-weight:700; color:var(--wh)">15 min vs 5 hours</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BEAT 5: ASK YOUR SHOP (SOLUTION) -->
+  <section class="beat beat--solution">
+    <div class="container">
+      <div class="beat__grid">
+        <div>
+          <span class="beat__time beat__time--solution">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            Thursday. Ask a question, get an answer
+          </span>
+          <h2 class="beat__title">You ask: "What am I losing money on?" Answer in 2 seconds.</h2>
+          <p class="beat__desc">It searches 150,556 records and answers in plain English. Cost: $0.001. It can read your data but can never change it. Triple-locked, read-only.</p>
+          <p class="beat__desc">Next week: scan that GALA invoice with one photo. Every line matched, cost rises flagged. 30 seconds instead of a drawer full of paper.</p>
+        </div>
+        <div class="beat__card">
+          <div style="background:var(--s05); border-radius:10px; padding:14px; margin-bottom:14px">
+            <div style="font-size:12px; font-weight:700; color:var(--v6); margin-bottom:6px; text-transform:uppercase; letter-spacing:1px">You asked:</div>
+            <div style="font-size:14px; color:var(--s8); font-weight:500">"Which 5 products am I losing the most money on?"</div>
+          </div>
+          <div style="background:var(--gn05); border:1px solid #bbf7d0; border-radius:10px; padding:14px">
+            <div style="font-size:12px; font-weight:700; color:var(--gn); margin-bottom:6px; text-transform:uppercase; letter-spacing:1px">Answer (1.8s):</div>
+            <ol style="font-size:13px; color:var(--s7); padding-left:18px; line-height:1.9">
+              <li>Haribo Yellow Bellies 20pk: &minus;&euro;1,347/yr</li>
+              <li>Goodfellas Deep Pepperoni: &minus;&euro;892/yr</li>
+              <li>Monster Energy 4pk: &minus;&euro;634/yr</li>
+              <li>Brennans Sliced Pan: &minus;&euro;522/yr</li>
+              <li>Dairygold Spread 454g: &minus;&euro;487/yr</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- THREE TOOLS -->
+  <section class="section" id="tools">
+    <div class="container">
+      <span class="sec-eyebrow center">Smart tools</span>
+      <h2 class="sec-title center">Replace 5 hours of spreadsheet work with 3 tools that cost &euro;1/month</h2>
+      <p class="sec-desc center">Each is read-only-safe, cost-capped, and GDPR compliant. Your data stays in-region and is never used for training.</p>
+      <div class="tools-row">
+        <div class="tool-compact">
+          <div class="tool-compact__header">
+            <div class="tool-compact__icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="4" width="2" height="16" fill="currentColor"/><rect x="7" y="4" width="1" height="16" fill="currentColor"/><rect x="10" y="4" width="2" height="16" fill="currentColor"/><rect x="14" y="4" width="1" height="16" fill="currentColor"/><rect x="17" y="4" width="3" height="16" fill="currentColor"/><rect x="22" y="4" width="1" height="16" fill="currentColor"/></svg>
+            </div>
+            <span class="tool-compact__name">Barcode Scanner</span>
+          </div>
+          <p class="tool-compact__desc">Point your camera at any product. Instant margin lookup. Image decoded on-device, never sent anywhere.</p>
+          <div class="tool-compact__meta">Free, unlimited, on-device only</div>
+        </div>
+        <div class="tool-compact">
+          <div class="tool-compact__header">
+            <div class="tool-compact__icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6z" stroke="currentColor" stroke-width="2"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            </div>
+            <span class="tool-compact__name">Invoice Scanner</span>
+          </div>
+          <p class="tool-compact__desc">Photograph a delivery invoice. Every line matched to your catalogue, cost rises flagged in red. 30 seconds.</p>
+          <div class="tool-compact__meta">~$0.001/scan, 50/day cap, in-region processing</div>
+        </div>
+        <div class="tool-compact">
+          <div class="tool-compact__header">
+            <div class="tool-compact__icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2v10z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            </div>
+            <span class="tool-compact__name">Ask Your Shop</span>
+          </div>
+          <p class="tool-compact__desc">Ask in plain English, answer in 2 seconds. Triple-locked: reads your data but can never change it.</p>
+          <div class="tool-compact__meta">~$0.001/question, 100/day cap, read-only guaranteed</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- RESOLUTION STATS -->
+  <section class="resolution">
+    <div class="container">
+      <span class="sec-eyebrow center">The difference</span>
+      <h2 class="sec-title center">Same shop. Same POS. Now you see everything that was hidden.</h2>
+      <div class="resolution__stats">
+        <div class="res-stat"><div class="res-stat__num">3 to 5 hrs</div><div class="res-stat__label">saved every week</div></div>
+        <div class="res-stat"><div class="res-stat__num">423</div><div class="res-stat__label">issues found for you</div></div>
+        <div class="res-stat"><div class="res-stat__num">&euro;10k</div><div class="res-stat__label">recoverable margin/yr</div></div>
+        <div class="res-stat"><div class="res-stat__num">~2s</div><div class="res-stat__label">dashboard load time</div></div>
+      </div>
+      <a href="#contact" class="btn-primary">Book a free margin scan</a>
+    </div>
+  </section>
+
+  <!-- FAQ / OBJECTION HANDLING -->
+  <section class="section section--gray">
+    <div class="container">
+      <span class="sec-eyebrow center">Before you ask</span>
+      <h2 class="sec-title center">No new hardware. No changes to your POS. No risk.</h2>
+      <div class="faq-list">
+        <div class="faq-item">
+          <div class="faq-item__q">Do I need new hardware?</div>
+          <p class="faq-item__a">No. Works with your existing CBE or Pervasive POS. Nothing to install on your till or PC.</p>
+        </div>
+        <div class="faq-item">
+          <div class="faq-item__q">Can my data be changed?</div>
+          <p class="faq-item__a">No. Three independent locks prevent any write operation. Read-only access only.</p>
+        </div>
+        <div class="faq-item">
+          <div class="faq-item__q">Where does my data go?</div>
+          <p class="faq-item__a">Nowhere outside the EU. In-region processing, never used for model training, fully GDPR compliant.</p>
+        </div>
+        <div class="faq-item">
+          <div class="faq-item__q">Is it expensive?</div>
+          <p class="faq-item__a">Pro costs &euro;99/month. Smart tool usage adds ~&euro;1/month. Recovers &euro;7,500 to &euro;10,000/year. That is a 6 to 8x return.</p>
+        </div>
+        <div class="faq-item">
+          <div class="faq-item__q">How long to set up?</div>
+          <p class="faq-item__a">One afternoon. You see your first issues report within 24 hours. No downtime, no changes to your system.</p>
+        </div>
+        <div class="faq-item">
+          <div class="faq-item__q">Works with my symbol group?</div>
+          <p class="faq-item__a">Yes. Compatible with GALA, BWG, Musgrave and most Irish symbol group stock systems.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section class="section" id="pricing">
+    <div class="container">
+      <span class="sec-eyebrow center">Pricing</span>
+      <h2 class="sec-title center">Simple plans. 6 to 8x return on investment.</h2>
+      <p class="sec-desc center">Cost &euro;1,188/year at Pro. Recovers &euro;7,500 to &euro;10,000. Built for independent Irish shops.</p>
+      <div class="pricing-grid">
+        <div class="price-card">
+          <div class="price-card__name">Starter</div>
+          <div class="price-card__price">&euro;49<span>/mo</span></div>
+          <p class="price-card__desc">Dashboard + alerts + barcode scanner.</p>
+          <ul class="price-card__features">
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Live margin dashboard</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>423 issues auto-detected</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Barcode Scanner (free)</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>42 departments tracked</li>
+          </ul>
+          <a href="#contact" class="price-card__btn price-card__btn--outline">Get started</a>
+        </div>
+        <div class="price-card price-card--popular">
+          <div class="price-card__badge">Most popular</div>
+          <div class="price-card__name">Pro</div>
+          <div class="price-card__price">&euro;99<span>/mo</span></div>
+          <p class="price-card__desc">Everything in Starter + Ask Your Shop.</p>
+          <ul class="price-card__features">
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Everything in Starter</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Ask Your Shop (100/day)</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Trading patterns</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Supplier analytics</li>
+          </ul>
+          <a href="#contact" class="price-card__btn price-card__btn--primary">Get Pro</a>
+        </div>
+        <div class="price-card">
+          <div class="price-card__name">Premium</div>
+          <div class="price-card__price">&euro;149<span>/mo</span></div>
+          <p class="price-card__desc">All tools included, with Invoice Scanner.</p>
+          <ul class="price-card__features">
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Everything in Pro</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Invoice Scanner (50/day)</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Department drill-down</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Priority support</li>
+          </ul>
+          <a href="#contact" class="price-card__btn price-card__btn--outline">Get Premium</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA BAND -->
+  <section class="cta-band">
+    <div class="cta-band__orb" aria-hidden="true"></div>
+    <div class="container" style="position:relative">
+      <h2>Next Tuesday does not have to end with a question mark.</h2>
+      <p>See your own data first. Free margin scan, no commitment, no changes to your POS. Set up in an afternoon.</p>
+      <a href="#contact" class="btn-primary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2L3 7v5c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z" stroke="currentColor" stroke-width="2"/></svg>
+        Book a free margin scan
+      </a>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section class="section" id="contact">
+    <div class="container">
+      <div class="contact-grid">
+        <div>
+          <span class="sec-eyebrow">Get started</span>
+          <h2 class="sec-title">See what next Tuesday looks like with RetailGuard.</h2>
+          <p class="sec-desc" style="margin-bottom:20px">We connect read-only. You see your first issues report within 24 hours. No risk, no writes, no changes to your system.</p>
+          <div style="display:flex; flex-direction:column; gap:8px; margin-top:14px">
+            <div style="display:flex; align-items:center; gap:8px; font-size:13px; color:var(--s5)">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="color:var(--gn); flex-shrink:0" aria-hidden="true"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+              No credit card required
+            </div>
+            <div style="display:flex; align-items:center; gap:8px; font-size:13px; color:var(--s5)">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="color:var(--gn); flex-shrink:0" aria-hidden="true"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+              One afternoon setup
+            </div>
+            <div style="display:flex; align-items:center; gap:8px; font-size:13px; color:var(--s5)">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="color:var(--gn); flex-shrink:0" aria-hidden="true"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+              Built for Irish forecourts and convenience stores
+            </div>
+          </div>
+        </div>
+        <form class="contact-form" aria-label="Contact form">
+          <input type="text" placeholder="Your name" aria-label="Your name" required />
+          <input type="email" placeholder="Email address" aria-label="Email address" required />
+          <input type="text" placeholder="Shop name" aria-label="Shop name" />
+          <input type="text" placeholder="POS system (e.g. CBE, Pervasive)" aria-label="POS system" />
+          <textarea placeholder="How many products do you carry? Any questions?" aria-label="Message"></textarea>
+          <button type="submit" class="btn-primary" style="align-self:flex-start">Book a free margin scan</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="container">
+      <div class="footer__inner">
+        <span class="footer__copy">RetailGuard 2026. Built for independent Irish shops.</span>
+        <div class="footer__links">
+          <a href="#">Privacy</a>
+          <a href="#">Terms</a>
+          <a href="#">Security</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById('burger').addEventListener('click', function() {
+      document.getElementById('drawer').classList.toggle('open');
+    });
+  </script>
+</body>
+</html>
