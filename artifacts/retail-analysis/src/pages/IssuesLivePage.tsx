@@ -47,8 +47,7 @@ export function IssuesLivePage() {
   return (
     <div className="p-4 md:p-6">
       <div className="mb-4">
-        <h1 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">Issues — Margin Worklist</h1>
-        <p className="text-gray-500 text-xs mt-0.5">Active products below your target margin, with the price to set to fix them</p>
+        <h1 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">Issues</h1>
       </div>
 
       {/* KPI cards */}
