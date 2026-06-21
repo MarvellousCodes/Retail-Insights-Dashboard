@@ -191,7 +191,7 @@ export function runAnalysis(
 
 function App() {
   const [tab, setTab] = useState<InternalTab>("livedata");
-  const [sidebarExpanded, setSidebarExpanded] = useState(false);
+  const [sidebarExpanded, setSidebarExpanded] = useState(true);
   const [loggedIn, setLoggedIn] = useState(true);
   const [theme, setTheme] = useState<"light" | "dark">(() => {
     if (typeof window === "undefined") return "light";
