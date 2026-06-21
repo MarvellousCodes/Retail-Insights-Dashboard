@@ -15,6 +15,10 @@ function MarginBadge({ p }: { p: any }) {
   return <span className={`text-[10px] ${cls} px-1.5 py-0.5 rounded font-medium`}>{label} {m.toFixed(0)}%</span>;
 }
 
+function Tip({ label, tip }: { label: string; tip: string }) {
+  return <span title={tip} className="cursor-help border-b border-dotted border-violet-300/60 hover:border-violet-500">{label}</span>;
+}
+
 export function LiveDataPage() {
   const [stats, setStats] = useState<Record<string, number>>({});
   const [products, setProducts] = useState<any[]>([]);
@@ -178,14 +182,14 @@ export function LiveDataPage() {
           <table className="w-full text-sm">
             <thead className="bg-violet-50 dark:bg-violet-900/20 sticky top-0">
               <tr>
-                <th className="px-3 py-2.5 text-left text-xs font-semibold text-violet-700">Product</th>
-                <th className="px-3 py-2.5 text-right text-xs font-semibold text-violet-700">Price</th>
-                <th className="px-3 py-2.5 text-right text-xs font-semibold text-violet-700">Cost</th>
-                <th className="px-3 py-2.5 text-center text-xs font-semibold text-violet-700">Margin</th>
-                <th className="px-3 py-2.5 text-right text-xs font-semibold text-violet-700">Markup</th>
-                <th className="px-3 py-2.5 text-left text-xs font-semibold text-violet-700">Supplier</th>
-                <th className="px-3 py-2.5 text-center text-xs font-semibold text-violet-700">Status</th>
-                <th className="px-3 py-2.5 text-left text-xs font-semibold text-violet-700">Barcode</th>
+                <th className="px-3 py-2.5 text-left text-xs font-semibold text-violet-700"><Tip label="Product" tip="The product description from your EPOS." /></th>
+                <th className="px-3 py-2.5 text-right text-xs font-semibold text-violet-700"><Tip label="Price" tip="Your current shelf price (Retail1). 'on request' means staff key it at the till." /></th>
+                <th className="px-3 py-2.5 text-right text-xs font-semibold text-violet-700"><Tip label="Cost" tip="What one unit costs you: pack cost divided by pack size." /></th>
+                <th className="px-3 py-2.5 text-center text-xs font-semibold text-violet-700"><Tip label="Margin" tip="Profit as a share of the sell price: sell minus cost, divided by sell, as a percent. 'check data' means the cost or price looks wrong." /></th>
+                <th className="px-3 py-2.5 text-right text-xs font-semibold text-violet-700"><Tip label="Markup" tip="Profit as a share of the cost: sell minus cost, divided by cost, as a percent." /></th>
+                <th className="px-3 py-2.5 text-left text-xs font-semibold text-violet-700"><Tip label="Supplier" tip="The supplier name, with their code beside it." /></th>
+                <th className="px-3 py-2.5 text-center text-xs font-semibold text-violet-700"><Tip label="Status" tip="Active or inactive, taken straight from the Active flag in your EPOS export (Active = Y)." /></th>
+                <th className="px-3 py-2.5 text-left text-xs font-semibold text-violet-700"><Tip label="Barcode" tip="The product barcode." /></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50 dark:divide-gray-700">

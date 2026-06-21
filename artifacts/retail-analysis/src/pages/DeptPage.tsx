@@ -28,6 +28,10 @@ function StatCard({ label, value, tone }: { label: string; value: string; tone?:
   );
 }
 
+function Tip({ label, tip }: { label: string; tip: string }) {
+  return <span title={tip} className="cursor-help border-b border-dotted border-gray-400/50 hover:border-violet-400">{label}</span>;
+}
+
 export function DeptPage() {
   const [targetPct, setTargetPct] = useState<number | null>(null);
   const [tree, setTree] = useState<any[]>([]);
@@ -256,14 +260,14 @@ export function DeptPage() {
                       <table className="w-full text-sm">
                         <thead className="bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700">
                           <tr>
-                            <th className="px-4 py-2 text-left text-xs text-gray-500">Product</th>
-                            <th className="px-3 py-2 text-left text-xs text-gray-500 hidden md:table-cell">Sub-dept</th>
-                            <th className="px-3 py-2 text-right text-xs text-gray-500">Sell</th>
-                            <th className="px-3 py-2 text-right text-xs text-gray-500">Cost</th>
-                            <th className="px-3 py-2 text-right text-xs text-gray-500">Margin</th>
-                            {hasTarget && <th className="px-3 py-2 text-right text-xs text-gray-500">Gap</th>}
-                            {hasTarget && <th className="px-3 py-2 text-right text-xs text-gray-500">Suggested</th>}
-                            {hasTarget && <th className="px-4 py-2 text-right text-xs text-gray-500">€/mo</th>}
+                            <th className="px-4 py-2 text-left text-xs text-gray-500"><Tip label="Product" tip="Product name, with its barcode below." /></th>
+                            <th className="px-3 py-2 text-left text-xs text-gray-500 hidden md:table-cell"><Tip label="Sub-dept" tip="The sub-category this product sits in." /></th>
+                            <th className="px-3 py-2 text-right text-xs text-gray-500"><Tip label="Sell" tip="Your current shelf price. 'on request' means staff key the price at the till." /></th>
+                            <th className="px-3 py-2 text-right text-xs text-gray-500"><Tip label="Cost" tip="What one unit costs you: pack cost divided by pack size. VAT is not removed yet." /></th>
+                            <th className="px-3 py-2 text-right text-xs text-gray-500"><Tip label="Margin" tip="Profit as a share of the sell price: sell price minus cost, divided by the sell price, shown as a percent." /></th>
+                            {hasTarget && <th className="px-3 py-2 text-right text-xs text-gray-500"><Tip label="Gap" tip="How far below your target this product sits, in percentage points: target minus the product's margin." /></th>}
+                            {hasTarget && <th className="px-3 py-2 text-right text-xs text-gray-500"><Tip label="Suggested" tip="The price that hits your target margin exactly: unit cost divided by (1 minus the target)." /></th>}
+                            {hasTarget && <th className="px-4 py-2 text-right text-xs text-gray-500"><Tip label="€/mo" tip="Estimated extra profit a month at the suggested price: (suggested minus current price) times units sold per month, averaged over the last 3 months." /></th>}
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-50 dark:divide-gray-700">
