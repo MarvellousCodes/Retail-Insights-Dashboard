@@ -1,77 +1,172 @@
 import { useState, useEffect } from "react";
 import { apiCall, API_BASE } from "@/lib/api";
 
-function eur(v: number | null) {
+const TARGETS = [20, 25, 30];
+
+function eur(v: number | null | undefined) {
   return v === null || v === undefined ? "—" : `€${Number(v).toFixed(2)}`;
 }
-function marginCls(m: number | null) {
-  if (m === null || m === undefined) return "bg-gray-50 text-gray-500";
-  return m >= 25 ? "bg-green-50 text-green-700" : m >= 10 ? "bg-amber-50 text-amber-700" : "bg-red-50 text-red-700";
+function money0(v: number | null | undefined) {
+  if (v === null || v === undefined) return "€0";
+  return "€" + Math.round(Number(v)).toLocaleString("en-IE");
+}
+function marginCls(m: number | null | undefined) {
+  if (m === null || m === undefined) return "bg-gray-50 text-gray-500 dark:bg-gray-800 dark:text-gray-400";
+  return m >= 25
+    ? "bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+    : m >= 10
+    ? "bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
+    : "bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400";
+}
+
+function StatCard({ label, value, tone }: { label: string; value: string; tone?: string }) {
+  return (
+    <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 px-4 py-3 shadow-sm">
+      <div className="text-[11px] uppercase tracking-wide text-gray-400">{label}</div>
+      <div className={`text-xl font-bold ${tone || "text-gray-900 dark:text-white"}`}>{value}</div>
+    </div>
+  );
 }
 
 export function DeptPage() {
-  const [depts, setDepts] = useState<any[]>([]);
+  const [targetPct, setTargetPct] = useState(20);
+  const [tree, setTree] = useState<any[]>([]);
+  const [summary, setSummary] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState<string | null>(null);
-  const [sub, setSub] = useState("");           // selected sub-dept code ('' = all)
+  const [sub, setSub] = useState("");
+  const [leaksOnly, setLeaksOnly] = useState(true);
   const [prods, setProds] = useState<any[]>([]);
-  const [subs, setSubs] = useState<any[]>([]);
   const [total, setTotal] = useState(0);
   const [offset, setOffset] = useState(0);
-  const [deptName, setDeptName] = useState("");
   const [loadingProds, setLoadingProds] = useState(false);
   const LIMIT = 100;
+  const t = (targetPct / 100).toFixed(2);
 
   useEffect(() => {
-    apiCall("/api/departments").then((d) => { setDepts(d.departments || []); setLoading(false); });
-  }, []);
+    setLoading(true);
+    apiCall(`/api/leak-tree?target=${t}`).then((d) => {
+      setTree(d.departments || []);
+      setSummary(d.summary || null);
+      setLoading(false);
+    });
+  }, [targetPct]);
+
+  // reload the open department's products when target or the leaks-only toggle changes
+  useEffect(() => {
+    if (expanded) loadProducts(expanded, sub, 0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [targetPct, leaksOnly]);
 
   const openDept = (code: string) => {
-    if (expanded === code) { setExpanded(null); return; }
-    setExpanded(code); setSub(""); setOffset(0);
+    if (expanded === code) {
+      setExpanded(null);
+      return;
+    }
+    setExpanded(code);
+    setSub("");
+    setOffset(0);
     loadProducts(code, "", 0);
   };
 
   const loadProducts = async (code: string, subCode: string, off: number) => {
     setLoadingProds(true);
-    const d = await apiCall(`/api/departments/${code}/products?sub=${subCode}&limit=${LIMIT}&offset=${off}`);
-    setProds(d.products || []); setSubs(d.sub_departments || []); setTotal(d.total || 0);
-    setDeptName(d.department_name || code); setOffset(off); setLoadingProds(false);
+    const d = await apiCall(
+      `/api/departments/${code}/products?sub=${subCode}&leaks_only=${leaksOnly ? 1 : 0}&target=${t}&limit=${LIMIT}&offset=${off}`
+    );
+    setProds(d.products || []);
+    setTotal(d.total || 0);
+    setOffset(off);
+    setLoadingProds(false);
   };
 
-  if (loading) return <div className="p-8 text-center text-gray-400">Loading departments...</div>;
+  const leakUrl = (code: string, subCode: string) =>
+    `${API_BASE}/api/export/leaks?target=${t}${code ? `&dept=${code}` : ""}${subCode ? `&sub=${subCode}` : ""}`;
+
+  if (loading) return <div className="p-8 text-center text-gray-400">Loading margin leaks...</div>;
 
   return (
     <div className="p-4 md:p-6">
-      <div className="flex items-start justify-between gap-3">
+      {/* Header + target selector */}
+      <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
         <div>
-          <h1 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">Departments</h1>
-          <p className="text-xs text-gray-500 mb-4">{depts.length} departments • click to drill into sub-departments & products</p>
+          <h1 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">Departments &amp; margin leaks</h1>
+          <p className="text-xs text-gray-500">
+            {tree.length} departments. Click a department to drill into sub-departments and the products losing money.
+          </p>
         </div>
-        <a
-          href={`${API_BASE}/api/export/products-by-department?active=1`}
-          className="shrink-0 inline-flex items-center gap-2 bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-sm shadow-violet-600/25"
-          title="Download all active products grouped by department as a CSV (opens in Excel)"
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          Export CSV
-        </a>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-1">
+            <span className="text-[11px] text-gray-400 px-2">Target margin</span>
+            {TARGETS.map((tp) => (
+              <button
+                key={tp}
+                onClick={() => setTargetPct(tp)}
+                className={`px-2.5 py-1 rounded-lg text-xs font-bold ${
+                  targetPct === tp ? "bg-violet-600 text-white" : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                }`}
+              >
+                {tp}%
+              </button>
+            ))}
+          </div>
+          <a
+            href={leakUrl("", "")}
+            className="shrink-0 inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-sm shadow-red-600/25"
+            title="Download every below-target product across the store, with recommended price and monthly euro impact"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
+            Export all leaks
+          </a>
+        </div>
       </div>
 
+      {/* Summary band */}
+      {summary && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+          <StatCard label="Active products" value={(summary.active || 0).toLocaleString("en-IE")} />
+          <StatCard label={`Leaks below ${targetPct}%`} value={(summary.leaks || 0).toLocaleString("en-IE")} tone="text-red-600" />
+          <StatCard label="At risk / month" value={money0(summary.monthly_impact)} tone="text-red-600" />
+          <StatCard label="At risk / year" value={money0(summary.annual_impact)} tone="text-red-600" />
+        </div>
+      )}
+      <p className="text-[11px] text-gray-400 mb-4">
+        A leak is an active, priced product selling below the {targetPct}% target margin. Monthly euro figures use each
+        product's recent sales velocity, so a leak with no recent sales shows as €0 impact but still counts.
+      </p>
+
       <div className="space-y-3">
-        {depts.map((dept) => (
-          <div key={dept.code} className={`bg-white dark:bg-gray-800 rounded-xl shadow-sm border ${dept.legacy ? "border-gray-100 dark:border-gray-800 opacity-70" : "border-gray-200 dark:border-gray-700"} overflow-hidden`}>
-            <div onClick={() => openDept(dept.code)}
-              className="px-4 py-3 flex items-center justify-between cursor-pointer hover:bg-violet-50/50 dark:hover:bg-violet-900/10 transition">
+        {tree.map((dept) => (
+          <div
+            key={dept.code}
+            className={`bg-white dark:bg-gray-800 rounded-xl shadow-sm border ${
+              dept.legacy ? "border-gray-100 dark:border-gray-800 opacity-70" : "border-gray-200 dark:border-gray-700"
+            } overflow-hidden`}
+          >
+            {/* Department row */}
+            <div
+              onClick={() => openDept(dept.code)}
+              className="px-4 py-3 flex items-center justify-between cursor-pointer hover:bg-violet-50/50 dark:hover:bg-violet-900/10 transition gap-3"
+            >
               <div className="flex items-center gap-3 min-w-0">
                 <span className="text-[10px] font-mono bg-violet-100 dark:bg-violet-900 text-violet-700 dark:text-violet-300 px-2 py-1 rounded shrink-0">{dept.code}</span>
                 <div className="min-w-0">
-                  <span className="font-semibold text-sm text-gray-900 dark:text-white truncate">{dept.name}{dept.legacy && <span className="ml-2 text-[10px] text-gray-400">(retired)</span>}</span>
+                  <span className="font-semibold text-sm text-gray-900 dark:text-white truncate">
+                    {dept.name}
+                    {dept.legacy && <span className="ml-2 text-[10px] text-gray-400">(retired)</span>}
+                  </span>
                   <span className="text-xs text-gray-400 ml-2">{dept.active} active · {dept.sub_departments?.length || 0} sub-depts</span>
                 </div>
               </div>
-              <div className="flex items-center gap-4 shrink-0">
-                {dept.revenue > 0 && <span className="text-xs text-gray-500 hidden sm:inline">{eur(dept.revenue)} rev</span>}
+              <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+                {dept.leaks > 0 ? (
+                  <span className="text-[11px] font-bold bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400 px-2 py-0.5 rounded-full">{dept.leaks} leaks</span>
+                ) : (
+                  <span className="text-[11px] text-green-600 dark:text-green-400 hidden sm:inline">no leaks</span>
+                )}
+                {dept.monthly_impact > 0 && (
+                  <span className="text-sm font-bold text-red-600" title="Estimated margin lost per month">{money0(dept.monthly_impact)}/mo</span>
+                )}
                 <span className={`text-sm font-bold ${dept.avg_margin > 30 ? "text-green-600" : dept.avg_margin > 0 ? "text-amber-600" : "text-red-600"}`}>{dept.avg_margin ?? "—"}%</span>
                 <span className="text-gray-400 text-xs">{expanded === dept.code ? "▼" : "▶"}</span>
               </div>
@@ -79,44 +174,87 @@ export function DeptPage() {
 
             {expanded === dept.code && (
               <div className="border-t border-gray-100 dark:border-gray-700">
-                {/* Sub-department chips */}
-                <div className="px-4 py-2.5 flex gap-2 flex-wrap bg-gray-50 dark:bg-gray-900">
-                  <button onClick={() => { setSub(""); loadProducts(dept.code, "", 0); }}
-                    className={`px-2.5 py-1 rounded-lg text-xs font-medium ${sub === "" ? "bg-violet-600 text-white" : "bg-white dark:bg-gray-800 text-gray-600 border border-gray-200 dark:border-gray-700"}`}>All ({dept.active})</button>
-                  {subs.map((s) => (
-                    <button key={s.code} onClick={() => { setSub(s.code); loadProducts(dept.code, s.code, 0); }}
-                      className={`px-2.5 py-1 rounded-lg text-xs font-medium ${sub === s.code ? "bg-violet-600 text-white" : "bg-white dark:bg-gray-800 text-gray-600 border border-gray-200 dark:border-gray-700"}`}>{s.name} ({s.active})</button>
+                {/* Controls: leaks-only toggle + export this department */}
+                <div className="px-4 py-2.5 flex items-center justify-between gap-3 bg-gray-50 dark:bg-gray-900 flex-wrap">
+                  <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300 cursor-pointer select-none">
+                    <input type="checkbox" checked={leaksOnly} onChange={(e) => setLeaksOnly(e.target.checked)} className="accent-violet-600" />
+                    Show leaks only
+                  </label>
+                  <a href={leakUrl(dept.code, sub)} className="inline-flex items-center gap-1.5 text-xs font-semibold text-red-600 hover:text-red-700">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
+                    Export {sub ? "these" : "department"} leaks
+                  </a>
+                </div>
+
+                {/* Sub-department chips with their own leak metrics (from the tree, instant) */}
+                <div className="px-4 py-2.5 flex gap-2 flex-wrap bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700">
+                  <button
+                    onClick={() => { setSub(""); loadProducts(dept.code, "", 0); }}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-medium ${sub === "" ? "bg-violet-600 text-white" : "bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700"}`}
+                  >
+                    All ({dept.active})
+                  </button>
+                  {(dept.sub_departments || []).map((s: any) => (
+                    <button
+                      key={s.code}
+                      onClick={() => { setSub(s.code); loadProducts(dept.code, s.code, 0); }}
+                      className={`px-2.5 py-1 rounded-lg text-xs font-medium flex items-center gap-1.5 ${sub === s.code ? "bg-violet-600 text-white" : "bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700"}`}
+                    >
+                      <span>{s.name} ({s.active})</span>
+                      {s.leaks > 0 && (
+                        <span className={`text-[10px] font-bold px-1.5 rounded-full ${sub === s.code ? "bg-white/25 text-white" : "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400"}`}>
+                          {s.leaks} · {money0(s.monthly_impact)}
+                        </span>
+                      )}
+                    </button>
                   ))}
                 </div>
+
                 {/* Products */}
-                {loadingProds ? <div className="p-4 text-center text-gray-400 text-sm">Loading…</div> : (
+                {loadingProds ? (
+                  <div className="p-4 text-center text-gray-400 text-sm">Loading…</div>
+                ) : prods.length === 0 ? (
+                  <div className="p-6 text-center text-sm text-green-600 dark:text-green-400">
+                    {leaksOnly ? "No margin leaks here at the current target. " : "No active products. "}
+                    {leaksOnly && <button onClick={() => setLeaksOnly(false)} className="underline text-violet-600">Show all products</button>}
+                  </div>
+                ) : (
                   <>
-                    <table className="w-full text-sm">
-                      <thead className="bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700">
-                        <tr>
-                          <th className="px-4 py-2 text-left text-xs text-gray-500">Product</th>
-                          <th className="px-4 py-2 text-left text-xs text-gray-500">Sub-dept</th>
-                          <th className="px-4 py-2 text-right text-xs text-gray-500">Sell</th>
-                          <th className="px-4 py-2 text-right text-xs text-gray-500">Cost</th>
-                          <th className="px-4 py-2 text-right text-xs text-gray-500">Margin</th>
-                          <th className="px-4 py-2 text-right text-xs text-gray-500">Markup</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-50 dark:divide-gray-700">
-                        {prods.map((p, i) => (
-                          <tr key={i} className="hover:bg-gray-50 dark:hover:bg-gray-800">
-                            <td className="px-4 py-2 text-gray-800 dark:text-gray-200 truncate max-w-[260px]">{p.name}</td>
-                            <td className="px-4 py-2 text-gray-400 text-xs truncate max-w-[120px]">{p.sub_name}</td>
-                            <td className="px-4 py-2 text-right font-medium text-violet-600">{p.price_on_request ? <span className="text-[11px] text-gray-400">on request</span> : eur(p.price)}</td>
-                            <td className="px-4 py-2 text-right text-gray-500">{eur(p.cost)}</td>
-                            <td className="px-4 py-2 text-right"><span className={`px-2 py-0.5 rounded-full text-xs font-bold ${marginCls(p.margin)}`}>{p.margin === null ? "—" : p.margin + "%"}</span></td>
-                            <td className="px-4 py-2 text-right text-gray-500 text-xs">{p.markup === null ? "—" : p.markup + "%"}</td>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead className="bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700">
+                          <tr>
+                            <th className="px-4 py-2 text-left text-xs text-gray-500">Product</th>
+                            <th className="px-3 py-2 text-left text-xs text-gray-500 hidden md:table-cell">Sub-dept</th>
+                            <th className="px-3 py-2 text-right text-xs text-gray-500">Sell</th>
+                            <th className="px-3 py-2 text-right text-xs text-gray-500">Cost</th>
+                            <th className="px-3 py-2 text-right text-xs text-gray-500">Margin</th>
+                            <th className="px-3 py-2 text-right text-xs text-gray-500">Gap</th>
+                            <th className="px-3 py-2 text-right text-xs text-gray-500">Suggested</th>
+                            <th className="px-4 py-2 text-right text-xs text-gray-500">€/mo</th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                        </thead>
+                        <tbody className="divide-y divide-gray-50 dark:divide-gray-700">
+                          {prods.map((p, i) => (
+                            <tr key={i} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                              <td className="px-4 py-2 text-gray-800 dark:text-gray-200 truncate max-w-[240px]">
+                                {p.name}
+                                {p.barcode && <span className="block text-[10px] text-gray-400 font-mono">{p.barcode}</span>}
+                              </td>
+                              <td className="px-3 py-2 text-gray-400 text-xs truncate max-w-[120px] hidden md:table-cell">{p.sub_name}</td>
+                              <td className="px-3 py-2 text-right font-medium text-violet-600">{p.price_on_request ? <span className="text-[11px] text-gray-400">on request</span> : eur(p.price)}</td>
+                              <td className="px-3 py-2 text-right text-gray-500">{eur(p.cost)}</td>
+                              <td className="px-3 py-2 text-right"><span className={`px-2 py-0.5 rounded-full text-xs font-bold ${marginCls(p.margin)}`}>{p.margin === null ? "—" : p.margin + "%"}</span></td>
+                              <td className="px-3 py-2 text-right text-xs text-red-500">{p.below_target && p.target_gap != null ? `-${p.target_gap}pp` : "—"}</td>
+                              <td className="px-3 py-2 text-right text-xs font-semibold text-green-600">{p.below_target && p.recommended != null ? eur(p.recommended) : "—"}</td>
+                              <td className="px-4 py-2 text-right text-xs font-bold text-red-600">{p.impact != null && p.impact > 0 ? money0(p.impact) : "—"}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
                     <div className="px-4 py-2 bg-gray-50 dark:bg-gray-900 text-xs text-gray-500 flex items-center justify-between">
-                      <span>Showing {total === 0 ? 0 : offset + 1}–{Math.min(offset + LIMIT, total)} of {total} active</span>
+                      <span>{leaksOnly ? "Leaks " : "Products "}{total === 0 ? 0 : offset + 1}–{Math.min(offset + LIMIT, total)} of {total}</span>
                       <span className="flex gap-2">
                         <button disabled={offset === 0} onClick={() => loadProducts(dept.code, sub, Math.max(0, offset - LIMIT))} className="px-2 py-0.5 rounded border border-gray-200 dark:border-gray-700 disabled:opacity-40">Prev</button>
                         <button disabled={offset + LIMIT >= total} onClick={() => loadProducts(dept.code, sub, offset + LIMIT)} className="px-2 py-0.5 rounded border border-gray-200 dark:border-gray-700 disabled:opacity-40">Next</button>
