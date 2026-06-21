@@ -9,7 +9,8 @@ const EVT = "rg-mask-change";
 export const STARS = "★★★";
 
 export function getMasked(): boolean {
-  try { return localStorage.getItem(KEY) === "1"; } catch { return false; }
+  // Masked by default; only an explicit reveal (stored "0") shows the real figures.
+  try { return localStorage.getItem(KEY) !== "0"; } catch { return true; }
 }
 function applyMasked(v: boolean) {
   try { localStorage.setItem(KEY, v ? "1" : "0"); } catch { /* ignore */ }
