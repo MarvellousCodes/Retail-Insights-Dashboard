@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { apiCall } from "@/lib/api";
+import { apiCall, API_BASE } from "@/lib/api";
 
 function eur(v: number | null) {
   return v === null || v === undefined ? "—" : `€${Number(v).toFixed(2)}`;
@@ -43,8 +43,20 @@ export function DeptPage() {
 
   return (
     <div className="p-4 md:p-6">
-      <h1 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">Departments</h1>
-      <p className="text-xs text-gray-500 mb-4">{depts.length} departments • click to drill into sub-departments & products</p>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h1 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">Departments</h1>
+          <p className="text-xs text-gray-500 mb-4">{depts.length} departments • click to drill into sub-departments & products</p>
+        </div>
+        <a
+          href={`${API_BASE}/api/export/products-by-department?active=1`}
+          className="shrink-0 inline-flex items-center gap-2 bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-sm shadow-violet-600/25"
+          title="Download all active products grouped by department as a CSV (opens in Excel)"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Export CSV
+        </a>
+      </div>
 
       <div className="space-y-3">
         {depts.map((dept) => (
