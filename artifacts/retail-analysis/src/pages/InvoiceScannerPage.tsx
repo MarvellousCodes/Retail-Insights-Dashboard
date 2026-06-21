@@ -11,6 +11,8 @@ interface Line {
   status: "matched" | "review" | "new"; matched?: string;
   matched_by?: "barcode" | "name"; confidence?: "high" | "low";
   old_cost?: number | null; cost_delta?: number | null; new_margin?: number | null;
+  unit_cost_new?: number | null; pack_size?: number | null;
+  case_cost_old?: number | null; case_cost_new?: number | null;
   flag: string;
 }
 interface ScanResult {
@@ -159,7 +161,12 @@ export function InvoiceScannerPage(_props?: { existingProducts?: any[]; onAddToS
                       <td className="px-4 py-2.5 text-gray-800 dark:text-gray-100 max-w-[230px] truncate" title={l.invoice_desc}>{l.invoice_desc}</td>
                       <td className="px-3 py-2.5 font-mono text-[11px] text-gray-400 whitespace-nowrap">{l.barcode || "—"}</td>
                       <td className="px-3 py-2.5 text-right text-gray-500 tabular-nums">{l.qty ?? "—"}</td>
-                      <td className="px-3 py-2.5 text-right text-gray-800 dark:text-gray-200 tabular-nums whitespace-nowrap">{eur(l.invoice_cost)}</td>
+                      <td className="px-3 py-2.5 text-right whitespace-nowrap">
+                        <div className="text-gray-800 dark:text-gray-200 tabular-nums">{eur(l.invoice_cost)}</div>
+                        {l.pack_size && l.unit_cost_new != null
+                          ? <div className="text-[10px] text-gray-400">case of {Math.round(l.pack_size)} · {eur(l.unit_cost_new)}/unit</div>
+                          : null}
+                      </td>
                       <td className="px-4 py-2.5 max-w-[210px]">
                         {l.status === "new"
                           ? <span className="text-violet-500 text-xs italic">not on your system</span>
