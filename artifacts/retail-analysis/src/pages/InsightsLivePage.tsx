@@ -1,71 +1,159 @@
 import { useState, useEffect } from "react";
 import { apiCall } from "@/lib/api";
-import { CheckCircle, AlertTriangle, TrendingUp, TrendingDown, ArrowUp, ArrowDown, BarChart3 } from "lucide-react";
+import { Lightbulb, Award, Tag, TrendingDown, TrendingUp } from "lucide-react";
+
+function eur(v: number | null | undefined) {
+  return v === null || v === undefined ? "—" : `€${Number(v).toFixed(2)}`;
+}
+function eur0(v: number | null | undefined) {
+  return "€" + Math.round(Number(v || 0)).toLocaleString("en-IE");
+}
+function num(v: number | null | undefined) {
+  return Math.round(Number(v || 0)).toLocaleString("en-IE");
+}
+
+function DriftList({ title, rows, tone }: { title: string; rows: any[]; tone: "down" | "up" }) {
+  const down = tone === "down";
+  return (
+    <div>
+      <div className={`flex items-center gap-1.5 text-xs font-bold mb-2 ${down ? "text-red-600" : "text-green-600"}`}>
+        {down ? <TrendingDown className="w-4 h-4" /> : <TrendingUp className="w-4 h-4" />}
+        {title}
+      </div>
+      {rows.length === 0 ? (
+        <p className="text-xs text-gray-400">Nothing notable.</p>
+      ) : (
+        <div className="space-y-1.5">
+          {rows.map((d, i) => (
+            <div key={i} className="flex items-center justify-between gap-2 bg-gray-50 dark:bg-gray-900 rounded-lg px-3 py-2">
+              <span className="text-sm text-gray-800 dark:text-gray-200 truncate">{d.name}</span>
+              <span className="flex items-center gap-2 shrink-0">
+                <span className="text-[11px] text-gray-400 tabular-nums">{d.prior}% → {d.recent}%</span>
+                <span className={`text-xs font-bold tabular-nums px-2 py-0.5 rounded-full ${down ? "bg-red-50 text-red-700 dark:bg-red-900/40 dark:text-red-400" : "bg-green-50 text-green-700 dark:bg-green-900/40 dark:text-green-400"}`}>
+                  {d.drift > 0 ? "+" : ""}{d.drift}pp
+                </span>
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export function InsightsLivePage() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [expanded, setExpanded] = useState<string|null>(null);
 
   useEffect(() => {
-    apiCall("/api/insights/product-margins").then(d => { setData(d); setLoading(false); });
+    apiCall("/api/insights/discovery").then((d) => { setData(d); setLoading(false); });
   }, []);
 
-  if (loading) return <div className="p-8 text-center text-gray-400">Computing insights...</div>;
+  if (loading) return <div className="p-8 text-center text-gray-400">Finding insights...</div>;
 
-  const products = data?.products || [];
-  const positive = products.filter((p:any) => p.margin > 0);
-  const negative = products.filter((p:any) => p.margin < 0);
-  const avgMargin = positive.length > 0 ? (positive.reduce((s:number,p:any) => s+p.margin, 0) / positive.length).toFixed(1) : "0";
-  const topProfit = positive.length > 0 ? positive[positive.length-1] : null;
-  const bottomProfit = negative.length > 0 ? negative[0] : null;
-  const totalLoss = negative.reduce((s:number,p:any) => s + (p.retail - p.cost), 0);
-  const biggestWinner = positive.length > 0 ? positive[positive.length-1] : null;
-  const biggestLoser = negative.length > 0 ? negative[0] : null;
-
-  const cards = [
-    { id:"positive", Icon:CheckCircle, iconBg:"bg-green-100", iconColor:"text-green-600", value:positive.length.toString(), label:"Positive Margins", sub:`Avg ${avgMargin}% across ${positive.length} products`, items: positive.slice(-10).reverse() },
-    { id:"negative", Icon:AlertTriangle, iconBg:"bg-red-100", iconColor:"text-red-600", value:negative.length.toString(), label:"Negative Margins", sub:`€${Math.abs(totalLoss).toFixed(2)} total loss per unit`, items: negative.slice(0,10) },
-    { id:"top", Icon:TrendingUp, iconBg:"bg-green-100", iconColor:"text-green-600", value: topProfit ? `€${(topProfit.retail - topProfit.cost).toFixed(2)}/unit` : "—", label:"Top Profits", sub:"Ranked by profit per unit sold", items: positive.slice(-10).reverse() },
-    { id:"bottom", Icon:TrendingDown, iconBg:"bg-red-100", iconColor:"text-red-600", value: bottomProfit ? `€${(bottomProfit.retail - bottomProfit.cost).toFixed(2)}/unit` : "—", label:"Bottom Profits", sub:"Ranked by lowest profit per unit", items: negative.slice(0,10) },
-    { id:"winners", Icon:ArrowUp, iconBg:"bg-violet-100", iconColor:"text-violet-600", value: biggestWinner ? `${biggestWinner.margin}%` : "—", label:"Biggest Winners", sub:"Highest margin % products", items: positive.slice(-10).reverse() },
-    { id:"losers", Icon:ArrowDown, iconBg:"bg-red-100", iconColor:"text-red-600", value: biggestLoser ? `${biggestLoser.margin}%` : "—", label:"Biggest Losers", sub:"Lowest margin % products", items: negative.slice(0,10) },
-  ];
+  const fallers = data?.drift?.fallers || [];
+  const risers = data?.drift?.risers || [];
+  const winners = data?.hidden_winners || [];
+  const under = data?.underpriced_bestsellers || [];
+  const card = "bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm";
 
   return (
-    <div className="p-4 md:p-6">
-      <h1 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2"><BarChart3 className="w-5 h-5 text-violet-600" /> Insights</h1>
-      <p className="text-xs text-gray-500 mb-6">Click a card to see the full breakdown</p>
+    <div className="p-4 md:p-6 space-y-6">
+      <div>
+        <h1 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+          <Lightbulb className="w-5 h-5 text-violet-600" /> Insights
+        </h1>
+        <p className="text-xs text-gray-500 mt-0.5">
+          Things worth knowing that you would not think to look for. Your fix list lives in Issues; this is the bigger picture.
+        </p>
+      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {cards.map(card => (
-          <div key={card.id} className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-            <div onClick={() => setExpanded(expanded===card.id ? null : card.id)} className="p-5 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-750 transition flex justify-between items-start">
-              <div>
-                <div className={`w-8 h-8 ${card.iconBg} rounded-lg flex items-center justify-center mb-3`}>
-                  <card.Icon className={`w-4 h-4 ${card.iconColor}`} />
-                </div>
-                <p className={`text-2xl font-bold ${card.id.includes('negative') || card.id.includes('bottom') || card.id.includes('loser') ? 'text-red-600' : card.id.includes('winner') ? 'text-violet-600' : 'text-green-600'}`}>{card.value}</p>
-                <p className="font-medium text-sm text-gray-900 dark:text-white mt-1">{card.label}</p>
-                <p className="text-xs text-gray-400 mt-0.5">{card.sub}</p>
-              </div>
-              <span className="text-gray-300 text-sm">{expanded===card.id ? '▲' : '▼'}</span>
-            </div>
-            {expanded===card.id && (
-              <div className="border-t border-gray-100 dark:border-gray-700 max-h-64 overflow-y-auto">
-                {card.items.map((p:any, i:number) => (
-                  <div key={i} className="px-5 py-2.5 flex justify-between items-center border-b border-gray-50 dark:border-gray-700 last:border-0">
-                    <div>
-                      <p className="text-sm text-gray-800 dark:text-gray-200">{p.name}</p>
-                      <p className="text-[10px] text-gray-400">{p.supplier} • €{p.retail.toFixed(2)} retail • €{p.cost.toFixed(2)} cost</p>
-                    </div>
-                    <span className={`text-xs font-bold px-2 py-0.5 rounded ${p.margin > 0 ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>{p.margin}%</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        ))}
+      {/* 1. Margin drift by department */}
+      <div className={`${card} p-5`}>
+        <h3 className="font-semibold text-sm text-gray-900 dark:text-white">Margin drift by department</h3>
+        <p className="text-xs text-gray-400 mt-0.5 mb-4">
+          Where your category margins are moving, {data?.window}. A drop is an early warning before it shows up in the takings.
+        </p>
+        <div className="grid md:grid-cols-2 gap-5">
+          <DriftList title="Slipping" rows={fallers} tone="down" />
+          <DriftList title="Improving" rows={risers} tone="up" />
+        </div>
+      </div>
+
+      {/* 2. Hidden winners */}
+      <div className={`${card} overflow-hidden`}>
+        <div className="p-5 pb-3">
+          <h3 className="font-semibold text-sm text-gray-900 dark:text-white flex items-center gap-2">
+            <Award className="w-4 h-4 text-green-600" /> Hidden winners
+          </h3>
+          <p className="text-xs text-gray-400 mt-0.5">
+            High margin and selling fast. Keep these stocked, in date and where people see them.
+          </p>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-gray-50 dark:bg-gray-900 border-y border-gray-100 dark:border-gray-700">
+              <tr>
+                <th className="px-5 py-2 text-left text-[11px] font-semibold text-gray-500">Product</th>
+                <th className="px-3 py-2 text-left text-[11px] font-semibold text-gray-500 hidden sm:table-cell">Department</th>
+                <th className="px-3 py-2 text-right text-[11px] font-semibold text-gray-500">Margin</th>
+                <th className="px-5 py-2 text-right text-[11px] font-semibold text-gray-500">Sold / mo</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-50 dark:divide-gray-700">
+              {winners.map((w: any, i: number) => (
+                <tr key={i} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                  <td className="px-5 py-2 text-gray-800 dark:text-gray-200 truncate max-w-[240px]">{w.name}</td>
+                  <td className="px-3 py-2 text-gray-400 text-xs truncate max-w-[160px] hidden sm:table-cell">{w.dept}</td>
+                  <td className="px-3 py-2 text-right"><span className="px-2 py-0.5 rounded-full text-xs font-bold bg-green-50 text-green-700 dark:bg-green-900/40 dark:text-green-400">{w.margin}%</span></td>
+                  <td className="px-5 py-2 text-right font-semibold text-gray-700 dark:text-gray-300 tabular-nums">{num(w.monthly_units)}</td>
+                </tr>
+              ))}
+              {winners.length === 0 && <tr><td colSpan={4} className="px-5 py-6 text-center text-gray-400 text-sm">No data yet.</td></tr>}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* 3. Underpriced bestsellers */}
+      <div className={`${card} overflow-hidden`}>
+        <div className="p-5 pb-3">
+          <h3 className="font-semibold text-sm text-gray-900 dark:text-white flex items-center gap-2">
+            <Tag className="w-4 h-4 text-red-600" /> Underpriced bestsellers
+          </h3>
+          <p className="text-xs text-gray-400 mt-0.5">
+            Your busiest products on thin margins, biggest monthly euro wins first. Fuel, lottery and similar are left out because you cannot reprice them.
+          </p>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-gray-50 dark:bg-gray-900 border-y border-gray-100 dark:border-gray-700">
+              <tr>
+                <th className="px-5 py-2 text-left text-[11px] font-semibold text-gray-500">Product</th>
+                <th className="px-3 py-2 text-left text-[11px] font-semibold text-gray-500 hidden md:table-cell">Department</th>
+                <th className="px-3 py-2 text-right text-[11px] font-semibold text-gray-500">Margin</th>
+                <th className="px-3 py-2 text-right text-[11px] font-semibold text-gray-500">Now</th>
+                <th className="px-3 py-2 text-right text-[11px] font-semibold text-gray-500">Suggested</th>
+                <th className="px-3 py-2 text-right text-[11px] font-semibold text-gray-500 hidden sm:table-cell">Sold / mo</th>
+                <th className="px-5 py-2 text-right text-[11px] font-semibold text-gray-500">€ / mo</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-50 dark:divide-gray-700">
+              {under.map((u: any, i: number) => (
+                <tr key={i} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                  <td className="px-5 py-2 text-gray-800 dark:text-gray-200 truncate max-w-[220px]">{u.name}</td>
+                  <td className="px-3 py-2 text-gray-400 text-xs truncate max-w-[140px] hidden md:table-cell">{u.dept}</td>
+                  <td className="px-3 py-2 text-right"><span className={`px-2 py-0.5 rounded-full text-xs font-bold ${u.margin < 0 ? "bg-red-100 text-red-700" : "bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"}`}>{u.margin}%</span></td>
+                  <td className="px-3 py-2 text-right text-gray-500 tabular-nums">{eur(u.price)}</td>
+                  <td className="px-3 py-2 text-right font-semibold text-green-600 tabular-nums">{eur(u.suggested)}</td>
+                  <td className="px-3 py-2 text-right text-gray-600 dark:text-gray-300 tabular-nums hidden sm:table-cell">{num(u.monthly_units)}</td>
+                  <td className="px-5 py-2 text-right font-bold text-violet-600 tabular-nums">{eur0(u.monthly_opportunity)}</td>
+                </tr>
+              ))}
+              {under.length === 0 && <tr><td colSpan={7} className="px-5 py-6 text-center text-gray-400 text-sm">No data yet.</td></tr>}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
