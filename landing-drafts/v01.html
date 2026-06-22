@@ -616,11 +616,44 @@
     });
     document.getElementById('contactForm').addEventListener('submit', function(e) {
       e.preventDefault();
-      this.style.display = 'none';
-      var ok = document.createElement('div');
-      ok.style.cssText = 'text-align:center;font-size:15px;font-weight:600;color:#16a34a;background:#f0fdf4;border-radius:12px;padding:20px';
-      ok.textContent = 'Got it. We will send your free margin report within 48 hours.';
-      this.parentNode.appendChild(ok);
+      var form = this;
+      var btn = form.querySelector('button[type="submit"]');
+      var name = (document.getElementById('c-name').value || '').trim();
+      var email = (document.getElementById('c-email').value || '').trim();
+      var store = (document.getElementById('c-store').value || '').trim();
+      var pos = (document.getElementById('c-pos').value || '').trim();
+      var msg = (document.getElementById('c-msg').value || '').trim();
+      if (!name || !email) { alert('Please enter your name and email so we can send your report.'); return; }
+      var orig = btn.textContent;
+      btn.disabled = true; btn.textContent = 'Sending...';
+      fetch('https://formsubmit.co/ajax/retailguard.sales@gmail.com', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({
+          Name: name,
+          Email: email,
+          Store: store || '(not given)',
+          'POS system': pos || '(not given)',
+          'Biggest pain point': msg || '(not given)',
+          _subject: 'New RetailGuard margin scan request: ' + (store || name),
+          _template: 'table',
+          _captcha: 'false'
+        })
+      }).then(function(r){ return r.json(); }).then(function(d){
+        if (d && (d.success === true || d.success === 'true')) {
+          form.style.display = 'none';
+          var ok = document.createElement('div');
+          ok.style.cssText = 'text-align:center;font-size:15px;font-weight:600;color:#16a34a;background:#f0fdf4;border-radius:12px;padding:20px';
+          ok.textContent = 'Got it, ' + (name.split(' ')[0]) + '. We will send your free margin report within one business day.';
+          form.parentNode.appendChild(ok);
+        } else {
+          btn.disabled = false; btn.textContent = orig;
+          alert('Sorry, that did not send. Please email retailguard.sales@gmail.com directly and we will sort it.');
+        }
+      }).catch(function(){
+        btn.disabled = false; btn.textContent = orig;
+        alert('Sorry, that did not send. Please email retailguard.sales@gmail.com directly and we will sort it.');
+      });
     });
   </script>
 </body>
