@@ -394,7 +394,7 @@ function App() {
             />
           )}
           {tab === "analyse" && <AnalysePage analyzing={analyzing} fileName={lastFileNames} />}
-          {tab === "dashboard" && <DashboardInsights />}
+          {tab === "dashboard" && <DashboardInsights onNavigate={(t) => { setTab(t); setMobileNav(false); }} />}
           {tab === "issues" && <InsightsLivePage />}
           {tab === "invoices" && <InvoiceScannerPage existingProducts={activeProducts} onAddToSystem={handleAnalyseMultiple} />}
           {tab === "scanner" && <BarcodeScannerPage />}
