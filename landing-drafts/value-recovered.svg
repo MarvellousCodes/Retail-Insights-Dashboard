@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 800" width="1280" height="800">
+<defs>
+ <linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7c3aed"/><stop offset="1" stop-color="#c026d3"/></linearGradient>
+ <linearGradient id="ar" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8b5cf6" stop-opacity="0.35"/><stop offset="1" stop-color="#8b5cf6" stop-opacity="0"/></linearGradient>
+ <radialGradient id="gl1" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#8b5cf6" stop-opacity="0.55"/><stop offset="1" stop-color="#8b5cf6" stop-opacity="0"/></radialGradient>
+ <radialGradient id="gl2" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#c026d3" stop-opacity="0.4"/><stop offset="1" stop-color="#c026d3" stop-opacity="0"/></radialGradient>
+ <filter id="sh" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="30" stdDeviation="38" flood-color="#000000" flood-opacity="0.5"/></filter>
+ <style>text{font-family:'Inter','Helvetica Neue',Arial,sans-serif}</style>
+</defs>
+<rect width="1280" height="800" fill="#0b0b14"/>
+<circle cx="1080" cy="90" r="380" fill="url(#gl1)" opacity="0.6"/>
+<circle cx="150" cy="720" r="300" fill="url(#gl2)" opacity="0.5"/>
+<rect x="90" y="80" width="1100" height="640" rx="18" fill="#121019" stroke="#ffffff" stroke-opacity="0.09" filter="url(#sh)"/>
+<circle cx="122" cy="104" r="6" fill="#ef4444"/><circle cx="142" cy="104" r="6" fill="#f59e0b"/><circle cx="162" cy="104" r="6" fill="#22c55e"/>
+<text x="640" y="109" text-anchor="middle" fill="#9ca3af" font-size="13" font-weight="600">RetailGuard / Impact</text>
+<circle cx="1098" cy="104" r="4" fill="#22c55e"/><text x="1110" y="108" fill="#22c55e" font-size="11.5" font-weight="600">Live</text>
+<line x1="90" y1="128" x2="1190" y2="128" stroke="#ffffff" stroke-opacity="0.07"/>
+
+<text x="124" y="170" fill="#ffffff" font-size="22" font-weight="800">Margin recovered</text>
+<text x="124" y="195" fill="#6b7280" font-size="13">Money that would otherwise have leaked, estimated for a shop your size</text>
+<text x="124" y="302" fill="#ffffff" font-size="46" font-weight="900">&#8364;8,400</text>
+<text x="124" y="332" fill="#6b7280" font-size="13">recovered in a year, estimated</text>
+<rect x="620" y="222" width="510" height="150" rx="8" fill="#16151f"/>
+<path d="M640,352 L680,347 L720,340 L760,332 L800,320 L840,304 L880,287 L920,272 L960,260 L1000,250 L1040,242 L1080,237 L1110,232 L1110,352 Z" fill="url(#ar)"/>
+<polyline points="640,352 680,347 720,340 760,332 800,320 840,304 880,287 920,272 960,260 1000,250 1040,242 1080,237 1110,232" fill="none" stroke="#7c3aed" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="640" y="368" fill="#4b5563" font-size="9">Jan</text>
+<text x="868" y="368" fill="#4b5563" font-size="9">Jun</text>
+<text x="1100" y="368" fill="#4b5563" font-size="9">Dec</text>
+<rect x="124" y="402" width="320" height="106" rx="10" fill="#16151f"/>
+<text x="144" y="432" fill="#9ca3af" font-size="11" font-weight="600">PER MONTH</text>
+<text x="144" y="470" fill="#ffffff" font-size="30" font-weight="800">~&#8364;700</text>
+<text x="144" y="494" fill="#22c55e" font-size="12">found and fixed</text>
+<rect x="468" y="402" width="320" height="106" rx="10" fill="#16151f"/>
+<text x="488" y="432" fill="#9ca3af" font-size="11" font-weight="600">FIRST SAVING</text>
+<text x="488" y="470" fill="#ffffff" font-size="30" font-weight="800">6 days</text>
+<text x="488" y="494" fill="#6b7280" font-size="12">from go live</text>
+<rect x="812" y="402" width="320" height="106" rx="10" fill="#16151f"/>
+<text x="832" y="432" fill="#9ca3af" font-size="11" font-weight="600">EFFORT</text>
+<text x="832" y="470" fill="#ffffff" font-size="30" font-weight="800">Zero</text>
+<text x="832" y="494" fill="#6b7280" font-size="12">found automatically</text>
+<text x="1156" y="700" text-anchor="end" fill="#4b5563" font-size="10">Estimated, illustrative</text>
+</svg>
