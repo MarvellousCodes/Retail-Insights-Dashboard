@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { apiCall } from "@/lib/api";
+import { ProductDetail } from "@/components/ProductDetail";
 
 function fmtPrice(v: string) {
   const n = parseFloat(v || "0");
@@ -55,6 +56,7 @@ export function LiveDataPage() {
   const [syncing, setSyncing] = useState(false);
   const [activeOnly, setActiveOnly] = useState(true);
   const [counts, setCounts] = useState<{active:number;all:number}>({active:0,all:0});
+  const [selId, setSelId] = useState<string|null>(null);
 
   useEffect(() => { loadData(); }, [activeOnly]);
 
@@ -151,7 +153,7 @@ export function LiveDataPage() {
               </div>
               <div className="divide-y divide-gray-50 dark:divide-gray-700">
                 {items.slice(0, 5).map((p: any, i: number) => (
-                  <div key={i} className="px-4 py-2.5 flex justify-between items-center">
+                  <div key={i} onClick={() => p.ID && setSelId(String(p.ID))} className="px-4 py-2.5 flex justify-between items-center cursor-pointer hover:bg-violet-50/40 dark:hover:bg-violet-900/10">
                     <div>
                       <span className="text-sm text-gray-800 dark:text-gray-200">{(p.Description||"").trim()}</span>
                       {(p.Active||"").trim() === "N" && <span className="ml-2 text-[10px] bg-red-50 text-red-500 px-1.5 py-0.5 rounded">Inactive</span>}
@@ -167,7 +169,7 @@ export function LiveDataPage() {
       ) : view === "cards" ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {sorted.map((p, i) => (
-            <div key={i} onClick={() => setExpanded(expanded===i?null:i)} className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-200 dark:border-gray-700 cursor-pointer hover:border-violet-300 hover:shadow-md transition">
+            <div key={i} onClick={() => p.ID && setSelId(String(p.ID))} className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-200 dark:border-gray-700 cursor-pointer hover:border-violet-300 hover:shadow-md transition">
               <div className="flex justify-between items-start gap-2">
                 <div className="flex-1 min-w-0">
                   <h3 className="font-medium text-sm text-gray-900 dark:text-white truncate">{(p.Description||"").trim()}</h3>
@@ -216,7 +218,7 @@ export function LiveDataPage() {
             </thead>
             <tbody className="divide-y divide-gray-50 dark:divide-gray-700">
               {sorted.map((p, i) => (
-                <tr key={i} className="hover:bg-violet-50/40">
+                <tr key={i} onClick={() => p.ID && setSelId(String(p.ID))} className="hover:bg-violet-50/40 cursor-pointer">
                   <td className="px-3 py-2.5 text-gray-800 dark:text-gray-200 truncate max-w-[220px]">{(p.Description||"").trim()}</td>
                   <td className="px-3 py-2.5 text-right font-medium text-violet-600">{p.price_on_request ? <span className="text-[11px] text-gray-400">on request</span> : fmtPrice(p.Retail1)}</td>
                   <td className="px-3 py-2.5 text-right text-gray-500">{fmtPrice(p.UnitCost||p.CurrentCost)}</td>
@@ -237,6 +239,7 @@ export function LiveDataPage() {
         </div>
       )}
       <p className="text-xs text-gray-400 mt-3 text-center">Showing {sorted.length} {activeOnly ? "active" : ""} products{counts.active ? ` • ${counts.active.toLocaleString()} active in store` : ""}</p>
+      <ProductDetail id={selId} onClose={() => setSelId(null)} />
     </div>
   );
 }

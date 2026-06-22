@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { apiCall, API_BASE } from "@/lib/api";
+import { ProductDetail } from "@/components/ProductDetail";
 
 const TARGETS = [20, 25, 30];
 
@@ -66,6 +67,7 @@ export function DeptPage() {
   const [total, setTotal] = useState(0);
   const [offset, setOffset] = useState(0);
   const [loadingProds, setLoadingProds] = useState(false);
+  const [selId, setSelId] = useState<string | null>(null);
   const LIMIT = 100;
   const hasTarget = targetPct !== null;
   const t = hasTarget ? (targetPct! / 100).toFixed(2) : "";
@@ -294,7 +296,7 @@ export function DeptPage() {
                         </thead>
                         <tbody className="divide-y divide-gray-50 dark:divide-gray-700">
                           {prods.map((p, i) => (
-                            <tr key={i} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                            <tr key={i} onClick={() => p.id != null && setSelId(String(p.id))} className="hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer">
                               <td className="px-4 py-2 text-gray-800 dark:text-gray-200 truncate max-w-[240px]">
                                 {p.name}
                                 {p.barcode && <span className="block text-[10px] text-gray-400 font-mono">{p.barcode}</span>}
@@ -325,6 +327,7 @@ export function DeptPage() {
           </div>
         ))}
       </div>
+      <ProductDetail id={selId} onClose={() => setSelId(null)} />
     </div>
   );
 }
