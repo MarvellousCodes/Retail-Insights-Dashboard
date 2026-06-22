@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { apiCall, API_BASE } from "@/lib/api";
 import { Receipt, ShoppingBasket, Euro, Coins, Download, Layers } from "lucide-react";
+import { useRevenueMask, RevenueMaskToggle, STARS } from "@/lib/privacy";
 
 function money(v: number) {
   if (v >= 1_000_000) return "€" + (v / 1_000_000).toFixed(2) + "M";
@@ -15,6 +16,7 @@ export function TransactionsPage() {
   const [metric, setMetric] = useState<"count" | "value">("count");
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
+  const { masked, toggle } = useRevenueMask();
 
   const load = useCallback((f?: string, t?: string, first = false) => {
     setLoading(true);
@@ -36,7 +38,7 @@ export function TransactionsPage() {
   const byHour = (data?.byHour || []).filter((h: any) => h.count > 0);
   const maxDay = Math.max(...byDay.map((d: any) => d[metric]), 1);
   const maxHour = Math.max(...byHour.map((h: any) => h[metric]), 1);
-  const fmt = (v: number) => (metric === "value" ? money(v) : v.toLocaleString());
+  const fmt = (v: number) => masked ? STARS : (metric === "value" ? money(v) : v.toLocaleString());
   const maxDeptVal = Math.max(...depts.map((d) => d.value), 1);
   const exportUrl = `${API_BASE}/api/export/transactions?from=${from}&to=${to}`;
 
@@ -47,6 +49,7 @@ export function TransactionsPage() {
           <h1 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">Transactions</h1>
           <p className="text-xs text-gray-500">Basket size, busiest times, and sales volume by department</p>
         </div>
+        <RevenueMaskToggle masked={masked} toggle={toggle} />
       </div>
 
       {/* date range + export */}
@@ -76,19 +79,19 @@ export function TransactionsPage() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
         <div className="bg-white dark:bg-gray-800 rounded-xl p-3 border border-gray-200 dark:border-gray-700 flex items-center gap-3">
           <div className="w-9 h-9 rounded-lg bg-violet-100 dark:bg-violet-900/40 flex items-center justify-center"><Receipt className="w-4 h-4 text-violet-600" /></div>
-          <div><p className="text-xl font-bold text-gray-900 dark:text-white">{(data?.count || 0).toLocaleString()}</p><p className="text-[11px] text-gray-500">Transactions</p></div>
+          <div><p className="text-xl font-bold text-gray-900 dark:text-white">{masked ? STARS : (data?.count || 0).toLocaleString()}</p><p className="text-[11px] text-gray-500">Transactions</p></div>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-xl p-3 border border-gray-200 dark:border-gray-700 flex items-center gap-3">
           <div className="w-9 h-9 rounded-lg bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center"><Coins className="w-4 h-4 text-emerald-600" /></div>
-          <div><p className="text-xl font-bold text-gray-900 dark:text-white">{money(data?.total_value || 0)}</p><p className="text-[11px] text-gray-500">Total value</p></div>
+          <div><p className="text-xl font-bold text-gray-900 dark:text-white">{masked ? STARS : money(data?.total_value || 0)}</p><p className="text-[11px] text-gray-500">Total value</p></div>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-xl p-3 border border-gray-200 dark:border-gray-700 flex items-center gap-3">
           <div className="w-9 h-9 rounded-lg bg-green-100 dark:bg-green-900/40 flex items-center justify-center"><ShoppingBasket className="w-4 h-4 text-green-600" /></div>
-          <div><p className="text-xl font-bold text-gray-900 dark:text-white">{data?.avg_basket ?? 0}</p><p className="text-[11px] text-gray-500">Avg items / sale</p></div>
+          <div><p className="text-xl font-bold text-gray-900 dark:text-white">{masked ? STARS : (data?.avg_basket ?? 0)}</p><p className="text-[11px] text-gray-500">Avg items / sale</p></div>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-xl p-3 border border-gray-200 dark:border-gray-700 flex items-center gap-3">
           <div className="w-9 h-9 rounded-lg bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center"><Euro className="w-4 h-4 text-amber-600" /></div>
-          <div><p className="text-xl font-bold text-gray-900 dark:text-white">€{data?.avg_value ?? 0}</p><p className="text-[11px] text-gray-500">Avg basket value</p></div>
+          <div><p className="text-xl font-bold text-gray-900 dark:text-white">{masked ? STARS : `€${data?.avg_value ?? 0}`}</p><p className="text-[11px] text-gray-500">Avg basket value</p></div>
         </div>
       </div>
 
@@ -144,8 +147,8 @@ export function TransactionsPage() {
               <span className="flex-1 h-2.5 rounded-full bg-gray-100 dark:bg-gray-700 overflow-hidden">
                 <span className="block h-full rounded-full bg-violet-500" style={{ width: `${Math.round((d.value / maxDeptVal) * 100)}%` }}></span>
               </span>
-              <span className="w-20 text-right tabular-nums text-gray-700 dark:text-gray-200 font-medium">{money(d.value)}</span>
-              <span className="w-24 text-right tabular-nums text-gray-400 text-xs hidden sm:inline">{d.qty.toLocaleString()} units</span>
+              <span className="w-20 text-right tabular-nums text-gray-700 dark:text-gray-200 font-medium">{masked ? STARS : money(d.value)}</span>
+              <span className="w-24 text-right tabular-nums text-gray-400 text-xs hidden sm:inline">{masked ? STARS : `${d.qty.toLocaleString()} units`}</span>
             </div>
           ))}
           {depts.length === 0 && <p className="text-sm text-gray-400">No department volume available.</p>}
