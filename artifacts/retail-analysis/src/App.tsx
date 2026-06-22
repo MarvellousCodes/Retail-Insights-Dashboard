@@ -204,6 +204,11 @@ function App() {
     else root.classList.remove("dark");
     localStorage.setItem("rg-theme", theme);
   }, [theme]);
+
+  // Auth gate: no token means not signed in, go to the sign-in page.
+  useEffect(() => {
+    if (!isLoggedIn()) window.location.href = "/signin.html";
+  }, []);
   const [sources, setSources] = useState<Source[]>([]);
   const [activeSourceIds, setActiveSourceIds] = useState<Set<string>>(new Set());
   const [marginAlerts, setMarginAlerts] = useState<MarginAlert[]>([]);

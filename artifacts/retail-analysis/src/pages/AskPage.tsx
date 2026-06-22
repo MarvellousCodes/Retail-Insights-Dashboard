@@ -62,10 +62,13 @@ export function AskPage() {
     if (!text || sheetBusy) return;
     setSheetMsg(null); setSheetBusy(true);
     try {
+      const token = localStorage.getItem("rg-token");
       const res = await fetch(`${API_BASE}/api/spreadsheet`, {
-        method: "POST", headers: { "Content-Type": "application/json" },
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
         body: JSON.stringify({ question: text, format: "xlsx" }),
       });
+      if (res.status === 401) { localStorage.removeItem("rg-token"); window.location.href = "/signin.html"; return; }
       const ct = res.headers.get("content-type") || "";
       if (ct.includes("application/json")) {
         const e = await res.json();

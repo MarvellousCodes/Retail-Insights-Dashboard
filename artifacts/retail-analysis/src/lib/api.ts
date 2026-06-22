@@ -8,11 +8,16 @@ export async function apiCall(endpoint: string, options?: RequestInit) {
   const token = localStorage.getItem("rg-token");
   const res = await fetch(`${API_BASE}${endpoint}`, {
     ...options,
-    headers: { "Content-Type": "application/json", ...(options?.headers || {}) },
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(options?.headers || {}),
+    },
   });
   if (res.status === 401) {
     localStorage.removeItem("rg-token");
-    window.location.reload();
+    if (!location.pathname.endsWith("/signin.html")) location.href = "/signin.html";
+    return await new Promise(() => {});
   }
   return res.json();
 }
