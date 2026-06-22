@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { apiCall } from "@/lib/api";
-import { Sparkles, Send, Loader2, Code2, Download, Gauge, AlertTriangle } from "lucide-react";
+import { apiCall, API_BASE } from "@/lib/api";
+import { Sparkles, Send, Loader2, Code2, Download, Gauge, AlertTriangle, FileSpreadsheet } from "lucide-react";
 
 interface Turn {
   q: string; answer: string; sql: string;
@@ -16,12 +16,22 @@ const SUGGESTIONS = [
   "How many active products are below 20% margin?",
 ];
 
+const SHEET_SUGGESTIONS = [
+  "All products below cost, with department and suggested price",
+  "Every supplier with total spend and average margin",
+  "Top 100 products by sales value this year",
+  "Active products with no barcode",
+];
+
 export function AskPage() {
   const [q, setQ] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [history, setHistory] = useState<Turn[]>([]);
   const [usage, setUsage] = useState<Usage | null>(null);
+  const [sheetQ, setSheetQ] = useState("");
+  const [sheetBusy, setSheetBusy] = useState(false);
+  const [sheetMsg, setSheetMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const endRef = useRef<HTMLDivElement | null>(null);
 
   const loadUsage = useCallback(() => { apiCall("/api/ask/usage").then(setUsage).catch(() => {}); }, []);
@@ -47,6 +57,40 @@ export function AskPage() {
 
   const toggleSql = (i: number) => setHistory((h) => h.map((t, idx) => idx === i ? { ...t, showSql: !t.showSql } : t));
 
+  const buildSheet = useCallback(async (request: string) => {
+    const text = request.trim();
+    if (!text || sheetBusy) return;
+    setSheetMsg(null); setSheetBusy(true);
+    try {
+      const res = await fetch(`${API_BASE}/api/spreadsheet`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question: text, format: "xlsx" }),
+      });
+      const ct = res.headers.get("content-type") || "";
+      if (ct.includes("application/json")) {
+        const e = await res.json();
+        setSheetMsg({ ok: false, text: e.error || "Could not build that spreadsheet." });
+      } else {
+        const blob = await res.blob();
+        const cd = res.headers.get("content-disposition") || "";
+        const m = cd.match(/filename="(.+?)"/);
+        const fname = m ? m[1] : "retailguard-export.xlsx";
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob); a.download = fname; a.click();
+        const rows = res.headers.get("X-RG-Rows") || "0";
+        const fmt = (res.headers.get("X-RG-Format") || "xlsx").toUpperCase();
+        setSheetMsg({ ok: true, text: `Built ${fname} (${rows} rows, ${fmt}).` });
+        const today = res.headers.get("X-RG-Today");
+        const mc = res.headers.get("X-RG-Month-Cost");
+        if (today) setUsage((u) => ({ ...(u as Usage), today: +today, month_cost: +(mc || 0), configured: true }));
+        setSheetQ("");
+      }
+    } catch {
+      setSheetMsg({ ok: false, text: "Something went wrong building the file." });
+    }
+    setSheetBusy(false);
+  }, [sheetBusy]);
+
   const exportTxt = () => {
     const text = history.slice().reverse().map((t) => `Q: ${t.q}\nA: ${t.answer}\nSQL: ${t.sql}\n`).join("\n----------------\n\n");
     const a = document.createElement("a");
@@ -68,7 +112,7 @@ export function AskPage() {
           </button>
         )}
       </div>
-      <p className="text-xs text-gray-500 mb-3">Ask a plain-English question about your stock, margins, departments, sales or suppliers. Read-only — it can never change your data.</p>
+      <p className="text-xs text-gray-500 mb-3">Ask a plain-English question about your stock, margins, departments, sales or suppliers, or build a spreadsheet below. Read-only, so it can never change your data.</p>
 
       {u && (
         <div className="flex items-center gap-3 mb-3 text-xs text-gray-500">
@@ -76,6 +120,36 @@ export function AskPage() {
           <span>${u.month_cost.toFixed(3)} / ${u.monthly_ceiling.toFixed(0)} this month</span>
         </div>
       )}
+
+      {/* spreadsheet builder */}
+      <div className="mb-4 rounded-2xl border border-violet-200 dark:border-violet-800 bg-violet-50/60 dark:bg-violet-900/15 p-4">
+        <div className="flex items-center gap-2 mb-1">
+          <FileSpreadsheet className="w-4 h-4 text-violet-600" />
+          <h2 className="text-sm font-bold text-gray-900 dark:text-white">Build a spreadsheet</h2>
+        </div>
+        <p className="text-xs text-gray-500 mb-3">Describe the list you want and download it as an Excel file. The lookup that finds your data costs a fraction of a cent. Building the file is free.</p>
+        <div className="flex gap-2">
+          <input
+            value={sheetQ} onChange={(e) => setSheetQ(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") buildSheet(sheetQ); }}
+            placeholder="e.g. every active product below 25% margin in Chilled & Dairy with the suggested price"
+            className="flex-1 h-11 px-3.5 rounded-xl border border-violet-200 dark:border-violet-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-violet-500" />
+          <button onClick={() => buildSheet(sheetQ)} disabled={!sheetQ.trim() || sheetBusy}
+            className="inline-flex items-center gap-2 px-4 h-11 rounded-xl bg-violet-600 text-white text-sm font-semibold hover:bg-violet-700 transition disabled:opacity-50 whitespace-nowrap">
+            {sheetBusy ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileSpreadsheet className="w-4 h-4" />} Build Excel
+          </button>
+        </div>
+        <div className="flex flex-wrap gap-2 mt-3">
+          {SHEET_SUGGESTIONS.map((s) => (
+            <button key={s} onClick={() => buildSheet(s)} disabled={sheetBusy}
+              className="px-3 py-1.5 rounded-full text-xs bg-white dark:bg-gray-800 border border-violet-200 dark:border-violet-700 text-violet-700 dark:text-violet-300 hover:bg-violet-100 dark:hover:bg-violet-900/40 transition disabled:opacity-50">
+              {s}
+            </button>
+          ))}
+        </div>
+        {sheetMsg && (
+          <p className={`text-xs mt-2 ${sheetMsg.ok ? "text-green-600 dark:text-green-400" : "text-amber-600 dark:text-amber-400"}`}>{sheetMsg.text}</p>
+        )}
+      </div>
 
       {/* input */}
       <div className="flex gap-2 mb-3">
