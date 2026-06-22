@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
+import { Menu } from "lucide-react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Sidebar } from "@/components/Sidebar";
 import { UploadPage } from "@/pages/UploadPage";
@@ -192,6 +193,7 @@ export function runAnalysis(
 function App() {
   const [tab, setTab] = useState<InternalTab>("livedata");
   const [sidebarExpanded, setSidebarExpanded] = useState(true);
+  const [mobileNav, setMobileNav] = useState(false);
   const [loggedIn, setLoggedIn] = useState(true);
   const [theme, setTheme] = useState<"light" | "dark">(() => {
     if (typeof window === "undefined") return "light";
@@ -350,13 +352,24 @@ function App() {
       <div className="flex h-screen bg-gray-50 overflow-hidden">
         <Sidebar
           activeTab={activeNav}
-          onTabChange={(t) => setTab(t)}
+          onTabChange={(t) => { setTab(t); setMobileNav(false); }}
           expanded={sidebarExpanded}
           onToggle={() => setSidebarExpanded((e) => !e)}
           theme={theme}
           onThemeToggle={() => setTheme((t) => (t === "dark" ? "light" : "dark"))}
+          mobileOpen={mobileNav}
+          onClose={() => setMobileNav(false)}
         />
+        {mobileNav && (
+          <div className="fixed inset-0 bg-black/40 z-20 md:hidden" onClick={() => setMobileNav(false)} aria-hidden="true" />
+        )}
         <main className="flex-1 overflow-y-auto">
+          <div className="md:hidden sticky top-0 z-10 flex items-center gap-3 h-14 px-4 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+            <button onClick={() => setMobileNav(true)} aria-label="Open menu" className="w-9 h-9 -ml-1 flex items-center justify-center rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+              <Menu className="w-5 h-5" />
+            </button>
+            <span className="font-black text-sm bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent">RetailGuard</span>
+          </div>
           {tab === "livedata" && <LiveDataPage />}
           {tab === "turnover" && <TurnoverPage />}
           {tab === "transactions" && <TransactionsPage />}

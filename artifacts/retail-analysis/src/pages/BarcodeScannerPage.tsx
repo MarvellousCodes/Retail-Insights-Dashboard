@@ -1,11 +1,21 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { apiCall } from "@/lib/api";
+import { BrowserMultiFormatReader } from "@zxing/browser";
+import { DecodeHintType, BarcodeFormat } from "@zxing/library";
 import {
   ScanBarcode, Camera, CameraOff, Check, X, Keyboard, ImageUp,
   Loader2, PackageSearch, AlertTriangle,
 } from "lucide-react";
 
-const FORMATS = ["ean_13", "ean_8", "upc_a", "upc_e", "code_128", "code_39", "itf"];
+// Retail 1D formats. ZXing decodes these in pure JS, so it works on iOS Safari
+// (which has no native BarcodeDetector), as well as Android and desktop.
+const HINTS = new Map<DecodeHintType, unknown>([
+  [DecodeHintType.POSSIBLE_FORMATS, [
+    BarcodeFormat.EAN_13, BarcodeFormat.EAN_8, BarcodeFormat.UPC_A,
+    BarcodeFormat.UPC_E, BarcodeFormat.CODE_128, BarcodeFormat.CODE_39, BarcodeFormat.ITF,
+  ]],
+  [DecodeHintType.TRY_HARDER, true],
+]);
 
 interface Product {
   name: string; barcode: string; code: string;
@@ -33,18 +43,18 @@ export function BarcodeScannerPage() {
   const [scanning, setScanning] = useState(false);
   const [notice, setNotice] = useState("");
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const streamRef = useRef<MediaStream | null>(null);
-  const rafRef = useRef<number | null>(null);
-  const detectorRef = useRef<any>(null);
+  const readerRef = useRef<BrowserMultiFormatReader | null>(null);
+  const controlsRef = useRef<{ stop: () => void } | null>(null);
   const fileRef = useRef<HTMLInputElement | null>(null);
 
-  const hasDetector = typeof window !== "undefined" && "BarcodeDetector" in window;
+  // Camera needs a secure context + getUserMedia. Decoding is done by ZXing in
+  // JS, so unlike the old BarcodeDetector path this now works on iPhones too.
   const canCamera = typeof window !== "undefined" && window.isSecureContext
-    && !!navigator.mediaDevices?.getUserMedia && hasDetector;
+    && !!navigator.mediaDevices?.getUserMedia;
 
-  const getDetector = () => {
-    if (!detectorRef.current) detectorRef.current = new (window as any).BarcodeDetector({ formats: FORMATS });
-    return detectorRef.current;
+  const getReader = () => {
+    if (!readerRef.current) readerRef.current = new BrowserMultiFormatReader(HINTS);
+    return readerRef.current;
   };
 
   const lookup = useCallback(async (c: string) => {
@@ -61,65 +71,61 @@ export function BarcodeScannerPage() {
   }, []);
 
   const stopCamera = useCallback(() => {
-    if (rafRef.current) cancelAnimationFrame(rafRef.current);
-    rafRef.current = null;
-    streamRef.current?.getTracks().forEach((t) => t.stop());
-    streamRef.current = null;
+    try { controlsRef.current?.stop(); } catch { /* already stopped */ }
+    controlsRef.current = null;
+    const v = videoRef.current;
+    const s = v && (v.srcObject as MediaStream | null);
+    s?.getTracks().forEach((t) => t.stop());
+    if (v) v.srcObject = null;
     setScanning(false);
   }, []);
 
   const startCamera = useCallback(async () => {
     setNotice("");
     if (!canCamera) {
-      setNotice(!window.isSecureContext
-        ? "Live camera needs a secure (HTTPS) connection. For now, take a photo or scan into the box below — a USB/handheld barcode scanner works there too."
-        : "This browser can't do live camera scanning. Use photo upload or type/scan the barcode below.");
+      setNotice(typeof window !== "undefined" && !window.isSecureContext
+        ? "Live camera needs a secure (HTTPS) connection. Take a photo or type/scan the barcode below — a USB/handheld scanner works there too."
+        : "This browser can't access the camera. Use photo upload or type the barcode below.");
       return;
     }
+    setScanning(true);
     try {
-      const detector = getDetector();
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-      streamRef.current = stream;
-      if (videoRef.current) { videoRef.current.srcObject = stream; await videoRef.current.play(); }
-      setScanning(true);
-      const tick = async () => {
-        if (!videoRef.current || !streamRef.current) return;
-        try {
-          const codes = await detector.detect(videoRef.current);
-          if (codes && codes.length) {
-            const val = codes[0].rawValue;
-            setCode(val); stopCamera(); lookup(val);
-            return;
+      const reader = getReader();
+      controlsRef.current = await reader.decodeFromConstraints(
+        { video: { facingMode: { ideal: "environment" } } },
+        videoRef.current as HTMLVideoElement,
+        (res) => {
+          if (res) {
+            const val = res.getText();
+            stopCamera();
+            setCode(val);
+            lookup(val);
           }
-        } catch { /* transient detect error — keep scanning */ }
-        rafRef.current = requestAnimationFrame(tick);
-      };
-      rafRef.current = requestAnimationFrame(tick);
+          // no result this frame -> ZXing keeps scanning
+        },
+      );
     } catch (e: any) {
+      setScanning(false);
       setNotice(e?.name === "NotAllowedError"
         ? "Camera permission was denied. Allow camera access, or use photo upload / type the barcode."
         : "Couldn't start the camera. Use photo upload or type the barcode below.");
-      setScanning(false);
     }
   }, [canCamera, lookup, stopCamera]);
 
   const onFile = useCallback(async (file: File | undefined) => {
     if (!file) return;
     setNotice("");
-    if (!hasDetector) {
-      setNotice("This browser can't read barcodes from a photo. Type or scan the barcode into the box below instead.");
-      return;
-    }
+    const url = URL.createObjectURL(file);
     try {
-      const bmp = await createImageBitmap(file);
-      const codes = await getDetector().detect(bmp);
-      (bmp as any).close?.();
-      if (codes && codes.length) { setCode(codes[0].rawValue); lookup(codes[0].rawValue); }
-      else setNotice("No barcode found in that photo — try a clearer, closer shot, or type it below.");
+      const res = await getReader().decodeFromImageUrl(url);
+      const val = res.getText();
+      setCode(val); lookup(val);
     } catch {
-      setNotice("Couldn't read that image. Try another photo or type the barcode below.");
+      setNotice("No barcode found in that photo — try a clearer, closer shot, or type it below.");
+    } finally {
+      URL.revokeObjectURL(url);
     }
-  }, [hasDetector, lookup]);
+  }, [lookup]);
 
   useEffect(() => () => stopCamera(), [stopCamera]);
 
@@ -135,13 +141,13 @@ export function BarcodeScannerPage() {
 
       {/* Scanner card */}
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-        {/* Camera viewport */}
-        <div className="relative bg-gray-900 aspect-video flex items-center justify-center">
-          <video ref={videoRef} className={`w-full h-full object-cover ${scanning ? "" : "hidden"}`} playsInline muted />
+        {/* Camera viewport (video stays mounted so iOS can play it) */}
+        <div className="relative bg-gray-900 aspect-video">
+          <video ref={videoRef} className="w-full h-full object-cover" playsInline muted autoPlay />
           {!scanning && (
-            <div className="text-center px-6">
-              <Camera className="w-10 h-10 text-gray-500 mx-auto mb-2" />
-              <p className="text-gray-400 text-sm">{canCamera ? "Point the camera at a barcode" : "Live camera needs HTTPS — use the options below"}</p>
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6 bg-gray-900/85">
+              <Camera className="w-10 h-10 text-gray-500 mb-2" />
+              <p className="text-gray-400 text-sm">{canCamera ? "Point the camera at a barcode" : "Camera needs HTTPS — use the options below"}</p>
             </div>
           )}
           {scanning && (
@@ -183,7 +189,6 @@ export function BarcodeScannerPage() {
               value={code}
               onChange={(e) => setCode(e.target.value)}
               onKeyDown={(e) => { if (e.key === "Enter") lookup(code); }}
-              autoFocus
               inputMode="numeric"
               placeholder="e.g. 5391520944567"
               className="flex-1 h-10 px-3 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
