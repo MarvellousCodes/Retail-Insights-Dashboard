@@ -80,34 +80,40 @@ export const MANUAL_SOURCE_ID = "manual-entries";
 
 // ─── Default Thresholds ──────────────────────────────────────────────────────
 
+// Default minimum margin targets, keyed by the CANONICAL department names from
+// the dept_names table (the single naming scheme used everywhere else in the app).
+// Non-repriceable categories (fuel, lottery, vouchers, levies) are intentionally
+// omitted: their margin is commission/duty-set, not a target you can hit.
+// Any department not listed defaults to 20%.
 export const DEFAULT_THRESHOLDS: DeptThreshold[] = [
-  { department: "Off Licence", minMargin: 18 },
-  { department: "Bread and Cakes", minMargin: 28 },
-  { department: "Biscuits", minMargin: 25 },
-  { department: "Confectionery", minMargin: 25 },
-  { department: "Dairy Wall", minMargin: 22 },
-  { department: "Soft Drinks", minMargin: 20 },
-  { department: "Frozen Food", minMargin: 22 },
-  { department: "Ice Cream N Cones", minMargin: 30 },
-  { department: "Grocery", minMargin: 22 },
-  { department: "Health and Beauty", minMargin: 35 },
-  { department: "Newspapers", minMargin: 10 },
-  { department: "Deli Cold", minMargin: 40 },
-  { department: "Deli Hot", minMargin: 45 },
-  { department: "Instore Bakery", minMargin: 35 },
-  { department: "Tea/Coffee Machine", minMargin: 60 },
-  { department: "Non Food", minMargin: 30 },
-  { department: "Fresh Produce", minMargin: 35 },
-  { department: "Tobacco", minMargin: 8 },
-  { department: "Newsagents", minMargin: 15 },
-  { department: "Prepared Meals", minMargin: 40 },
-  { department: "Breakfast Meats", minMargin: 25 },
-  { department: "Cooked Meats", minMargin: 30 },
-  { department: "Crisps and Snacks", minMargin: 28 },
-  { department: "Sports and Nutrition", minMargin: 30 },
-  { department: "Fresh Meat", minMargin: 25 },
-  { department: "Forecourt Services", minMargin: 15 },
-  { department: "General", minMargin: 20 },
+  { department: "Wines & Spirits", minMargin: 18 },
+  { department: "Bread & Bakery", minMargin: 28 },
+  { department: "Biscuits & Cookies", minMargin: 25 },
+  { department: "Confectionery / Sweets", minMargin: 25 },
+  { department: "Dairy & Chilled", minMargin: 22 },
+  { department: "Soft Drinks & Beverages", minMargin: 20 },
+  { department: "Frozen / Ready Meals", minMargin: 22 },
+  { department: "Ice Cream & Frozen Treats", minMargin: 30 },
+  { department: "Grocery / Tinned & Dry Goods", minMargin: 22 },
+  { department: "General Grocery", minMargin: 22 },
+  { department: "Health & Beauty / Pharmacy", minMargin: 35 },
+  { department: "Deli / Fresh Meat", minMargin: 40 },
+  { department: "Bakery / Pastry", minMargin: 35 },
+  { department: "Café & Catering Equipment", minMargin: 60 },
+  { department: "General Merchandise & Equipment", minMargin: 30 },
+  { department: "Fresh Produce / Vegetables", minMargin: 35 },
+  { department: "Tobacco & Lighters", minMargin: 8 },
+  { department: "Magazines & Publications", minMargin: 12 },
+  { department: "Balloons, Cards & Stationery", minMargin: 45 },
+  { department: "Toys", minMargin: 35 },
+  { department: "Chilled Ready Meals", minMargin: 40 },
+  { department: "Sausages & Fresh Meat", minMargin: 25 },
+  { department: "Deli Meats / Charcuterie", minMargin: 35 },
+  { department: "Crisps & Snacks", minMargin: 28 },
+  { department: "BBQ & Firelighters", minMargin: 30 },
+  { department: "Sports & Health Bars", minMargin: 30 },
+  { department: "Fresh Meat / Butchery", minMargin: 25 },
+  { department: "Motoring & Fuel", minMargin: 15 },
 ];
 
 // ─── Utilities ───────────────────────────────────────────────────────────────
