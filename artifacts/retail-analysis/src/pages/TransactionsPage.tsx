@@ -17,6 +17,7 @@ export function TransactionsPage() {
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const { masked, toggle } = useRevenueMask();
+  const [exporting, setExporting] = useState(false);
 
   const load = useCallback((f?: string, t?: string, first = false) => {
     setLoading(true);
@@ -41,6 +42,21 @@ export function TransactionsPage() {
   const fmt = (v: number) => (metric === "value" ? (masked ? STARS : money(v)) : v.toLocaleString());
   const maxDeptVal = Math.max(...depts.map((d) => d.value), 1);
   const exportUrl = `${API_BASE}/api/export/transactions?from=${from}&to=${to}`;
+  const handleExport = async () => {
+    setExporting(true);
+    try {
+      const token = localStorage.getItem("rg-token");
+      const res = await fetch(exportUrl, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
+      if (!res.ok) { alert(res.status === 401 ? "Please sign in again to export." : "Export failed, please try again."); return; }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url; a.download = `transactions_${from || "all"}_${to || "all"}.csv`;
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+    } catch { alert("Export failed, please try again."); }
+    finally { setExporting(false); }
+  };
 
   return (
     <div className="p-4 md:p-6">
@@ -68,10 +84,10 @@ export function TransactionsPage() {
         </div>
         <button onClick={() => load(from, to)}
           className="bg-violet-600 hover:bg-violet-700 text-white text-sm font-bold px-4 py-2 rounded-lg">Apply</button>
-        <a href={exportUrl}
-          className="inline-flex items-center gap-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 text-sm font-bold px-4 py-2 rounded-lg hover:bg-gray-50">
-          <Download className="w-4 h-4" /> Export CSV
-        </a>
+        <button onClick={handleExport} disabled={exporting}
+          className="inline-flex items-center gap-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 text-sm font-bold px-4 py-2 rounded-lg hover:bg-gray-50 disabled:opacity-50">
+          <Download className="w-4 h-4" /> {exporting ? "Exporting…" : "Export CSV"}
+        </button>
         {data?.date_min && <span className="text-[11px] text-gray-400 ml-auto self-center">Data covers {data.date_min} to {data.date_max}</span>}
       </div>
 
@@ -105,14 +121,14 @@ export function TransactionsPage() {
         {/* By day of week */}
         <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-200 dark:border-gray-700">
           <h2 className="font-semibold text-sm text-gray-900 dark:text-white mb-3">By day of week</h2>
-          <div className="flex gap-2 items-end" style={{ height: "128px" }}>
+          <div className="flex gap-2 items-end" style={{ height: "200px" }}>
             {byDay.map((d: any, i: number) => {
-              const barH = Math.max(4, Math.round((d[metric] / maxDay) * 108));
+              const barH = Math.max(6, Math.round((d[metric] / maxDay) * 150));
               return (
-                <div key={i} className="flex-1 flex flex-col justify-end items-center group relative h-full">
-                  <div className="absolute -top-5 text-[9px] text-gray-500 opacity-0 group-hover:opacity-100 whitespace-nowrap">{fmt(d[metric])}</div>
+                <div key={i} className="flex-1 flex flex-col justify-end items-center h-full" title={`${d.day}: ${fmt(d[metric])}`}>
+                  <div className="text-[12px] font-semibold text-gray-700 dark:text-gray-200 mb-1 whitespace-nowrap">{fmt(d[metric])}</div>
                   <div className="w-full rounded-t bg-violet-500" style={{ height: `${barH}px` }}></div>
-                  <span className="text-[10px] text-gray-500 mt-1 shrink-0">{d.day}</span>
+                  <span className="text-[11px] text-gray-500 mt-1 shrink-0">{d.day}</span>
                 </div>
               );
             })}
@@ -121,14 +137,14 @@ export function TransactionsPage() {
         {/* By hour */}
         <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-200 dark:border-gray-700">
           <h2 className="font-semibold text-sm text-gray-900 dark:text-white mb-3">By hour of day</h2>
-          <div className="flex gap-0.5 items-end" style={{ height: "128px" }}>
+          <div className="flex gap-0.5 items-end" style={{ height: "210px" }}>
             {byHour.map((h: any, i: number) => {
-              const barH = Math.max(3, Math.round((h[metric] / maxHour) * 108));
+              const barH = Math.max(4, Math.round((h[metric] / maxHour) * 150));
               return (
-                <div key={i} className="flex-1 flex flex-col justify-end items-center group relative h-full">
-                  <div className="absolute -top-5 text-[9px] text-gray-500 opacity-0 group-hover:opacity-100 whitespace-nowrap z-10">{h.hour}:00 · {fmt(h[metric])}</div>
+                <div key={i} className="flex-1 flex flex-col justify-end items-center h-full" title={`${h.hour}:00 · ${fmt(h[metric])}`}>
+                  <div className="text-[10px] font-semibold text-gray-600 dark:text-gray-300 mb-1 leading-none" style={{ writingMode: "vertical-rl", transform: "rotate(180deg)" }}>{fmt(h[metric])}</div>
                   <div className="w-full rounded-t bg-fuchsia-500" style={{ height: `${barH}px` }}></div>
-                  <span className="text-[8px] text-gray-400 mt-0.5 shrink-0">{h.hour}</span>
+                  <span className="text-[9px] text-gray-400 mt-0.5 shrink-0">{h.hour}</span>
                 </div>
               );
             })}
