@@ -394,7 +394,7 @@ function App() {
           {tab === "scanner" && <BarcodeScannerPage />}
           {tab === "askshop" && <AskPage />}
           {tab === "settings" && (
-            <SettingsPage thresholds={thresholds} onUpdate={handleThresholdUpdate} />
+            <SettingsPage theme={theme} onThemeToggle={() => setTheme((t) => (t === "dark" ? "light" : "dark"))} />
           )}
         </main>
       </div>
