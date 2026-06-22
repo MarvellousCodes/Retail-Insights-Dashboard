@@ -29,7 +29,29 @@ function StatCard({ label, value, tone }: { label: string; value: string; tone?:
 }
 
 function Tip({ label, tip }: { label: string; tip: string }) {
-  return <span title={tip} className="cursor-help border-b border-dotted border-gray-400/50 hover:border-violet-400">{label}</span>;
+  const [pos, setPos] = useState<{ x: number; y: number; below: boolean } | null>(null);
+  return (
+    <span
+      onMouseEnter={(e) => {
+        const r = e.currentTarget.getBoundingClientRect();
+        const below = r.top < 150;
+        const x = Math.min(Math.max(r.left + r.width / 2, 140), window.innerWidth - 140);
+        setPos({ x, y: below ? r.bottom + 8 : r.top - 8, below });
+      }}
+      onMouseLeave={() => setPos(null)}
+      className="cursor-help border-b border-dotted border-gray-400/60 hover:border-violet-500"
+    >
+      {label}
+      {pos && (
+        <span
+          style={{ position: "fixed", left: pos.x, top: pos.y, transform: pos.below ? "translate(-50%,0)" : "translate(-50%,-100%)", zIndex: 9999 }}
+          className="pointer-events-none w-64 max-w-[80vw] rounded-lg bg-gray-900 text-white text-[11px] font-normal leading-snug px-3 py-2 shadow-xl whitespace-normal"
+        >
+          {tip}
+        </span>
+      )}
+    </span>
+  );
 }
 
 export function DeptPage() {
