@@ -184,6 +184,40 @@
       .footer__inner { flex-direction: column; text-align: center; }
       .hero__proof { flex-direction: column; gap: 12px; align-items: center; }
     }
+    /* centered hero */
+    .hero .container { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 40px; }
+    .hero__copy { max-width: 780px; }
+    .hero__lead { font-size: clamp(17px, 2vw, 21px); font-weight: 600; color: var(--wh); margin: -2px 0 16px; }
+    .hero__proof { justify-content: center; }
+    .hero__actions { justify-content: center; }
+    .hero .chat-mock { max-width: 560px; width: 100%; text-align: left; }
+    /* live dashboard showcase */
+    .showcase { padding: 88px 0; background: #ffffff; color: #0b0b12; scroll-margin-top: 90px; }
+    .showcase__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 48px; align-items: start; }
+    .mock { border: 1px solid #e7e5f0; border-radius: 16px; overflow: hidden; box-shadow: 0 24px 60px rgba(17,12,46,.12), 0 4px 14px rgba(124,92,255,.07); background: #fff; }
+    .mock__bar { display: flex; align-items: center; gap: 6px; padding: 10px 14px; background: #f7f7f9; border-bottom: 1px solid #eee; }
+    .mock__dot { width: 10px; height: 10px; border-radius: 50%; background: #d1d5db; }
+    .mock__dot:nth-child(1){ background:#ff5f57 } .mock__dot:nth-child(2){ background:#febc2e } .mock__dot:nth-child(3){ background:#28c840 }
+    .mock__title { font-size: 12px; color: #6b7280; margin-left: 8px; }
+    .mock__body { padding: 16px; }
+    .kpi-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 14px; }
+    .kpi { border: 1px solid #eee; border-radius: 10px; padding: 10px; text-align: center; }
+    .kpi__num { font-size: 20px; font-weight: 800; } .kpi__lbl { font-size: 11px; color: #6b7280; margin-top: 2px; }
+    .mock__table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .mock__table th { text-align: left; color: #9ca3af; font-weight: 600; font-size: 11px; padding: 6px 4px; }
+    .mock__table td { padding: 8px 4px; border-top: 1px solid #f1f1f4; color:#27272a; }
+    .showcase__text { text-align: left; }
+    .showcase__h { font-size: 26px; font-weight: 800; margin: 6px 0 10px; color:#0b0b12; }
+    .showcase__p { color: #52525b; font-size: 15px; line-height: 1.6; margin-bottom: 18px; }
+    .issue { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-top: 1px solid #f1f1f4; font-size: 13px; color:#27272a; }
+    .issue:first-child { border-top: 0; }
+    .issue__dept { color: #9ca3af; font-size: 11px; } .issue__neg { color: #ef4444; font-weight: 700; }
+    .showcase__link { display: inline-block; margin-top: 16px; color: #7c3aed; font-weight: 600; text-decoration: none; }
+    .showcase__link:hover { text-decoration: underline; }
+    @media (max-width: 860px) { .showcase__grid { grid-template-columns: 1fr; } .kpi-row { grid-template-columns: repeat(2,1fr); } }
+    .cap-list { max-width: 760px; margin: 44px auto 0; display: flex; flex-direction: column; gap: 18px; }
+    .cap-line { position: relative; padding-left: 30px; font-size: clamp(16px,1.7vw,19px); font-weight: 600; color: var(--s8); line-height: 1.5; text-align: left; }
+    .cap-line__dot { position: absolute; left: 0; top: 9px; width: 11px; height: 11px; border-radius: 50%; background: linear-gradient(135deg,#7c3aed,#a855f7); }
   </style>
 </head>
 <body>
@@ -221,50 +255,17 @@
       <div class="hero__grid"></div>
     </div>
     <div class="container">
-      <div>
+      <div class="hero__copy">
         <div class="hero__pill"><span class="hero__pill-dot"></span> In pilot with an Irish forecourt</div>
-        <h1 class="hero__title">Know exactly what's losing you money. <span class="hero__grad">Just ask.</span></h1>
-        <p class="hero__sub">Your shop's co-pilot connects to your existing POS and answers margin, stock, and sales questions in plain English. No spreadsheets. No exports. No new hardware.</p>
-        <div class="hero__proof">
-          <div class="hero__proof-item"><strong>423</strong> margin leaks found in one shop</div>
-          <div class="hero__proof-item"><strong>~2s</strong> answers from live data</div>
-          <div class="hero__proof-item"><strong>3-5 hrs</strong> saved weekly</div>
-        </div>
+        <h1 class="hero__title">Know your store.<br/><span class="hero__grad">Grow your margins.</span></h1>
+        <p class="hero__lead">See exactly what your shop is losing money on, without touching your POS.</p>
         <div class="hero__actions">
           <a href="#contact" class="btn-primary">Book a free margin scan</a>
-          <a href="#smart-tools" class="btn-ghost">See how it works</a>
+          <a href="v10.html" class="btn-ghost">See how it works</a>
         </div>
       </div>
-      <div class="chat-mock" aria-hidden="true">
-        <div class="chat-mock__header">
-          <div class="chat-mock__header-icon">
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 2L2 8l6 6 6-6-6-6z" fill="white" opacity=".9"/></svg>
-          </div>
-          <span class="chat-mock__header-text">Ask Your Shop</span>
-        </div>
-        <div class="chat-mock__body">
-          <div class="chat-msg chat-msg--user">Which 5 products am I losing the most money on?</div>
-          <div class="chat-msg chat-msg--bot">
-            Based on your margin data, here are your top 5 loss-makers:
-            <ol>
-              <li>Goodfellas Deep Pepperoni: <strong style="color:#ef4444">-16.5%</strong></li>
-              <li>Brennans Batch Loaf 800g: <strong style="color:#ef4444">-12.3%</strong></li>
-              <li>Avonmore Fresh Milk 2L: <strong style="color:#ef4444">-8.7%</strong></li>
-              <li>Coca-Cola 500ml PET: <strong style="color:#ef4444">-6.2%</strong></li>
-              <li>Cadbury Twirl 5-pack: <strong style="color:#ef4444">-4.1%</strong></li>
-            </ol>
-            <div class="chat-chip">
-              <svg width="10" height="10" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2 4h12M2 8h12M2 12h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-              Show SQL
-            </div>
-          </div>
-        </div>
-        <div class="chat-mock__input">
-          <div class="chat-mock__input-field">Ask a follow-up question...</div>
-          <div class="chat-mock__input-btn">
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M14 2L7 9M14 2L9 14l-2-5-5-2 12-5z" fill="white"/></svg>
-          </div>
-        </div>
+      <div class="hero__visual">
+        <img src="/benchmark-hero.svg" alt="RetailGuard benchmark, your store versus the network" style="display:block;width:100%;border-radius:16px;box-shadow:0 24px 60px rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.08)"/>
       </div>
     </div>
   </section>
@@ -285,13 +286,107 @@
           <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8l4 4 6-6" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
           Data stays in Ireland (GDPR)
         </div>
-        <div class="trust-strip__item">
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8l4 4 6-6" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          Read-only by design, so it can never change your data
-        </div>
       </div>
     </div>
   </div>
+
+  <!-- Toolkit (open-ended capability statements, not a fixed list) -->
+  <section class="smart-tools" id="smart-tools">
+    <div class="container">
+      <div class="sec-eyebrow center">Your shop's toolkit</div>
+      <h2 class="sec-title center">Everything your POS never showed you</h2>
+      <p class="sec-desc center">Not a fixed list of features. A growing set of answers, drawn from the data your till already collects.</p>
+      <div class="cap-list">
+        <div class="cap-line"><span class="cap-line__dot"></span>Ask it anything about your shop, in plain English, and get the answer in seconds.</div>
+        <div class="cap-line"><span class="cap-line__dot"></span>Photograph a delivery and it reads every line, flagging what quietly went up before it touches your margin.</div>
+        <div class="cap-line"><span class="cap-line__dot"></span>Every product priced below what it costs you, surfaced with the exact fix, before it bleeds another week.</div>
+        <div class="cap-line"><span class="cap-line__dot"></span>Drill from a whole department down to a single product, and see the money at every level.</div>
+        <div class="cap-line"><span class="cap-line__dot"></span>And whatever you are chasing this week, a custom spreadsheet is one sentence away. Ask, and it builds.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Three flagship hands-on tools (hyped, ambiguous) -->
+  <section class="smart-tools" style="padding-top:0">
+    <div class="container">
+      <div class="sec-eyebrow center">Point, snap, ask</div>
+      <h2 class="sec-title center">Three tools that do the work you dread</h2>
+      <p class="sec-desc center">The jobs that used to eat your evenings, handled in seconds. Point a phone, snap an invoice, or just ask.</p>
+      <div class="tools-grid">
+        <div class="tool-card">
+          <div class="tool-card__icon" style="background:linear-gradient(135deg,#7c3aed,#c026d3)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><line x1="7" y1="12" x2="17" y2="12"/></svg></div>
+          <h3>Barcode Scanner</h3>
+          <p>Point your phone at anything on the shelf and know in a heartbeat whether it is making you money or quietly losing it. Price, cost, margin, the whole story, before you have even put it down.</p>
+          <div class="tool-card__meta">Reads on your phone &middot; nothing leaves the device</div>
+        </div>
+        <div class="tool-card">
+          <div class="tool-card__icon" style="background:linear-gradient(135deg,#f59e0b,#d97706)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg></div>
+          <h3>Invoice Scanner</h3>
+          <p>Snap any supplier invoice and watch it read itself. Every line matched to your shop, every sneaky cost rise caught, before it ever reaches your shelf edge.</p>
+          <div class="tool-card__meta">Photo or PDF &middot; cost creep flagged</div>
+        </div>
+        <div class="tool-card">
+          <div class="tool-card__icon" style="background:linear-gradient(135deg,#8b5cf6,#7c3aed)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></div>
+          <h3>Ask Your Shop</h3>
+          <p>Ask it anything, the way you would ask your sharpest manager, and get a straight answer from your own numbers in about two seconds. It only ever looks, never touches.</p>
+          <div class="tool-card__meta">Answers in ~2 seconds &middot; only ever reads</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Live dashboard showcase -->
+  <section class="showcase">
+    <div class="container">
+      <div class="sec-eyebrow center">Live dashboard</div>
+      <h2 class="sec-title center">Stop selling below cost without knowing</h2>
+      <p class="sec-desc center">Your whole shop distilled into numbers that update on their own, so you see which products are bleeding margin before they cost you at the till. (Example shop, illustrative figures.)</p>
+      <div class="showcase__grid">
+        <div class="mock">
+          <div class="mock__bar"><span class="mock__dot"></span><span class="mock__dot"></span><span class="mock__dot"></span><span class="mock__title">RetailGuard / Dashboard</span></div>
+          <div class="mock__body">
+            <div class="kpi-row">
+              <div class="kpi"><div class="kpi__num">6,400</div><div class="kpi__lbl">Active</div></div>
+              <div class="kpi"><div class="kpi__num" style="color:#16a34a">34%</div><div class="kpi__lbl">Avg markup</div></div>
+              <div class="kpi"><div class="kpi__num" style="color:#d97706">380</div><div class="kpi__lbl">Issues</div></div>
+              <div class="kpi"><div class="kpi__num">41</div><div class="kpi__lbl">Depts</div></div>
+            </div>
+            <table class="mock__table">
+              <thead><tr><th>Department</th><th>Revenue</th><th>Margin</th></tr></thead>
+              <tbody>
+                <tr><td>Tobacco &amp; Lighters</td><td>&euro;1.9M</td><td style="color:#16a34a">38.1%</td></tr>
+                <tr><td>Wines &amp; Spirits</td><td>&euro;1.4M</td><td style="color:#16a34a">39.5%</td></tr>
+                <tr><td>Vouchers / Top-ups</td><td>&euro;1.1M</td><td style="color:#d97706">12.4%</td></tr>
+                <tr><td>Chilled &amp; Dairy</td><td>&euro;0.6M</td><td style="color:#ef4444">19.2%</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="showcase__text">
+          <div class="sec-eyebrow">Issues worklist</div>
+          <h3 class="showcase__h">Fix the biggest leaks first, not the loudest</h3>
+          <p class="showcase__p">Every margin issue ranked by what it actually costs you. Loss-makers, zero-margin lines and missing prices sorted so you reprice what matters most. Replaces hours of weekly spreadsheet work.</p>
+          <div class="mock">
+            <div class="mock__bar"><span class="mock__dot"></span><span class="mock__dot"></span><span class="mock__dot"></span><span class="mock__title">RetailGuard / Issues</span></div>
+            <div class="mock__body">
+              <div class="issue"><div><strong>Frozen pizza, own brand</strong><br/><span class="issue__dept">Frozen / Ready Meals</span></div><span class="issue__neg">-15%</span></div>
+              <div class="issue"><div><strong>Sweets multipack</strong><br/><span class="issue__dept">Confectionery</span></div><span class="issue__neg">-&euro;1,200/yr</span></div>
+              <div class="issue"><div><strong>Batch loaf 800g</strong><br/><span class="issue__dept">Bakery</span></div><span class="issue__neg">-4%</span></div>
+              <div class="issue"><div><strong>Sports drink 500ml</strong><br/><span class="issue__dept">Soft Drinks</span></div><span class="issue__neg">-2%</span></div>
+            </div>
+          </div>
+          <a href="v10.html" class="showcase__link">See the full Tuesday walkthrough &rarr;</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Capability breadth band -->
+  <section style="background:#0b0b12;padding:66px 0;text-align:center">
+    <div class="container">
+      <p style="font-size:clamp(22px,3vw,32px);font-weight:800;color:#fff;max-width:860px;margin:0 auto;line-height:1.3">If your till wrote it down, RetailGuard can turn it into an answer. <span style="background:linear-gradient(90deg,#a78bfa,#f0abfc);-webkit-background-clip:text;background-clip:text;color:transparent">The rest is just asking.</span></p>
+    </div>
+  </section>
 
   <!-- Problems -->
   <section class="problems">
@@ -307,7 +402,7 @@
           </div>
           <div>
             <h3>Invisible margin leaks</h3>
-            <p>Wrong or under-target prices sit live for months. Your POS never tells you. We found 423 in one shop.</p>
+            <p>Wrong or under-target prices sit live for months. Your POS never tells you. RetailGuard finds them automatically, the moment they happen.</p>
           </div>
         </div>
         <div class="problem-card">
@@ -342,48 +437,7 @@
   </section>
 
   <!-- Smart Tools -->
-  <section class="smart-tools" id="smart-tools">
-    <div class="container">
-      <div class="sec-eyebrow center">Your Shop's Toolkit</div>
-      <h2 class="sec-title center">Stop digging through spreadsheets. Just ask.</h2>
-      <p class="sec-desc center">Three smart tools that replace hours of manual work. Read-only, cost-capped, data never leaves your region.</p>
-      <div class="tools-grid">
-        <div class="tool-card">
-          <div class="tool-card__icon" style="background:linear-gradient(135deg,#7c3aed,#a78bfa)">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </div>
-          <h3>Ask Your Shop</h3>
-          <p>Ask questions in plain English and get instant answers from your live data. "What's my best margin department?" Answer in ~2 seconds, not 2 hours.</p>
-          <div class="tool-card__meta">
-            <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5"/><path d="M8 5v3l2 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-            ~$0.001/question &middot; READ-ONLY &middot; ~2s response
-          </div>
-        </div>
-        <div class="tool-card">
-          <div class="tool-card__icon" style="background:linear-gradient(135deg,#16a34a,#22c55e)">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2" stroke="white" stroke-width="2"/><path d="M7 7h2v10H7zM11 7h2v10h-2zM15 7h1v10h-1zM18 7h1v10h-1z" fill="white" opacity=".8"/></svg>
-          </div>
-          <h3>Barcode Scanner</h3>
-          <p>Point your phone camera at any product on the shelf. Instantly see: is it in your system, what does it cost you, and what's the real margin? Image never leaves your device.</p>
-          <div class="tool-card__meta">
-            <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M12 4L6 10l-3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            Free &middot; On-device only &middot; No upload
-          </div>
-        </div>
-        <div class="tool-card">
-          <div class="tool-card__icon" style="background:linear-gradient(135deg,#f59e0b,#fbbf24)">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="white" stroke-width="2" stroke-linejoin="round"/><path d="M14 2v6h6M8 13h8M8 17h5" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
-          </div>
-          <h3>Invoice Scanner</h3>
-          <p>Photograph a supplier delivery docket. Every line matched against your catalogue instantly, flagging cost changes and new margin leaks before stock hits the shelf.</p>
-          <div class="tool-card__meta">
-            <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5"/><path d="M8 5v3l2 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-            ~$0.001/scan &middot; Photo or PDF &middot; GDPR-safe
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
+  <!-- (tools section moved up under the hero) -->
 
   <!-- How -->
   <section class="how" id="how">
@@ -401,7 +455,7 @@
         <div class="step-item">
           <div class="step-num">02</div>
           <h3>We clean, validate, and load</h3>
-          <p>Our engine processes 150,556 stock records, calculates true per-unit margins, and flags every issue automatically.</p>
+          <p>Our engine processes your entire stock file, calculates true per-unit margins, and flags every issue automatically.</p>
         </div>
         <div class="step-line"></div>
         <div class="step-item">
@@ -417,10 +471,10 @@
   <section class="stats-band">
     <div class="container">
       <div class="stats-grid">
-        <div class="stat-item"><strong>150,556</strong><span>stock records analysed</span></div>
-        <div class="stat-item"><strong>423</strong><span>margin leaks found in one shop</span></div>
-        <div class="stat-item"><strong>&euro;7.5-10k</strong><span>recoverable per year</span></div>
-        <div class="stat-item"><strong>3-5 hrs</strong><span>saved per week</span></div>
+        <div class="stat-item"><strong>Thousands</strong><span>of stock records analysed</span></div>
+        <div class="stat-item"><strong>Hundreds</strong><span>of margin leaks found automatically</span></div>
+        <div class="stat-item"><strong>&euro;7.5k to 10k</strong><span>recoverable per year (estimated)</span></div>
+        <div class="stat-item"><strong>50+ hrs</strong><span>saved every month</span></div>
       </div>
     </div>
   </section>
@@ -429,8 +483,8 @@
   <section class="pricing" id="pricing">
     <div class="container">
       <div class="sec-eyebrow center">Pricing</div>
-      <h2 class="sec-title center">A full-time margin analyst for less than a euro a day</h2>
-      <p class="sec-desc center">RetailGuard Pro costs &euro;99/mo (&euro;1,188/yr). It typically recovers &euro;7,500-10,000/yr. That's a 6-8x return.</p>
+      <h2 class="sec-title center">Invest &euro;99. Recover &euro;10,000.</h2>
+      <p class="sec-desc center">RetailGuard Pro is &euro;99/mo (&euro;1,188/yr) and typically recovers an estimated &euro;7,500 to &euro;10,000 a year, a 6 to 8x return.</p>
       <div class="pricing-cards">
         <div class="price-card">
           <div class="price-card__name">Starter</div>
@@ -438,8 +492,8 @@
           <div class="price-card__desc">Dashboard, alerts, and department insights.</div>
           <ul class="price-card__features">
             <li><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8l4 4 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Live margin dashboard</li>
-            <li><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8l4 4 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Pricing issue alerts (423 found)</li>
-            <li><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8l4 4 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> 42-department drill-down</li>
+            <li><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8l4 4 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Pricing issue alerts</li>
+            <li><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8l4 4 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Department drill-down</li>
             <li><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8l4 4 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Barcode Scanner (free)</li>
           </ul>
           <a href="#contact" class="price-card__btn price-card__btn--secondary">Book a free margin scan</a>
