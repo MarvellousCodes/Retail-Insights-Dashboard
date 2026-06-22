@@ -12,6 +12,31 @@ function num(v: number | null | undefined) {
   return Math.round(Number(v || 0)).toLocaleString("en-IE");
 }
 
+function Hint({ tip, children }: { tip: string; children: React.ReactNode }) {
+  const [pos, setPos] = useState<{ x: number; y: number; below: boolean } | null>(null);
+  return (
+    <div
+      onMouseEnter={(e) => {
+        const r = e.currentTarget.getBoundingClientRect();
+        const below = r.top < 150;
+        const x = Math.min(Math.max(r.left + r.width / 2, 150), window.innerWidth - 150);
+        setPos({ x, y: below ? r.bottom + 8 : r.top - 8, below });
+      }}
+      onMouseLeave={() => setPos(null)}
+    >
+      {children}
+      {pos && (
+        <span
+          style={{ position: "fixed", left: pos.x, top: pos.y, transform: pos.below ? "translate(-50%,0)" : "translate(-50%,-100%)", zIndex: 9999 }}
+          className="pointer-events-none w-72 max-w-[80vw] rounded-lg bg-gray-900 text-white text-[11px] font-normal leading-snug px-3 py-2 shadow-xl whitespace-normal"
+        >
+          {tip}
+        </span>
+      )}
+    </div>
+  );
+}
+
 function DriftList({ title, rows, tone }: { title: string; rows: any[]; tone: "down" | "up" }) {
   const down = tone === "down";
   return (
@@ -24,17 +49,23 @@ function DriftList({ title, rows, tone }: { title: string; rows: any[]; tone: "d
         <p className="text-xs text-gray-400">Nothing notable.</p>
       ) : (
         <div className="space-y-1.5">
-          {rows.map((d, i) => (
-            <div key={i} className="flex items-center justify-between gap-2 bg-gray-50 dark:bg-gray-900 rounded-lg px-3 py-2">
-              <span className="text-sm text-gray-800 dark:text-gray-200 truncate">{d.name}</span>
-              <span className="flex items-center gap-2 shrink-0">
-                <span className="text-[11px] text-gray-400 tabular-nums">{d.prior}% → {d.recent}%</span>
-                <span className={`text-xs font-bold tabular-nums px-2 py-0.5 rounded-full ${down ? "bg-red-50 text-red-700 dark:bg-red-900/40 dark:text-red-400" : "bg-green-50 text-green-700 dark:bg-green-900/40 dark:text-green-400"}`}>
-                  {d.drift > 0 ? "+" : ""}{d.drift}pp
+          {rows.map((d, i) => {
+            const dir = down ? "drop" : "rise";
+            const tip = `${d.name}: margin moved from ${d.prior}% (the 3 months before) to ${d.recent}% (the last 3 months), a ${Math.abs(d.drift)} percentage point (pp) ${dir}.`;
+            return (
+            <Hint key={i} tip={tip}>
+              <div className="flex items-center justify-between gap-2 bg-gray-50 dark:bg-gray-900 rounded-lg px-3 py-2 cursor-help">
+                <span className="text-sm text-gray-800 dark:text-gray-200 truncate border-b border-dotted border-gray-300 dark:border-gray-600">{d.name}</span>
+                <span className="flex items-center gap-2 shrink-0">
+                  <span className="text-[11px] text-gray-400 tabular-nums">{d.prior}% → {d.recent}%</span>
+                  <span className={`text-xs font-bold tabular-nums px-2 py-0.5 rounded-full ${down ? "bg-red-50 text-red-700 dark:bg-red-900/40 dark:text-red-400" : "bg-green-50 text-green-700 dark:bg-green-900/40 dark:text-green-400"}`}>
+                    {d.drift > 0 ? "+" : ""}{d.drift}pp
+                  </span>
                 </span>
-              </span>
-            </div>
-          ))}
+              </div>
+            </Hint>
+            );
+          })}
         </div>
       )}
     </div>
@@ -72,7 +103,7 @@ export function InsightsLivePage() {
       <div className={`${card} p-5`}>
         <h3 className="font-semibold text-sm text-gray-900 dark:text-white">Margin drift by department</h3>
         <p className="text-xs text-gray-400 mt-0.5 mb-4">
-          Where your category margins are moving, {data?.window}. A drop is an early warning before it shows up in the takings.
+          Where your category margins are moving, {data?.window}. A drop is an early warning before it shows up in the takings. Hover any row for detail; pp means percentage points.
         </p>
         <div className="grid md:grid-cols-2 gap-5">
           <DriftList title="Slipping" rows={fallers} tone="down" />
