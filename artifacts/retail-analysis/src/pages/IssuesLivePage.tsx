@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { apiCall } from "@/lib/api";
+import { useRevenueMask, RevenueMaskToggle, STARS } from "@/lib/privacy";
 
 interface Issue {
   name: string; dept: string; retail: number; cost: number; margin: number;
@@ -13,16 +14,14 @@ const SEV_STYLE: Record<string, string> = {
   "Below target": "bg-gray-100 text-gray-600",
 };
 
-function eur(v: number | null) {
-  return v === null || v === undefined || isNaN(v as number) ? "—" : `€${Number(v).toFixed(2)}`;
-}
-
 export function IssuesLivePage() {
   const [issues, setIssues] = useState<Issue[]>([]);
   const [count, setCount] = useState(0);
   const [targetPct, setTargetPct] = useState(20);
   const [loading, setLoading] = useState(true);
   const [sevFilter, setSevFilter] = useState<string>("all");
+  const { masked, toggle } = useRevenueMask();
+  const eur = (v: number | null) => (v === null || v === undefined || isNaN(v as number)) ? "—" : (masked ? STARS : `€${Number(v).toFixed(2)}`);
 
   useEffect(() => { load(); }, [targetPct]);
 
@@ -46,8 +45,9 @@ export function IssuesLivePage() {
 
   return (
     <div className="p-4 md:p-6">
-      <div className="mb-4">
+      <div className="mb-4 flex items-center justify-between gap-3">
         <h1 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">Issues</h1>
+        <RevenueMaskToggle masked={masked} toggle={toggle} />
       </div>
 
       {/* KPI cards */}
