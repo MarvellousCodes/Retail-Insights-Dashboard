@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 800" width="1280" height="800">
+<defs>
+ <linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7c3aed"/><stop offset="1" stop-color="#c026d3"/></linearGradient>
+ <radialGradient id="gl1" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#8b5cf6" stop-opacity="0.55"/><stop offset="1" stop-color="#8b5cf6" stop-opacity="0"/></radialGradient>
+ <radialGradient id="gl2" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#c026d3" stop-opacity="0.4"/><stop offset="1" stop-color="#c026d3" stop-opacity="0"/></radialGradient>
+ <filter id="sh" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="30" stdDeviation="38" flood-color="#000000" flood-opacity="0.5"/></filter>
+ <style>
+  text{font-family:'Inter','Helvetica Neue',Arial,sans-serif}
+  .ey{fill:#6b7280;font-size:10.5px;font-weight:700;letter-spacing:1.3px}
+  .kn{fill:#fff;font-size:28px;font-weight:800}
+  .tt{fill:#fff;font-size:22px;font-weight:800}
+  .sub{fill:#6b7280;font-size:12px;font-weight:500}
+  .cell{fill:#e5e7eb;font-size:13.5px;font-weight:600}
+  .hd{fill:#6b7280;font-size:10.5px;font-weight:700;letter-spacing:1px}
+  .nv{fill:#9ca3af;font-size:13.5px;font-weight:500}
+  .nva{fill:#fff;font-size:13.5px;font-weight:600}
+  .dl{font-size:11px;font-weight:600}
+ </style>
+</defs>
+<rect width="1280" height="800" fill="#0b0b14"/>
+<circle cx="1080" cy="90" r="380" fill="url(#gl1)" opacity="0.6"/>
+<circle cx="150" cy="720" r="300" fill="url(#gl2)" opacity="0.5"/>
+<rect x="90" y="80" width="1100" height="640" rx="18" fill="#121019" stroke="#ffffff" stroke-opacity="0.09" filter="url(#sh)"/>
+<circle cx="122" cy="104" r="6" fill="#ef4444"/><circle cx="142" cy="104" r="6" fill="#f59e0b"/><circle cx="162" cy="104" r="6" fill="#22c55e"/>
+<text x="640" y="109" text-anchor="middle" fill="#9ca3af" font-size="13" font-weight="600">RetailGuard / Dashboard</text>
+<circle cx="1098" cy="104" r="4" fill="#22c55e"/><text x="1110" y="108" fill="#22c55e" font-size="11.5" font-weight="600">Live</text>
+<line x1="90" y1="128" x2="1190" y2="128" stroke="#ffffff" stroke-opacity="0.07"/>
+<rect x="90" y="128" width="230" height="592" fill="#0e0d15"/>
+<line x1="320" y1="128" x2="320" y2="720" stroke="#ffffff" stroke-opacity="0.06"/>
+<text x="114" y="170" fill="#fff" font-size="17" font-weight="800">Retail<tspan fill="url(#g)">Guard</tspan></text>
+<rect x="104" y="206" width="202" height="40" rx="10" fill="#7c3aed" fill-opacity="0.18"/>
+<rect x="120" y="220" width="5" height="5" rx="1" fill="#a78bfa"/><rect x="127" y="220" width="5" height="5" rx="1" fill="#a78bfa"/><rect x="120" y="227" width="5" height="5" rx="1" fill="#a78bfa"/><rect x="127" y="227" width="5" height="5" rx="1" fill="#a78bfa"/>
+<text x="146" y="231" class="nva">Dashboard</text>
+<path d="M126 270 L134 283 L118 283 Z" fill="none" stroke="#9ca3af" stroke-width="1.5" stroke-linejoin="round"/>
+<text x="146" y="281" class="nv">Issues</text>
+<rect x="268" y="269" width="38" height="17" rx="8.5" fill="#ef4444" fill-opacity="0.18"/><text x="287" y="281" text-anchor="middle" fill="#ef4444" font-size="10.5" font-weight="700">380</text>
+<g stroke="#9ca3af" stroke-width="1.8" stroke-linecap="round"><line x1="119" y1="317" x2="134" y2="317"/><line x1="119" y1="322" x2="134" y2="322"/><line x1="119" y1="327" x2="129" y2="327"/></g>
+<text x="146" y="327" class="nv">Departments</text>
+<rect x="119" y="360" width="15" height="12" rx="2" fill="none" stroke="#9ca3af" stroke-width="1.6"/><line x1="119" y1="364" x2="134" y2="364" stroke="#9ca3af" stroke-width="1.6"/>
+<text x="146" y="373" class="nv">Suppliers</text>
+<rect x="118" y="406" width="16" height="12" rx="3" fill="none" stroke="#9ca3af" stroke-width="1.6"/><path d="M123 418 l0 4 l4 -4" fill="none" stroke="#9ca3af" stroke-width="1.6" stroke-linejoin="round"/>
+<text x="146" y="419" class="nv">Ask your shop</text>
+<text x="356" y="176" class="tt">Store Overview</text>
+<text x="356" y="198" class="sub">Example shop &#183; synced just now</text>
+<g>
+ <rect x="356" y="220" width="189" height="108" rx="12" fill="#16151f" stroke="#ffffff" stroke-opacity="0.06"/>
+ <text x="374" y="250" class="ey">ACTIVE PRODUCTS</text><text x="374" y="288" class="kn">6,400</text><text x="374" y="310" class="dl" fill="#22c55e">+14 this week</text>
+ <rect x="561" y="220" width="189" height="108" rx="12" fill="#16151f" stroke="#ffffff" stroke-opacity="0.06"/>
+ <text x="579" y="250" class="ey">AVG MARKUP</text><text x="579" y="288" class="kn">34.2%</text><text x="579" y="310" class="dl" fill="#22c55e">+1.3pp vs last month</text>
+ <rect x="766" y="220" width="189" height="108" rx="12" fill="#16151f" stroke="#f59e0b" stroke-opacity="0.35"/>
+ <text x="784" y="250" class="ey">ISSUES FOUND</text><text x="784" y="288" class="kn" fill="#f59e0b">380</text><text x="784" y="310" class="dl" fill="#f59e0b">Action needed</text>
+ <rect x="971" y="220" width="189" height="108" rx="12" fill="#16151f" stroke="#ffffff" stroke-opacity="0.06"/>
+ <text x="989" y="250" class="ey">DEPARTMENTS</text><text x="989" y="288" class="kn">41</text><text x="989" y="310" class="dl" fill="#6b7280">All tracked</text>
+</g>
+<text x="356" y="372" class="hd">DEPARTMENT</text><text x="860" y="372" text-anchor="end" class="hd">PRODUCTS</text><text x="1010" y="372" text-anchor="end" class="hd">MARGIN</text><text x="1050" y="372" class="hd">STATUS</text>
+<line x1="356" y1="386" x2="1160" y2="386" stroke="#ffffff" stroke-opacity="0.08"/>
+<g>
+ <text x="356" y="424" class="cell">Tobacco &amp; Lighters</text><text x="860" y="424" text-anchor="end" class="cell">1,840</text><text x="1010" y="424" text-anchor="end" fill="#22c55e" font-size="13.5" font-weight="700">26.7%</text>
+ <rect x="1050" y="410" width="44" height="22" rx="11" fill="#22c55e" fill-opacity="0.15"/><text x="1072" y="425" text-anchor="middle" fill="#22c55e" font-size="11" font-weight="700">OK</text>
+ <line x1="356" y1="444" x2="1160" y2="444" stroke="#ffffff" stroke-opacity="0.05"/>
+ <text x="356" y="482" class="cell">Wines &amp; Spirits</text><text x="860" y="482" text-anchor="end" class="cell">7,600</text><text x="1010" y="482" text-anchor="end" fill="#22c55e" font-size="13.5" font-weight="700">39.5%</text>
+ <rect x="1050" y="468" width="44" height="22" rx="11" fill="#22c55e" fill-opacity="0.15"/><text x="1072" y="483" text-anchor="middle" fill="#22c55e" font-size="11" font-weight="700">OK</text>
+ <line x1="356" y1="502" x2="1160" y2="502" stroke="#ffffff" stroke-opacity="0.05"/>
+ <rect x="344" y="504" width="828" height="56" rx="8" fill="#ef4444" fill-opacity="0.07"/>
+ <text x="356" y="540" class="cell">Chilled &amp; Dairy</text><text x="860" y="540" text-anchor="end" class="cell">540</text><text x="1010" y="540" text-anchor="end" fill="#ef4444" font-size="13.5" font-weight="800">19.2%</text>
+ <rect x="1050" y="526" width="74" height="22" rx="11" fill="#ef4444" fill-opacity="0.18"/><text x="1087" y="541" text-anchor="middle" fill="#ef4444" font-size="11" font-weight="700">5 issues</text>
+ <line x1="356" y1="560" x2="1160" y2="560" stroke="#ffffff" stroke-opacity="0.05"/>
+ <text x="356" y="598" class="cell">Frozen &amp; Ready Meals</text><text x="860" y="598" text-anchor="end" class="cell">410</text><text x="1010" y="598" text-anchor="end" fill="#f59e0b" font-size="13.5" font-weight="700">22.4%</text>
+ <rect x="1050" y="584" width="74" height="22" rx="11" fill="#f59e0b" fill-opacity="0.16"/><text x="1087" y="599" text-anchor="middle" fill="#f59e0b" font-size="11" font-weight="700">3 alerts</text>
+ <line x1="356" y1="618" x2="1160" y2="618" stroke="#ffffff" stroke-opacity="0.05"/>
+ <text x="356" y="656" class="cell">Soft Drinks</text><text x="860" y="656" text-anchor="end" class="cell">680</text><text x="1010" y="656" text-anchor="end" fill="#22c55e" font-size="13.5" font-weight="700">38.5%</text>
+ <rect x="1050" y="642" width="44" height="22" rx="11" fill="#22c55e" fill-opacity="0.15"/><text x="1072" y="657" text-anchor="middle" fill="#22c55e" font-size="11" font-weight="700">OK</text>
+</g>
+</svg>

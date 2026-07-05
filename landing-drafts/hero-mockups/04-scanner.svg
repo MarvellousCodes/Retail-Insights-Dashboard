@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 800" width="1280" height="800">
+<defs>
+ <linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7c3aed"/><stop offset="1" stop-color="#c026d3"/></linearGradient>
+ <radialGradient id="gl1" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#f59e0b" stop-opacity="0.28"/><stop offset="1" stop-color="#f59e0b" stop-opacity="0"/></radialGradient>
+ <radialGradient id="gl2" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#8b5cf6" stop-opacity="0.45"/><stop offset="1" stop-color="#8b5cf6" stop-opacity="0"/></radialGradient>
+ <filter id="sh" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="30" stdDeviation="38" flood-color="#000000" flood-opacity="0.5"/></filter>
+ <filter id="ps" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#000000" flood-opacity="0.35"/></filter>
+ <style>text{font-family:'Inter','Helvetica Neue',Arial,sans-serif}</style>
+</defs>
+<rect width="1280" height="800" fill="#0b0b14"/>
+<circle cx="300" cy="120" r="340" fill="url(#gl1)" opacity="0.6"/>
+<circle cx="1100" cy="700" r="300" fill="url(#gl2)" opacity="0.5"/>
+<rect x="90" y="80" width="1100" height="640" rx="18" fill="#121019" stroke="#ffffff" stroke-opacity="0.09" filter="url(#sh)"/>
+<circle cx="122" cy="104" r="6" fill="#ef4444"/><circle cx="142" cy="104" r="6" fill="#f59e0b"/><circle cx="162" cy="104" r="6" fill="#22c55e"/>
+<text x="640" y="109" text-anchor="middle" fill="#9ca3af" font-size="13" font-weight="600">RetailGuard / Invoice Scanner</text>
+<line x1="90" y1="128" x2="1190" y2="128" stroke="#ffffff" stroke-opacity="0.07"/>
+<text x="124" y="184" fill="#fff" font-size="23" font-weight="800">Catch cost rises the day they land</text>
+<text x="124" y="208" fill="#6b7280" font-size="12.5" font-weight="500">Photograph a delivery and every line is read and matched to your shop &#183; example shop</text>
+<!-- scanned docket -->
+<rect x="124" y="240" width="372" height="432" rx="14" fill="#ffffff" filter="url(#ps)"/>
+<text x="150" y="278" fill="#9ca3af" font-size="10" font-weight="700" letter-spacing="1.4">DELIVERY DOCKET</text>
+<text x="150" y="304" fill="#111827" font-size="17" font-weight="800">Premier Wholesale</text>
+<text x="150" y="324" fill="#9ca3af" font-size="11" font-weight="500">Docket 4821 &#183; Tuesday</text>
+<line x1="150" y1="340" x2="470" y2="340" stroke="#e5e7eb"/>
+<g fill="#374151" font-size="12.5" font-weight="500">
+ <text x="150" y="372">Milk 2L</text><text x="470" y="372" text-anchor="end" font-weight="700">&#8364;2.05</text>
+ <text x="150" y="404">White bread 800g</text><text x="470" y="404" text-anchor="end" font-weight="700">&#8364;1.10</text>
+ <text x="150" y="436">Cheese slices</text><text x="470" y="436" text-anchor="end" font-weight="700">&#8364;0.72</text>
+ <text x="150" y="468">Cola 2L</text><text x="470" y="468" text-anchor="end" font-weight="700">&#8364;1.20</text>
+ <text x="150" y="500">Crisps multipack</text><text x="470" y="500" text-anchor="end" font-weight="700">&#8364;2.55</text>
+ <text x="150" y="532">Tea bags 80s</text><text x="470" y="532" text-anchor="end" font-weight="700">&#8364;3.10</text>
+</g>
+<line x1="150" y1="556" x2="470" y2="556" stroke="#e5e7eb"/>
+<circle cx="158" cy="592" r="9" fill="#22c55e" fill-opacity="0.15"/><path d="M154 592 l3 3 l5 -6" stroke="#16a34a" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="176" y="596" fill="#16a34a" font-size="12.5" font-weight="600">Matched to your catalogue</text>
+<text x="150" y="630" fill="#9ca3af" font-size="11" font-weight="500">12 of 12 lines read</text>
+<!-- parsed comparison -->
+<rect x="980" y="166" width="178" height="34" rx="17" fill="#f59e0b" fill-opacity="0.15"/><circle cx="1004" cy="183" r="4" fill="#f59e0b"/><text x="1016" y="187" fill="#f59e0b" font-size="12" font-weight="700">4 cost rises flagged</text>
+<text x="540" y="270" fill="#6b7280" font-size="10.5" font-weight="700" letter-spacing="1">PRODUCT</text>
+<text x="852" y="270" text-anchor="end" fill="#6b7280" font-size="10.5" font-weight="700" letter-spacing="1">WAS</text>
+<text x="956" y="270" text-anchor="end" fill="#6b7280" font-size="10.5" font-weight="700" letter-spacing="1">NOW</text>
+<text x="1150" y="270" text-anchor="end" fill="#6b7280" font-size="10.5" font-weight="700" letter-spacing="1">CHANGE</text>
+<line x1="540" y1="284" x2="1150" y2="284" stroke="#ffffff" stroke-opacity="0.08"/>
+<g font-size="13.5">
+ <text x="540" y="324" fill="#e5e7eb" font-weight="600">Milk 2L</text><text x="852" y="324" text-anchor="end" fill="#9ca3af">&#8364;1.85</text><text x="956" y="324" text-anchor="end" fill="#fff" font-weight="700">&#8364;2.05</text>
+ <rect x="1062" y="308" width="88" height="24" rx="12" fill="#f59e0b" fill-opacity="0.15"/><text x="1106" y="324" text-anchor="middle" fill="#f59e0b" font-size="12" font-weight="700">&#8593; +11%</text>
+ <line x1="540" y1="344" x2="1150" y2="344" stroke="#ffffff" stroke-opacity="0.05"/>
+ <text x="540" y="384" fill="#e5e7eb" font-weight="600">White bread 800g</text><text x="852" y="384" text-anchor="end" fill="#9ca3af">&#8364;1.10</text><text x="956" y="384" text-anchor="end" fill="#fff" font-weight="700">&#8364;1.10</text>
+ <text x="1150" y="384" text-anchor="end" fill="#6b7280" font-size="12" font-weight="600">same</text>
+ <line x1="540" y1="404" x2="1150" y2="404" stroke="#ffffff" stroke-opacity="0.05"/>
+ <text x="540" y="444" fill="#e5e7eb" font-weight="600">Cheese slices</text><text x="852" y="444" text-anchor="end" fill="#9ca3af">&#8364;0.65</text><text x="956" y="444" text-anchor="end" fill="#fff" font-weight="700">&#8364;0.72</text>
+ <rect x="1062" y="428" width="88" height="24" rx="12" fill="#f59e0b" fill-opacity="0.15"/><text x="1106" y="444" text-anchor="middle" fill="#f59e0b" font-size="12" font-weight="700">&#8593; +11%</text>
+ <line x1="540" y1="464" x2="1150" y2="464" stroke="#ffffff" stroke-opacity="0.05"/>
+ <text x="540" y="504" fill="#e5e7eb" font-weight="600">Cola 2L</text><text x="852" y="504" text-anchor="end" fill="#9ca3af">&#8364;1.20</text><text x="956" y="504" text-anchor="end" fill="#fff" font-weight="700">&#8364;1.20</text>
+ <text x="1150" y="504" text-anchor="end" fill="#6b7280" font-size="12" font-weight="600">same</text>
+ <line x1="540" y1="524" x2="1150" y2="524" stroke="#ffffff" stroke-opacity="0.05"/>
+ <text x="540" y="564" fill="#e5e7eb" font-weight="600">Crisps multipack</text><text x="852" y="564" text-anchor="end" fill="#9ca3af">&#8364;2.40</text><text x="956" y="564" text-anchor="end" fill="#fff" font-weight="700">&#8364;2.55</text>
+ <rect x="1070" y="548" width="80" height="24" rx="12" fill="#f59e0b" fill-opacity="0.15"/><text x="1110" y="564" text-anchor="middle" fill="#f59e0b" font-size="12" font-weight="700">&#8593; +6%</text>
+ <line x1="540" y1="584" x2="1150" y2="584" stroke="#ffffff" stroke-opacity="0.05"/>
+ <text x="540" y="624" fill="#e5e7eb" font-weight="600">Tea bags 80s</text><text x="852" y="624" text-anchor="end" fill="#9ca3af">&#8364;2.95</text><text x="956" y="624" text-anchor="end" fill="#fff" font-weight="700">&#8364;3.10</text>
+ <rect x="1070" y="608" width="80" height="24" rx="12" fill="#f59e0b" fill-opacity="0.15"/><text x="1110" y="624" text-anchor="middle" fill="#f59e0b" font-size="12" font-weight="700">&#8593; +5%</text>
+</g>
+<text x="540" y="668" fill="#9ca3af" font-size="12.5" font-weight="500">Flagged before they reach your shelf &#183; photo or PDF &#183; EU hosted</text>
+</svg>

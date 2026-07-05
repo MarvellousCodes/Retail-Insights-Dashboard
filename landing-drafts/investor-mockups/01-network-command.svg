@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 800" width="1280" height="800">
+<defs>
+ <linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7c3aed"/><stop offset="1" stop-color="#c026d3"/></linearGradient>
+ <linearGradient id="ar" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8b5cf6" stop-opacity="0.35"/><stop offset="1" stop-color="#8b5cf6" stop-opacity="0"/></linearGradient>
+ <radialGradient id="gl1" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#8b5cf6" stop-opacity="0.55"/><stop offset="1" stop-color="#8b5cf6" stop-opacity="0"/></radialGradient>
+ <radialGradient id="gl2" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#c026d3" stop-opacity="0.4"/><stop offset="1" stop-color="#c026d3" stop-opacity="0"/></radialGradient>
+ <filter id="sh" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="30" stdDeviation="38" flood-color="#000000" flood-opacity="0.5"/></filter>
+ <style>text{font-family:'Inter','Helvetica Neue',Arial,sans-serif}</style>
+</defs>
+<rect width="1280" height="800" fill="#0b0b14"/>
+<circle cx="1080" cy="90" r="380" fill="url(#gl1)" opacity="0.6"/>
+<circle cx="150" cy="720" r="300" fill="url(#gl2)" opacity="0.5"/>
+<rect x="90" y="80" width="1100" height="640" rx="18" fill="#121019" stroke="#ffffff" stroke-opacity="0.09" filter="url(#sh)"/>
+<circle cx="122" cy="104" r="6" fill="#ef4444"/><circle cx="142" cy="104" r="6" fill="#f59e0b"/><circle cx="162" cy="104" r="6" fill="#22c55e"/>
+<text x="640" y="109" text-anchor="middle" fill="#9ca3af" font-size="13" font-weight="600">RetailGuard / Network</text>
+<circle cx="1098" cy="104" r="4" fill="#22c55e"/><text x="1110" y="108" fill="#22c55e" font-size="11.5" font-weight="600">Live</text>
+<line x1="90" y1="128" x2="1190" y2="128" stroke="#ffffff" stroke-opacity="0.07"/>
+
+
+<!-- Section title -->
+<text x="124" y="178" fill="#fff" font-size="22" font-weight="800">Network command center</text>
+<text x="124" y="200" fill="#6b7280" font-size="12.5" font-weight="500">Every store you run, on one screen</text>
+
+<!-- KPI 1: STORES LIVE -->
+<rect x="124" y="222" width="245" height="106" rx="12" fill="#16151f" stroke="#ffffff" stroke-opacity="0.06"/>
+<text x="142" y="252" fill="#9ca3af" font-size="10.5" font-weight="700" letter-spacing="1.2">STORES LIVE</text>
+<text x="142" y="290" fill="#ffffff" font-size="27" font-weight="800">240</text>
+<text x="142" y="312" fill="#22c55e" font-size="11" font-weight="600">+18 this month</text>
+
+<!-- KPI 2: MARGIN RECOVERED -->
+<rect x="383" y="222" width="245" height="106" rx="12" fill="#16151f" stroke="#ffffff" stroke-opacity="0.06"/>
+<text x="401" y="252" fill="#9ca3af" font-size="10.5" font-weight="700" letter-spacing="1.2">MARGIN RECOVERED</text>
+<text x="401" y="290" fill="#ffffff" font-size="27" font-weight="800">&#8364;1.24M</text>
+<text x="401" y="312" fill="#9ca3af" font-size="11" font-weight="600">per year</text>
+
+<!-- KPI 3: LEAKS FIXED -->
+<rect x="642" y="222" width="245" height="106" rx="12" fill="#16151f" stroke="#ffffff" stroke-opacity="0.06"/>
+<text x="660" y="252" fill="#9ca3af" font-size="10.5" font-weight="700" letter-spacing="1.2">LEAKS FIXED</text>
+<text x="660" y="290" fill="#ffffff" font-size="27" font-weight="800">18,402</text>
+<text x="660" y="312" fill="#9ca3af" font-size="11" font-weight="600">across the network</text>
+
+<!-- KPI 4: AVG MARGIN UPLIFT -->
+<rect x="901" y="222" width="245" height="106" rx="12" fill="#16151f" stroke="#ffffff" stroke-opacity="0.06"/>
+<text x="919" y="252" fill="#9ca3af" font-size="10.5" font-weight="700" letter-spacing="1.2">AVG MARGIN UPLIFT</text>
+<text x="919" y="290" fill="#ffffff" font-size="27" font-weight="800">+3.2pp</text>
+<text x="919" y="312" fill="#22c55e" font-size="11" font-weight="600">since go live</text>
+
+<!-- Table header -->
+<text x="150" y="375" fill="#6b7280" font-size="10.5" font-weight="700" letter-spacing="1.2">GROUP</text>
+<text x="520" y="375" fill="#6b7280" font-size="10.5" font-weight="700" letter-spacing="1.2">STORES</text>
+<text x="750" y="375" fill="#6b7280" font-size="10.5" font-weight="700" letter-spacing="1.2">RECOVERED/yr</text>
+<text x="1050" y="375" fill="#6b7280" font-size="10.5" font-weight="700" letter-spacing="1.2">STATUS</text>
+<line x1="124" y1="390" x2="1156" y2="390" stroke="#ffffff" stroke-opacity="0.08"/>
+
+<!-- Row 1: Group A -->
+<text x="150" y="425" fill="#e5e7eb" font-size="13.5" font-weight="600">Group A</text>
+<text x="545" y="425" fill="#e5e7eb" font-size="13.5" font-weight="600" text-anchor="end">120</text>
+<text x="820" y="425" fill="#e5e7eb" font-size="13.5" font-weight="600" text-anchor="end">&#8364;640k</text>
+<rect x="1040" y="410" width="56" height="22" rx="11" fill="#22c55e" fill-opacity="0.15"/>
+<text x="1068" y="425" text-anchor="middle" fill="#22c55e" font-size="11" font-weight="600">OK</text>
+
+<!-- Row 2: Group B -->
+<text x="150" y="470" fill="#e5e7eb" font-size="13.5" font-weight="600">Group B</text>
+<text x="545" y="470" fill="#e5e7eb" font-size="13.5" font-weight="600" text-anchor="end">72</text>
+<text x="820" y="470" fill="#e5e7eb" font-size="13.5" font-weight="600" text-anchor="end">&#8364;384k</text>
+<rect x="1040" y="455" width="56" height="22" rx="11" fill="#22c55e" fill-opacity="0.15"/>
+<text x="1068" y="470" text-anchor="middle" fill="#22c55e" font-size="11" font-weight="600">OK</text>
+
+<!-- Row 3: Group C -->
+<text x="150" y="515" fill="#e5e7eb" font-size="13.5" font-weight="600">Group C</text>
+<text x="545" y="515" fill="#e5e7eb" font-size="13.5" font-weight="600" text-anchor="end">34</text>
+<text x="820" y="515" fill="#e5e7eb" font-size="13.5" font-weight="600" text-anchor="end">&#8364;182k</text>
+<rect x="1040" y="500" width="56" height="22" rx="11" fill="#22c55e" fill-opacity="0.15"/>
+<text x="1068" y="515" text-anchor="middle" fill="#22c55e" font-size="11" font-weight="600">OK</text>
+
+<!-- Row 4: Independents -->
+<text x="150" y="560" fill="#e5e7eb" font-size="13.5" font-weight="600">Independents</text>
+<text x="545" y="560" fill="#e5e7eb" font-size="13.5" font-weight="600" text-anchor="end">14</text>
+<text x="820" y="560" fill="#e5e7eb" font-size="13.5" font-weight="600" text-anchor="end">&#8364;34k</text>
+<rect x="1018" y="545" width="108" height="22" rx="11" fill="#f59e0b" fill-opacity="0.15"/>
+<text x="1072" y="560" text-anchor="middle" fill="#f59e0b" font-size="11" font-weight="600">3 onboarding</text>
+
+<!-- Footer -->
+<text x="1156" y="700" text-anchor="end" fill="#4b5563" font-size="10" font-weight="500">Illustrative</text>
+</svg>

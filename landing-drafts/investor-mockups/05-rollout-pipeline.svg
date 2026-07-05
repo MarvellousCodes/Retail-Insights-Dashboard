@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 800" width="1280" height="800">
+<defs>
+ <linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7c3aed"/><stop offset="1" stop-color="#c026d3"/></linearGradient>
+ <linearGradient id="ar" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8b5cf6" stop-opacity="0.35"/><stop offset="1" stop-color="#8b5cf6" stop-opacity="0"/></linearGradient>
+ <radialGradient id="gl1" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#8b5cf6" stop-opacity="0.55"/><stop offset="1" stop-color="#8b5cf6" stop-opacity="0"/></radialGradient>
+ <radialGradient id="gl2" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#c026d3" stop-opacity="0.4"/><stop offset="1" stop-color="#c026d3" stop-opacity="0"/></radialGradient>
+ <filter id="sh" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="30" stdDeviation="38" flood-color="#000000" flood-opacity="0.5"/></filter>
+ <style>text{font-family:'Inter','Helvetica Neue',Arial,sans-serif}</style>
+</defs>
+<rect width="1280" height="800" fill="#0b0b14"/>
+<circle cx="1080" cy="90" r="380" fill="url(#gl1)" opacity="0.6"/>
+<circle cx="150" cy="720" r="300" fill="url(#gl2)" opacity="0.5"/>
+<rect x="90" y="80" width="1100" height="640" rx="18" fill="#121019" stroke="#ffffff" stroke-opacity="0.09" filter="url(#sh)"/>
+<circle cx="122" cy="104" r="6" fill="#ef4444"/><circle cx="142" cy="104" r="6" fill="#f59e0b"/><circle cx="162" cy="104" r="6" fill="#22c55e"/>
+<text x="640" y="109" text-anchor="middle" fill="#9ca3af" font-size="13" font-weight="600">RetailGuard / Rollout</text>
+<circle cx="1098" cy="104" r="4" fill="#22c55e"/><text x="1110" y="108" fill="#22c55e" font-size="11.5" font-weight="600">Live</text>
+<line x1="90" y1="128" x2="1190" y2="128" stroke="#ffffff" stroke-opacity="0.07"/>
+
+<text x="124" y="168" fill="#ffffff" font-size="22" font-weight="700">Store rollout pipeline</text>
+<text x="124" y="192" fill="#6b7280" font-size="13">From first call to live in days</text>
+<!-- Column 1: PROSPECT -->
+<rect x="124" y="230" width="320" height="240" rx="14" fill="#16151f" stroke="#ffffff" stroke-opacity="0.06"/>
+<text x="284" y="270" text-anchor="middle" fill="#6b7280" font-size="10.5" font-weight="700">PROSPECT</text>
+<text x="284" y="320" text-anchor="middle" fill="#ffffff" font-size="34" font-weight="800">60</text>
+<rect x="220" y="350" width="56" height="24" rx="12" fill="rgba(124,58,237,0.16)"/><text x="248" y="366" text-anchor="middle" fill="#c4b5fd" font-size="11">Group D</text>
+<rect x="284" y="350" width="80" height="24" rx="12" fill="rgba(124,58,237,0.16)"/><text x="324" y="366" text-anchor="middle" fill="#c4b5fd" font-size="11">Independents</text>
+<!-- Column 2: ONBOARDING -->
+<rect x="468" y="230" width="320" height="240" rx="14" fill="#16151f" stroke="#ffffff" stroke-opacity="0.06"/>
+<text x="628" y="270" text-anchor="middle" fill="#6b7280" font-size="10.5" font-weight="700">ONBOARDING</text>
+<text x="628" y="320" text-anchor="middle" fill="#ffffff" font-size="34" font-weight="800">22</text>
+<rect x="554" y="350" width="72" height="24" rx="12" fill="rgba(124,58,237,0.16)"/><text x="590" y="366" text-anchor="middle" fill="#c4b5fd" font-size="11">Group C +8</text>
+<rect x="634" y="350" width="72" height="24" rx="12" fill="rgba(124,58,237,0.16)"/><text x="670" y="366" text-anchor="middle" fill="#c4b5fd" font-size="11">Group B +6</text>
+<!-- Column 3: LIVE -->
+<rect x="812" y="230" width="320" height="240" rx="14" fill="#16151f" stroke="#ffffff" stroke-opacity="0.06"/>
+<text x="972" y="270" text-anchor="middle" fill="#6b7280" font-size="10.5" font-weight="700">LIVE</text>
+<text x="972" y="320" text-anchor="middle" fill="#22c55e" font-size="34" font-weight="800">240</text>
+<rect x="898" y="350" width="64" height="24" rx="12" fill="rgba(124,58,237,0.16)"/><text x="930" y="366" text-anchor="middle" fill="#c4b5fd" font-size="11">Group A</text>
+<rect x="970" y="350" width="64" height="24" rx="12" fill="rgba(124,58,237,0.16)"/><text x="1002" y="366" text-anchor="middle" fill="#c4b5fd" font-size="11">Group B</text>
+<rect x="898" y="382" width="64" height="24" rx="12" fill="rgba(124,58,237,0.16)"/><text x="930" y="398" text-anchor="middle" fill="#c4b5fd" font-size="11">Group C</text>
+<!-- KPI Row -->
+<rect x="124" y="500" width="320" height="100" rx="14" fill="#16151f" stroke="#ffffff" stroke-opacity="0.06"/>
+<text x="284" y="536" text-anchor="middle" fill="#6b7280" font-size="10.5" font-weight="700">ONBOARDING VELOCITY</text>
+<text x="284" y="572" text-anchor="middle" fill="#22c55e" font-size="27" font-weight="800">12 stores/mo</text>
+<rect x="468" y="500" width="320" height="100" rx="14" fill="#16151f" stroke="#ffffff" stroke-opacity="0.06"/>
+<text x="628" y="536" text-anchor="middle" fill="#6b7280" font-size="10.5" font-weight="700">AVG TIME TO LIVE</text>
+<text x="628" y="572" text-anchor="middle" fill="#ffffff" font-size="27" font-weight="800">9 days</text>
+<rect x="812" y="500" width="320" height="100" rx="14" fill="#16151f" stroke="#ffffff" stroke-opacity="0.06"/>
+<text x="972" y="536" text-anchor="middle" fill="#6b7280" font-size="10.5" font-weight="700">WIN RATE</text>
+<text x="972" y="572" text-anchor="middle" fill="#22c55e" font-size="27" font-weight="800">63%</text>
+<text x="1156" y="700" text-anchor="end" fill="#4b5563" font-size="10">Illustrative</text>
+</svg>

@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 800" width="1280" height="800">
+<defs>
+ <linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7c3aed"/><stop offset="1" stop-color="#c026d3"/></linearGradient>
+ <linearGradient id="ar" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8b5cf6" stop-opacity="0.35"/><stop offset="1" stop-color="#8b5cf6" stop-opacity="0"/></linearGradient>
+ <radialGradient id="gl1" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#8b5cf6" stop-opacity="0.55"/><stop offset="1" stop-color="#8b5cf6" stop-opacity="0"/></radialGradient>
+ <radialGradient id="gl2" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#c026d3" stop-opacity="0.4"/><stop offset="1" stop-color="#c026d3" stop-opacity="0"/></radialGradient>
+ <filter id="sh" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="30" stdDeviation="38" flood-color="#000000" flood-opacity="0.5"/></filter>
+ <style>text{font-family:'Inter','Helvetica Neue',Arial,sans-serif}</style>
+</defs>
+<rect width="1280" height="800" fill="#0b0b14"/>
+<circle cx="1080" cy="90" r="380" fill="url(#gl1)" opacity="0.6"/>
+<circle cx="150" cy="720" r="300" fill="url(#gl2)" opacity="0.5"/>
+<rect x="90" y="80" width="1100" height="640" rx="18" fill="#121019" stroke="#ffffff" stroke-opacity="0.09" filter="url(#sh)"/>
+<circle cx="122" cy="104" r="6" fill="#ef4444"/><circle cx="142" cy="104" r="6" fill="#f59e0b"/><circle cx="162" cy="104" r="6" fill="#22c55e"/>
+<text x="640" y="109" text-anchor="middle" fill="#9ca3af" font-size="13" font-weight="600">RetailGuard / Growth</text>
+<circle cx="1098" cy="104" r="4" fill="#22c55e"/><text x="1110" y="108" fill="#22c55e" font-size="11.5" font-weight="600">Live</text>
+<line x1="90" y1="128" x2="1190" y2="128" stroke="#ffffff" stroke-opacity="0.07"/>
+
+
+<!-- Section title -->
+<text x="124" y="178" fill="#fff" font-size="22" font-weight="800">Recurring revenue</text>
+<text x="124" y="200" fill="#6b7280" font-size="12.5" font-weight="500">Subscription growth across the network</text>
+
+<!-- KPI 1: MRR -->
+<rect x="124" y="222" width="245" height="106" rx="12" fill="#16151f" stroke="#ffffff" stroke-opacity="0.06"/>
+<text x="142" y="252" fill="#9ca3af" font-size="10.5" font-weight="700" letter-spacing="1.2">MRR</text>
+<text x="142" y="290" fill="#ffffff" font-size="27" font-weight="800">&#8364;38,400</text>
+<text x="142" y="312" fill="#22c55e" font-size="11" font-weight="600">+11% MoM</text>
+
+<!-- KPI 2: ARR -->
+<rect x="383" y="222" width="245" height="106" rx="12" fill="#16151f" stroke="#ffffff" stroke-opacity="0.06"/>
+<text x="401" y="252" fill="#9ca3af" font-size="10.5" font-weight="700" letter-spacing="1.2">ARR</text>
+<text x="401" y="290" fill="#ffffff" font-size="27" font-weight="800">&#8364;461k</text>
+<text x="401" y="312" fill="#9ca3af" font-size="11" font-weight="600">annualised</text>
+
+<!-- KPI 3: NET RETENTION -->
+<rect x="642" y="222" width="245" height="106" rx="12" fill="#16151f" stroke="#ffffff" stroke-opacity="0.06"/>
+<text x="660" y="252" fill="#9ca3af" font-size="10.5" font-weight="700" letter-spacing="1.2">NET RETENTION</text>
+<text x="660" y="290" fill="#ffffff" font-size="27" font-weight="800">118%</text>
+<text x="660" y="312" fill="#22c55e" font-size="11" font-weight="600">&#9650; expanding</text>
+
+<!-- KPI 4: LOGO CHURN -->
+<rect x="901" y="222" width="245" height="106" rx="12" fill="#16151f" stroke="#ffffff" stroke-opacity="0.06"/>
+<text x="919" y="252" fill="#9ca3af" font-size="10.5" font-weight="700" letter-spacing="1.2">LOGO CHURN</text>
+<text x="919" y="290" fill="#ffffff" font-size="27" font-weight="800">1.4%</text>
+<text x="919" y="312" fill="#22c55e" font-size="11" font-weight="600">&#9660; improving</text>
+
+<!-- Chart area: x 150..1130, y 370..650. 0k=y650, 500k=y370. Scale: 1k = 0.56px -->
+<!-- Gridlines -->
+<line x1="150" y1="370" x2="1130" y2="370" stroke="#ffffff" stroke-opacity="0.06"/>
+<line x1="150" y1="510" x2="1130" y2="510" stroke="#ffffff" stroke-opacity="0.06"/>
+<line x1="150" y1="650" x2="1130" y2="650" stroke="#ffffff" stroke-opacity="0.06"/>
+
+<!-- Y-axis labels -->
+<text x="138" y="374" text-anchor="end" fill="#6b7280" font-size="10.5">500k</text>
+<text x="138" y="514" text-anchor="end" fill="#6b7280" font-size="10.5">250k</text>
+<text x="138" y="654" text-anchor="end" fill="#6b7280" font-size="10.5">0</text>
+
+<!-- Monthly x positions: 12 months evenly from 150 to 1130. step=89.09. x=150,239,328,417,506,595,684,773,862,951,1041,1130 -->
+<!-- Values: 120,150,180,210,250,290,320,360,390,420,445,461 -->
+<!-- y = 650 - (value/500)*280 -->
+<!-- y: 120->582.8, 150->566, 180->549.2, 210->532.4, 250->510, 290->487.6, 320->470.8, 360->448.4, 390->431.6, 420->414.8, 445->401.2, 461->391.24 -->
+
+<!-- Area fill -->
+<path d="M150,583 L239,566 L328,549 L417,532 L506,510 L595,488 L684,471 L773,448 L862,432 L951,415 L1041,401 L1130,391 L1130,650 L150,650 Z" fill="url(#ar)"/>
+
+<!-- Line -->
+<polyline points="150,583 239,566 328,549 417,532 506,510 595,488 684,471 773,448 862,432 951,415 1041,401 1130,391" fill="none" stroke="#7c3aed" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+
+<!-- End circle -->
+<circle cx="1130" cy="391" r="6" fill="#7c3aed" stroke="#121019" stroke-width="3"/>
+
+<!-- X-axis month labels -->
+<text x="150" y="672" text-anchor="middle" fill="#6b7280" font-size="10.5">Jan</text>
+<text x="239" y="672" text-anchor="middle" fill="#6b7280" font-size="10.5">Feb</text>
+<text x="328" y="672" text-anchor="middle" fill="#6b7280" font-size="10.5">Mar</text>
+<text x="417" y="672" text-anchor="middle" fill="#6b7280" font-size="10.5">Apr</text>
+<text x="506" y="672" text-anchor="middle" fill="#6b7280" font-size="10.5">May</text>
+<text x="595" y="672" text-anchor="middle" fill="#6b7280" font-size="10.5">Jun</text>
+<text x="684" y="672" text-anchor="middle" fill="#6b7280" font-size="10.5">Jul</text>
+<text x="773" y="672" text-anchor="middle" fill="#6b7280" font-size="10.5">Aug</text>
+<text x="862" y="672" text-anchor="middle" fill="#6b7280" font-size="10.5">Sep</text>
+<text x="951" y="672" text-anchor="middle" fill="#6b7280" font-size="10.5">Oct</text>
+<text x="1041" y="672" text-anchor="middle" fill="#6b7280" font-size="10.5">Nov</text>
+<text x="1130" y="672" text-anchor="middle" fill="#6b7280" font-size="10.5">Dec</text>
+
+<!-- Footer -->
+<text x="1156" y="700" text-anchor="end" fill="#4b5563" font-size="10" font-weight="500">Illustrative</text>
+</svg>

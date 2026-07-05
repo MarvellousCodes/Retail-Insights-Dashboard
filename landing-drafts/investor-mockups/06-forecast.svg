@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 800" width="1280" height="800">
+<defs>
+ <linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7c3aed"/><stop offset="1" stop-color="#c026d3"/></linearGradient>
+ <linearGradient id="ar" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8b5cf6" stop-opacity="0.35"/><stop offset="1" stop-color="#8b5cf6" stop-opacity="0"/></linearGradient>
+ <radialGradient id="gl1" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#8b5cf6" stop-opacity="0.55"/><stop offset="1" stop-color="#8b5cf6" stop-opacity="0"/></radialGradient>
+ <radialGradient id="gl2" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#c026d3" stop-opacity="0.4"/><stop offset="1" stop-color="#c026d3" stop-opacity="0"/></radialGradient>
+ <filter id="sh" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="30" stdDeviation="38" flood-color="#000000" flood-opacity="0.5"/></filter>
+ <style>text{font-family:'Inter','Helvetica Neue',Arial,sans-serif}</style>
+</defs>
+<rect width="1280" height="800" fill="#0b0b14"/>
+<circle cx="1080" cy="90" r="380" fill="url(#gl1)" opacity="0.6"/>
+<circle cx="150" cy="720" r="300" fill="url(#gl2)" opacity="0.5"/>
+<rect x="90" y="80" width="1100" height="640" rx="18" fill="#121019" stroke="#ffffff" stroke-opacity="0.09" filter="url(#sh)"/>
+<circle cx="122" cy="104" r="6" fill="#ef4444"/><circle cx="142" cy="104" r="6" fill="#f59e0b"/><circle cx="162" cy="104" r="6" fill="#22c55e"/>
+<text x="640" y="109" text-anchor="middle" fill="#9ca3af" font-size="13" font-weight="600">RetailGuard / Forecast</text>
+<circle cx="1098" cy="104" r="4" fill="#22c55e"/><text x="1110" y="108" fill="#22c55e" font-size="11.5" font-weight="600">Live</text>
+<line x1="90" y1="128" x2="1190" y2="128" stroke="#ffffff" stroke-opacity="0.07"/>
+
+<text x="124" y="168" fill="#ffffff" font-size="22" font-weight="700">Network margin forecast</text>
+<text x="124" y="192" fill="#6b7280" font-size="13">Projected from live trading data</text>
+<!-- Green pill -->
+<rect x="900" y="155" width="230" height="30" rx="15" fill="rgba(34,197,94,0.15)"/><text x="1015" y="175" text-anchor="middle" fill="#22c55e" font-size="12.5" font-weight="700">Projected +1.8pp next quarter</text>
+<!-- Chart area y260..640, x150..1130 -->
+<!-- Y axis labels -->
+<text x="140" y="635" text-anchor="end" fill="#6b7280" font-size="10">28%</text>
+<text x="140" y="540" text-anchor="end" fill="#6b7280" font-size="10">30%</text>
+<text x="140" y="445" text-anchor="end" fill="#6b7280" font-size="10">32%</text>
+<text x="140" y="350" text-anchor="end" fill="#6b7280" font-size="10">34%</text>
+<!-- Grid lines -->
+<line x1="150" y1="630" x2="1130" y2="630" stroke="#ffffff" stroke-opacity="0.04"/>
+<line x1="150" y1="535" x2="1130" y2="535" stroke="#ffffff" stroke-opacity="0.04"/>
+<line x1="150" y1="440" x2="1130" y2="440" stroke="#ffffff" stroke-opacity="0.04"/>
+<line x1="150" y1="345" x2="1130" y2="345" stroke="#ffffff" stroke-opacity="0.04"/>
+<!-- Chart scaling: 28%=y630, 33.1%=y388. Range 5.1pp over 242px = 47.45px/pp. baseY=630, each 1pp = -47.45px -->
+<!-- History points: 28,28.5,29,29.2,30,30.4,31,31.3 at x=150,290,370,450,530,610,690,770 -->
+<!-- Forecast points: 31.8,32.2,32.6,33.1 at x=850,930,1010,1090 -->
+<!-- Confidence band polygon (widening around forecast) -->
+<polygon points="770,601 850,571 930,552 1010,533 1090,509 1090,528 1010,547 930,562 850,581 770,601" fill="#8b5cf6" fill-opacity="0.12"/>
+<!-- History line (solid) -->
+<polyline points="150,630 290,606 370,583 450,573 530,535 610,516 690,488 770,473" fill="none" stroke="#7c3aed" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<!-- Forecast line (dashed) -->
+<polyline points="770,473 850,449 930,430 1010,411 1090,388" fill="none" stroke="#a78bfa" stroke-width="3" stroke-dasharray="6 5" stroke-linecap="round" stroke-linejoin="round"/>
+<!-- History dots -->
+<circle cx="150" cy="630" r="5" fill="#7c3aed"/><circle cx="290" cy="606" r="5" fill="#7c3aed"/><circle cx="370" cy="583" r="5" fill="#7c3aed"/><circle cx="450" cy="573" r="5" fill="#7c3aed"/><circle cx="530" cy="535" r="5" fill="#7c3aed"/><circle cx="610" cy="516" r="5" fill="#7c3aed"/><circle cx="690" cy="488" r="5" fill="#7c3aed"/><circle cx="770" cy="473" r="5" fill="#7c3aed"/>
+<!-- Forecast dots -->
+<circle cx="850" cy="449" r="5" fill="#a78bfa"/><circle cx="930" cy="430" r="5" fill="#a78bfa"/><circle cx="1010" cy="411" r="5" fill="#a78bfa"/><circle cx="1090" cy="388" r="5" fill="#a78bfa"/>
+<!-- X axis labels -->
+<text x="150" y="655" text-anchor="middle" fill="#6b7280" font-size="10">Jan</text>
+<text x="290" y="655" text-anchor="middle" fill="#6b7280" font-size="10">Feb</text>
+<text x="370" y="655" text-anchor="middle" fill="#6b7280" font-size="10">Mar</text>
+<text x="450" y="655" text-anchor="middle" fill="#6b7280" font-size="10">Apr</text>
+<text x="530" y="655" text-anchor="middle" fill="#6b7280" font-size="10">May</text>
+<text x="610" y="655" text-anchor="middle" fill="#6b7280" font-size="10">Jun</text>
+<text x="690" y="655" text-anchor="middle" fill="#6b7280" font-size="10">Jul</text>
+<text x="770" y="655" text-anchor="middle" fill="#6b7280" font-size="10">Aug</text>
+<text x="850" y="655" text-anchor="middle" fill="#6b7280" font-size="10">Sep</text>
+<text x="930" y="655" text-anchor="middle" fill="#6b7280" font-size="10">Oct</text>
+<text x="1010" y="655" text-anchor="middle" fill="#6b7280" font-size="10">Nov</text>
+<text x="1090" y="655" text-anchor="middle" fill="#6b7280" font-size="10">Dec</text>
+<!-- Watchlist mini list bottom-left -->
+<text x="160" y="688" fill="#6b7280" font-size="11" font-weight="700">WATCHLIST</text>
+<circle cx="168" cy="706" r="4" fill="#ef4444"/><text x="178" y="710" fill="#ffffff" font-size="12">Confectionery -4pp</text>
+<circle cx="168" cy="724" r="4" fill="#ef4444"/><text x="178" y="728" fill="#ffffff" font-size="12">Bakery -2pp</text>
+<circle cx="168" cy="742" r="4" fill="#22c55e"/><text x="178" y="746" fill="#ffffff" font-size="12">Coffee +6pp</text>
+<text x="1156" y="700" text-anchor="end" fill="#4b5563" font-size="10">Illustrative</text>
+</svg>

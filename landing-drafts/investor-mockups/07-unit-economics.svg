@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 800" width="1280" height="800">
+<defs>
+ <linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7c3aed"/><stop offset="1" stop-color="#c026d3"/></linearGradient>
+ <linearGradient id="ar" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8b5cf6" stop-opacity="0.35"/><stop offset="1" stop-color="#8b5cf6" stop-opacity="0"/></linearGradient>
+ <radialGradient id="gl1" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#8b5cf6" stop-opacity="0.55"/><stop offset="1" stop-color="#8b5cf6" stop-opacity="0"/></radialGradient>
+ <radialGradient id="gl2" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#c026d3" stop-opacity="0.4"/><stop offset="1" stop-color="#c026d3" stop-opacity="0"/></radialGradient>
+ <filter id="sh" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="30" stdDeviation="38" flood-color="#000000" flood-opacity="0.5"/></filter>
+ <style>text{font-family:'Inter','Helvetica Neue',Arial,sans-serif}</style>
+</defs>
+<rect width="1280" height="800" fill="#0b0b14"/>
+<circle cx="1080" cy="90" r="380" fill="url(#gl1)" opacity="0.6"/>
+<circle cx="150" cy="720" r="300" fill="url(#gl2)" opacity="0.5"/>
+<rect x="90" y="80" width="1100" height="640" rx="18" fill="#121019" stroke="#ffffff" stroke-opacity="0.09" filter="url(#sh)"/>
+<circle cx="122" cy="104" r="6" fill="#ef4444"/><circle cx="142" cy="104" r="6" fill="#f59e0b"/><circle cx="162" cy="104" r="6" fill="#22c55e"/>
+<text x="640" y="109" text-anchor="middle" fill="#9ca3af" font-size="13" font-weight="600">RetailGuard / Unit economics</text>
+<circle cx="1098" cy="104" r="4" fill="#22c55e"/><text x="1110" y="108" fill="#22c55e" font-size="11.5" font-weight="600">Live</text>
+<line x1="90" y1="128" x2="1190" y2="128" stroke="#ffffff" stroke-opacity="0.07"/>
+
+
+<!-- Section title -->
+<text x="124" y="178" fill="#fff" font-size="22" font-weight="800">SaaS unit economics</text>
+<text x="124" y="200" fill="#6b7280" font-size="12.5" font-weight="500">Healthy, capital-efficient growth</text>
+
+<!-- KPI 1: CAC -->
+<rect x="124" y="222" width="192" height="106" rx="12" fill="#16151f" stroke="#ffffff" stroke-opacity="0.06"/>
+<text x="142" y="252" fill="#9ca3af" font-size="10.5" font-weight="700" letter-spacing="1.2">CAC</text>
+<text x="142" y="290" fill="#ffffff" font-size="27" font-weight="800">&#8364;180</text>
+<text x="142" y="312" fill="#9ca3af" font-size="11" font-weight="600">per store acquired</text>
+
+<!-- KPI 2: LTV -->
+<rect x="330" y="222" width="192" height="106" rx="12" fill="#16151f" stroke="#ffffff" stroke-opacity="0.06"/>
+<text x="348" y="252" fill="#9ca3af" font-size="10.5" font-weight="700" letter-spacing="1.2">LTV</text>
+<text x="348" y="290" fill="#22c55e" font-size="27" font-weight="800">&#8364;2,940</text>
+<text x="348" y="312" fill="#22c55e" font-size="11" font-weight="600">per store lifetime</text>
+
+<!-- KPI 3: LTV : CAC -->
+<rect x="536" y="222" width="192" height="106" rx="12" fill="#16151f" stroke="#ffffff" stroke-opacity="0.06"/>
+<text x="554" y="252" fill="#9ca3af" font-size="10.5" font-weight="700" letter-spacing="1.2">LTV : CAC</text>
+<text x="554" y="290" fill="url(#g)" font-size="27" font-weight="800">16x</text>
+<text x="554" y="312" fill="#c4b5fd" font-size="11" font-weight="600">return ratio</text>
+
+<!-- KPI 4: PAYBACK -->
+<rect x="742" y="222" width="192" height="106" rx="12" fill="#16151f" stroke="#ffffff" stroke-opacity="0.06"/>
+<text x="760" y="252" fill="#9ca3af" font-size="10.5" font-weight="700" letter-spacing="1.2">PAYBACK</text>
+<text x="760" y="290" fill="#ffffff" font-size="27" font-weight="800">4.6 mo</text>
+<text x="760" y="312" fill="#9ca3af" font-size="11" font-weight="600">to recover CAC</text>
+
+<!-- KPI 5: GROSS MARGIN -->
+<rect x="948" y="222" width="192" height="106" rx="12" fill="#16151f" stroke="#ffffff" stroke-opacity="0.06"/>
+<text x="966" y="252" fill="#9ca3af" font-size="10.5" font-weight="700" letter-spacing="1.2">GROSS MARGIN</text>
+<text x="966" y="290" fill="#22c55e" font-size="27" font-weight="800">92%</text>
+<text x="966" y="312" fill="#22c55e" font-size="11" font-weight="600">software only</text>
+
+<!-- Bar comparison: CAC vs LTV -->
+<text x="124" y="400" fill="#9ca3af" font-size="10.5" font-weight="700" letter-spacing="1.2">CAC</text>
+<rect x="200" y="385" width="70" height="28" rx="8" fill="#2c2a3d"/>
+<text x="280" y="404" fill="#e5e7eb" font-size="13" font-weight="600">&#8364;180</text>
+
+<text x="124" y="455" fill="#9ca3af" font-size="10.5" font-weight="700" letter-spacing="1.2">LTV</text>
+<rect x="200" y="440" width="900" height="28" rx="8" fill="url(#g)"/>
+<text x="1110" y="459" fill="#e5e7eb" font-size="13" font-weight="600">&#8364;2,940</text>
+
+<!-- Caption -->
+<text x="124" y="510" fill="#9ca3af" font-size="13" font-weight="500">16x return on every euro of acquisition cost</text>
+
+<!-- Footer -->
+<text x="1156" y="700" text-anchor="end" fill="#4b5563" font-size="10" font-weight="500">Illustrative</text>
+</svg>

@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 800" width="1280" height="800">
+<defs>
+ <linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7c3aed"/><stop offset="1" stop-color="#c026d3"/></linearGradient>
+ <linearGradient id="rA" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ef4444" stop-opacity="0.28"/><stop offset="1" stop-color="#ef4444" stop-opacity="0"/></linearGradient>
+ <radialGradient id="gl1" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#8b5cf6" stop-opacity="0.5"/><stop offset="1" stop-color="#8b5cf6" stop-opacity="0"/></radialGradient>
+ <radialGradient id="gl2" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#ef4444" stop-opacity="0.26"/><stop offset="1" stop-color="#ef4444" stop-opacity="0"/></radialGradient>
+ <filter id="sh" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="30" stdDeviation="38" flood-color="#000000" flood-opacity="0.5"/></filter>
+ <style>text{font-family:'Inter','Helvetica Neue',Arial,sans-serif}</style>
+</defs>
+<rect width="1280" height="800" fill="#0b0b14"/>
+<circle cx="200" cy="120" r="340" fill="url(#gl1)" opacity="0.55"/>
+<circle cx="1120" cy="640" r="300" fill="url(#gl2)" opacity="0.6"/>
+<rect x="90" y="80" width="1100" height="640" rx="18" fill="#121019" stroke="#ffffff" stroke-opacity="0.09" filter="url(#sh)"/>
+<circle cx="122" cy="104" r="6" fill="#ef4444"/><circle cx="142" cy="104" r="6" fill="#f59e0b"/><circle cx="162" cy="104" r="6" fill="#22c55e"/>
+<text x="640" y="109" text-anchor="middle" fill="#9ca3af" font-size="13" font-weight="600">RetailGuard / Insights</text>
+<line x1="90" y1="128" x2="1190" y2="128" stroke="#ffffff" stroke-opacity="0.07"/>
+<text x="124" y="184" fill="#fff" font-size="23" font-weight="800">Margin drift by department</text>
+<text x="124" y="208" fill="#6b7280" font-size="12.5" font-weight="500">We watch every category, so a slow slide cannot hide &#183; example shop</text>
+<!-- stat cards -->
+<rect x="124" y="240" width="300" height="128" rx="14" fill="#16151f" stroke="#ef4444" stroke-opacity="0.3"/>
+<text x="148" y="272" fill="#6b7280" font-size="10.5" font-weight="700" letter-spacing="1.2">BIGGEST FALLER</text>
+<text x="148" y="298" fill="#fff" font-size="16" font-weight="700">Biscuits &amp; Cookies</text>
+<text x="148" y="340" fill="#ef4444" font-size="30" font-weight="800">-31pp</text>
+<text x="148" y="360" fill="#9ca3af" font-size="11.5" font-weight="500">52% to 20% in 3 months</text>
+<rect x="124" y="388" width="300" height="128" rx="14" fill="#16151f" stroke="#22c55e" stroke-opacity="0.28"/>
+<text x="148" y="420" fill="#6b7280" font-size="10.5" font-weight="700" letter-spacing="1.2">BIGGEST RISER</text>
+<text x="148" y="446" fill="#fff" font-size="16" font-weight="700">Fresh Produce</text>
+<text x="148" y="488" fill="#22c55e" font-size="30" font-weight="800">+12pp</text>
+<text x="148" y="508" fill="#9ca3af" font-size="11.5" font-weight="500">last 3 months</text>
+<rect x="124" y="536" width="300" height="120" rx="14" fill="#16151f" stroke="#ffffff" stroke-opacity="0.06"/>
+<text x="148" y="568" fill="#6b7280" font-size="10.5" font-weight="700" letter-spacing="1.2">HIDDEN WINNER</text>
+<text x="148" y="598" fill="#fff" font-size="18" font-weight="800">Coffee &#183; 84%</text>
+<text x="148" y="622" fill="#9ca3af" font-size="11.5" font-weight="500">high margin, sells fast</text>
+<!-- chart panel -->
+<rect x="448" y="240" width="708" height="416" rx="14" fill="#141320" stroke="#ffffff" stroke-opacity="0.06"/>
+<circle cx="472" cy="270" r="4" fill="#ef4444"/><text x="484" y="274" fill="#9ca3af" font-size="11.5" font-weight="600">Biscuits</text>
+<circle cx="582" cy="270" r="4" fill="#22c55e"/><text x="594" y="274" fill="#9ca3af" font-size="11.5" font-weight="600">Fresh Produce</text>
+<g stroke="#ffffff" stroke-opacity="0.06"><line x1="476" y1="300" x2="1130" y2="300"/><line x1="476" y1="400" x2="1130" y2="400"/><line x1="476" y1="500" x2="1130" y2="500"/><line x1="476" y1="600" x2="1130" y2="600"/></g>
+<g fill="#6b7280" font-size="10.5" font-weight="600" text-anchor="end"><text x="466" y="304">60%</text><text x="466" y="404">40%</text><text x="466" y="504">20%</text><text x="466" y="604">0</text></g>
+<path d="M500,328 L626,335 L752,348 L878,400 L1004,478 L1100,524 L1100,600 L500,600 Z" fill="url(#rA)"/>
+<polyline points="500,328 626,335 752,348 878,400 1004,478 1100,524" fill="none" stroke="#ef4444" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="500,452 626,446 752,434 878,416 1004,392 1100,380" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-opacity="0.85" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="1100" cy="524" r="6" fill="#ef4444" stroke="#121019" stroke-width="3"/>
+<g fill="#6b7280" font-size="11" font-weight="600" text-anchor="middle"><text x="500" y="628">Jan</text><text x="626" y="628">Feb</text><text x="752" y="628">Mar</text><text x="878" y="628">Apr</text><text x="1004" y="628">May</text><text x="1100" y="628">Jun</text></g>
+<rect x="840" y="436" width="220" height="34" rx="8" fill="#ef4444" fill-opacity="0.16" stroke="#ef4444" stroke-opacity="0.35"/><text x="950" y="458" text-anchor="middle" fill="#fca5a5" font-size="12.5" font-weight="700">Biscuits down 31 points</text>
+</svg>
