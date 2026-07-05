@@ -24,6 +24,7 @@ import { InsightsLivePage } from "@/pages/InsightsLivePage";
 import { IssuesLivePage } from "@/pages/IssuesLivePage";
 import { BarcodeScannerPage } from "@/pages/BarcodeScannerPage";
 import { AskPage } from "@/pages/AskPage";
+import { AskWidget } from "@/components/AskWidget";
 import { isLoggedIn } from "@/lib/api";
 
 const queryClient = new QueryClient();
@@ -403,6 +404,7 @@ function App() {
             <SettingsPage theme={theme} onThemeToggle={() => setTheme((t) => (t === "dark" ? "light" : "dark"))} />
           )}
         </main>
+        <AskWidget />
       </div>
     </QueryClientProvider>
   );
