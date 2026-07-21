@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RetailGuard | See Your Margins Clearly</title>
+<meta name="description" content="RetailGuard analyses your till data automatically and shows you exactly where margin is slipping. Free margin scan for independent retailers.">
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--violet:#7c3aed;--violet-light:#a78bfa;--violet-dim:rgba(124,58,237,0.15);--navy:#0a0a1a;--navy-mid:#111827;--white:#f8fafc;--muted:#94a3b8;--card:#1e1b4b;--radius:12px;--ease:cubic-bezier(0.22,1,0.36,1)}
+html{scroll-behavior:smooth}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--navy);color:var(--white);overflow-x:hidden}
+
+/* Loading state */
+#loading-screen{position:fixed;inset:0;z-index:999;background:var(--navy);display:flex;align-items:center;justify-content:center;transition:opacity 0.6s var(--ease)}
+#loading-screen.hidden{opacity:0;pointer-events:none}
+.loader-ring{width:48px;height:48px;border:3px solid var(--card);border-top-color:var(--violet);border-radius:50%;animation:spin 0.8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Scroll progress indicator */
+#scroll-progress{position:fixed;top:0;left:0;height:2px;background:var(--violet);z-index:100;width:0%;transition:width 0.1s linear;opacity:0.7}
+
+#scene-container{position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1}
+#scroll-spacer{height:500vh;pointer-events:none}
+.overlay-labels{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:1}
+.insight-label{position:absolute;padding:8px 16px;background:rgba(30,27,75,0.88);border:1px solid var(--violet-light);border-radius:8px;font-size:12px;font-weight:600;color:var(--violet-light);opacity:0;transition:opacity 0.6s var(--ease),transform 0.6s var(--ease);backdrop-filter:blur(6px);white-space:nowrap;transform:translateY(6px)}
+.insight-label.visible{opacity:1;transform:translateY(0)}
+
+/* Normal DOM sections */
+.dom-sections{position:relative;z-index:2;background:var(--navy)}
+section{padding:96px 24px;max-width:860px;margin:0 auto}
+h2{font-size:clamp(1.8rem,4vw,2.5rem);font-weight:700;margin-bottom:12px;color:var(--white);letter-spacing:-0.02em;line-height:1.2}
+h3{font-size:1rem;color:var(--violet-light);margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;font-size:0.8rem}
+.section-lead{color:var(--muted);font-size:1.05rem;line-height:1.7;max-width:580px}
+p,.step-text{color:var(--muted);font-size:1rem;line-height:1.7}
+
+/* How it works */
+.steps{display:grid;gap:36px;margin-top:48px}
+.step{display:flex;gap:20px;align-items:flex-start}
+.step-num{width:36px;height:36px;border-radius:50%;background:var(--violet);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.9rem;flex-shrink:0;box-shadow:0 4px 16px rgba(124,58,237,0.3)}
+.step h3{text-transform:none;font-size:1rem;letter-spacing:0}
+
+/* Pricing */
+.pricing-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px;margin-top:48px}
+.price-card{background:var(--card);border:1px solid rgba(124,58,237,0.2);border-radius:var(--radius);padding:32px 24px;text-align:center;position:relative;transition:transform 0.3s var(--ease),box-shadow 0.3s var(--ease)}
+.price-card:hover{transform:translateY(-4px);box-shadow:0 12px 40px rgba(124,58,237,0.12)}
+.price-card.popular{border-color:var(--violet);box-shadow:0 0 40px rgba(124,58,237,0.12)}
+.popular-badge{position:absolute;top:-11px;left:50%;transform:translateX(-50%);background:var(--violet);color:#fff;font-size:10px;font-weight:700;padding:4px 14px;border-radius:20px;text-transform:uppercase;letter-spacing:0.6px}
+.price{font-size:2.2rem;font-weight:800;color:var(--white);margin:16px 0 4px}
+.price span{font-size:0.85rem;font-weight:400;color:var(--muted)}
+.price-desc{color:var(--muted);font-size:0.82rem;margin-bottom:20px}
+.features{list-style:none;text-align:left;font-size:0.88rem;color:var(--muted)}
+.features li{padding:7px 0;border-bottom:1px solid rgba(148,163,184,0.08)}
+.features li:last-child{border-bottom:none}
+.features li::before{content:'';display:inline-block;width:5px;height:5px;background:var(--violet-light);border-radius:50%;margin-right:10px;vertical-align:middle}
+
+/* Form */
+.form-section{background:linear-gradient(145deg,var(--card) 0%,var(--navy-mid) 100%);border-radius:20px;padding:48px 32px;border:1px solid rgba(124,58,237,0.15)}
+form{display:grid;gap:14px;margin-top:28px;max-width:400px}
+input,select{padding:14px 16px;border-radius:10px;border:1px solid rgba(124,58,237,0.25);background:rgba(10,10,26,0.7);color:var(--white);font-size:0.95rem;transition:border-color 0.2s}
+input::placeholder{color:var(--muted)}
+input:focus,select:focus{outline:none;border-color:var(--violet);box-shadow:0 0 0 3px var(--violet-dim)}
+.btn-submit{padding:16px;border:none;border-radius:10px;background:var(--violet);color:#fff;font-size:1rem;font-weight:700;cursor:pointer;transition:background 0.2s,transform 0.1s}
+.btn-submit:hover{background:#6d28d9}
+.btn-submit:active{transform:scale(0.98)}
+.form-note{font-size:0.78rem;color:var(--muted);margin-top:6px}
+.form-success{display:none;padding:20px;background:rgba(124,58,237,0.08);border:1px solid var(--violet-light);border-radius:10px;text-align:center;color:var(--violet-light);font-weight:600}
+
+/* Fallback */
+.static-fallback{display:none;position:fixed;top:0;left:0;width:100%;height:100vh;z-index:-1;background:linear-gradient(160deg,var(--navy) 0%,#1e1b4b 50%,var(--navy) 100%)}
+.no-webgl .static-fallback{display:block}
+.no-webgl #scene-container{display:none}
+.no-webgl #scroll-spacer{height:auto}
+
+/* Footer */
+footer{text-align:center;padding:48px 24px;color:var(--muted);font-size:0.78rem;border-top:1px solid rgba(148,163,184,0.06)}
+
+@media(max-width:600px){
+  section{padding:64px 16px}
+  .pricing-grid{grid-template-columns:1fr}
+  .form-section{padding:32px 20px}
+  h2{font-size:1.6rem}
+}
+@media(prefers-reduced-motion:reduce){
+  #scene-container{display:none}
+  .static-fallback{display:block}
+  #scroll-spacer{height:auto}
+  #scroll-progress{display:none}
+}
+</style>
+</head>
+<body>
+
+<div id="loading-screen"><div class="loader-ring"></div></div>
+<div id="scroll-progress"></div>
+
+<div id="scene-container"></div>
+<div class="static-fallback"></div>
+<div id="scroll-spacer"></div>
+
+<div class="overlay-labels">
+  <div class="insight-label" id="lbl-0">Margin leaks</div>
+  <div class="insight-label" id="lbl-1">Price rises missed</div>
+  <div class="insight-label" id="lbl-2">Dead stock</div>
+  <div class="insight-label" id="lbl-3">Busiest hours</div>
+</div>
+
+<div class="dom-sections">
+  <section>
+    <h2>How it works</h2>
+    <p class="section-lead">Your till data flows through our system and surfaces the insights that matter. No manual reports, no spreadsheets.</p>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div>
+          <h3>Connect your till</h3>
+          <p class="step-text">A lightweight export sends your sales data securely. Nothing changes in your day to day workflow.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div>
+          <h3>Automated analysis</h3>
+          <p class="step-text">Every product is checked against cost prices, supplier invoices, and seasonal patterns. Thousands of comparisons run overnight.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div>
+          <h3>Clear answers on your dashboard</h3>
+          <p class="step-text">See exactly which lines are leaking margin, which prices have not kept up with cost increases, and where dead stock is tying up cash.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Pricing</h2>
+    <p class="section-lead">Typical opportunities identified can amount to thousands of euros per year, depending on store size.</p>
+    <div class="pricing-grid">
+      <div class="price-card">
+        <h3>Insight</h3>
+        <div class="price">&euro;500 <span>/mo</span></div>
+        <div class="price-desc">Net of VAT. No setup fee.</div>
+        <ul class="features">
+          <li>Full margin dashboard</li>
+          <li>Alerts on margin drops</li>
+          <li>Drill-down by department</li>
+          <li>Barcode scanner</li>
+          <li>Supplier analytics</li>
+        </ul>
+      </div>
+      <div class="price-card popular">
+        <div class="popular-badge">Most popular</div>
+        <h3>Complete</h3>
+        <div class="price">&euro;1,000 <span>/mo</span></div>
+        <div class="price-desc">Net of VAT. No setup fee.</div>
+        <ul class="features">
+          <li>Everything in Insight</li>
+          <li>Invoice Scanner</li>
+          <li>Ask Your Shop (natural language queries)</li>
+          <li>Trading pattern detection</li>
+          <li>Product performance reports</li>
+          <li>Priority support</li>
+        </ul>
+      </div>
+      <div class="price-card">
+        <h3>Multi-site</h3>
+        <div class="price">&euro;1,500 <span>/mo</span></div>
+        <div class="price-desc">Net of VAT. No setup fee.</div>
+        <ul class="features">
+          <li>Everything in Complete</li>
+          <li>Write-back (rolling out)</li>
+          <li>Morning report per site</li>
+          <li>Per-site onboarding</li>
+          <li>Multi-location comparison</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="form-section" id="contact">
+      <h2>Get my free margin scan</h2>
+      <p>We will analyse a sample of your data and show you exactly where margin is slipping. No commitment, no card required.</p>
+      <form id="lead-form">
+        <input type="hidden" name="_subject" value="RetailGuard lead (3d v2)">
+        <input type="text" name="name" placeholder="Your name" required>
+        <input type="email" name="email" placeholder="Email address" required>
+        <input type="text" name="shop" placeholder="Shop name (optional)">
+        <button type="submit" class="btn-submit">Get my free margin scan</button>
+        <p class="form-note">We will be in touch within 24 hours.</p>
+      </form>
+      <div class="form-success" id="form-success">Thank you! We will reach out shortly with your margin scan.</div>
+    </div>
+  </section>
+
+  <footer>&copy; 2026 RetailGuard. All rights reserved.</footer>
+</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js"
+  }
+}
+</script>
+<script type="module">
+import * as THREE from 'three';
+
+const container = document.getElementById('scene-container');
+const loadingScreen = document.getElementById('loading-screen');
+const progressBar = document.getElementById('scroll-progress');
+const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+// WebGL check
+let renderer;
+try {
+  renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'high-performance' });
+} catch (e) {
+  document.body.classList.add('no-webgl');
+  loadingScreen.classList.add('hidden');
+  throw new Error('No WebGL');
+}
+
+if (!renderer.capabilities.isWebGL2 && !renderer.extensions.get('WEBGL_draw_buffers')) {
+  document.body.classList.add('no-webgl');
+  loadingScreen.classList.add('hidden');
+}
+
+if (prefersReduced || document.body.classList.contains('no-webgl')) {
+  renderer.dispose();
+  loadingScreen.classList.add('hidden');
+} else {
+  initScene();
+}
+
+function initScene() {
+  const isMobile = window.innerWidth < 768;
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setClearColor(0x0a0a1a);
+  container.appendChild(renderer.domElement);
+
+  // Hide loading once first frame is possible
+  requestAnimationFrame(() => {
+    loadingScreen.classList.add('hidden');
+  });
+
+  const scene = new THREE.Scene();
+  scene.fog = new THREE.FogExp2(0x0a0a1a, 0.06);
+
+  const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 100);
+
+  // Camera path
+  const cameraPoints = [
+    new THREE.Vector3(0, 0.5, 5),
+    new THREE.Vector3(0, 0.3, 2),
+    new THREE.Vector3(1, 0.5, -1),
+    new THREE.Vector3(2, 1, -4),
+    new THREE.Vector3(1, 1.5, -7),
+    new THREE.Vector3(0, 2.5, -5),
+    new THREE.Vector3(0, 3, -3),
+  ];
+  const cameraCurve = new THREE.CatmullRomCurve3(cameraPoints);
+  const lookAtPoints = [
+    new THREE.Vector3(0, 0, 0),
+    new THREE.Vector3(0, 0, -1),
+    new THREE.Vector3(1, 0.3, -3),
+    new THREE.Vector3(1.5, 0.5, -5),
+    new THREE.Vector3(0, 0.8, -6),
+    new THREE.Vector3(0, 0.5, -3),
+    new THREE.Vector3(0, 0.5, -2),
+  ];
+  const lookAtCurve = new THREE.CatmullRomCurve3(lookAtPoints);
+
+  // Lighting
+  const ambLight = new THREE.AmbientLight(0x1a1a2e, 0.6);
+  scene.add(ambLight);
+
+  const dirLight = new THREE.DirectionalLight(0xeeeeff, 0.5);
+  dirLight.position.set(3, 5, 2);
+  scene.add(dirLight);
+
+  const pointLight1 = new THREE.PointLight(0x7c3aed, 2.5, 12);
+  pointLight1.position.set(0, 1, -4);
+  scene.add(pointLight1);
+
+  const pointLight2 = new THREE.PointLight(0xa78bfa, 1.2, 8);
+  pointLight2.position.set(1.5, 0.5, -6.5);
+  scene.add(pointLight2);
+
+  // Rim light for slabs
+  const rimLight = new THREE.PointLight(0x6366f1, 1, 6);
+  rimLight.position.set(-1, 2, -7);
+  scene.add(rimLight);
+
+  // Background shader plane (improved FBM with warping)
+  const bgGeo = new THREE.PlaneGeometry(80, 80);
+  const bgMat = new THREE.ShaderMaterial({
+    uniforms: { uTime: { value: 0 } },
+    vertexShader: `varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+    fragmentShader: `
+      uniform float uTime;
+      varying vec2 vUv;
+      float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+      float noise(vec2 p){
+        vec2 i = floor(p); vec2 f = fract(p);
+        f = f * f * (3.0 - 2.0 * f);
+        float a = hash(i); float b = hash(i + vec2(1.0, 0.0));
+        float c = hash(i + vec2(0.0, 1.0)); float d = hash(i + vec2(1.0, 1.0));
+        return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+      }
+      float fbm(vec2 p){
+        float v = 0.0; float a = 0.5; mat2 rot = mat2(0.8, 0.6, -0.6, 0.8);
+        for(int i = 0; i < 5; i++){ v += a * noise(p); p = rot * p * 2.0; a *= 0.5; }
+        return v;
+      }
+      void main(){
+        vec2 uv = vUv * 3.0;
+        float warp = fbm(uv + uTime * 0.015);
+        float n = fbm(uv + warp * 0.8 + uTime * 0.008);
+        vec3 navy = vec3(0.039, 0.039, 0.102);
+        vec3 deepViolet = vec3(0.14, 0.05, 0.28);
+        vec3 midPurple = vec3(0.22, 0.1, 0.38);
+        vec3 col = mix(navy, deepViolet, smoothstep(0.2, 0.5, n));
+        col = mix(col, midPurple, smoothstep(0.55, 0.8, n) * 0.4);
+        gl_FragColor = vec4(col, 1.0);
+      }
+    `,
+    side: THREE.DoubleSide,
+    depthWrite: false
+  });
+  const bgPlane = new THREE.Mesh(bgGeo, bgMat);
+  bgPlane.position.set(0, 0, -22);
+  scene.add(bgPlane);
+
+  // Stage 1: Till / receipt slab
+  const tillGeo = new THREE.BoxGeometry(1.2, 1.6, 0.05);
+  const tillMat = new THREE.MeshStandardMaterial({ color: 0xf4f4f5, roughness: 0.25, metalness: 0.05 });
+  const till = new THREE.Mesh(tillGeo, tillMat);
+  till.position.set(0, 0, 0);
+  scene.add(till);
+
+  // Receipt lines with varied widths
+  const lineWidths = [0.85, 0.6, 0.75, 0.5, 0.8, 0.55, 0.7, 0.65];
+  for (let i = 0; i < 8; i++) {
+    const lineGeo = new THREE.PlaneGeometry(lineWidths[i], 0.025);
+    const lineMat = new THREE.MeshBasicMaterial({ color: 0x3f3f46 });
+    const line = new THREE.Mesh(lineGeo, lineMat);
+    line.position.set((lineWidths[i] - 0.85) * 0.25, 0.55 - i * 0.13, 0.03);
+    till.add(line);
+  }
+
+  // Particle flow path
+  const flowPoints = [
+    new THREE.Vector3(0, 0, -0.1),
+    new THREE.Vector3(0.4, 0.15, -1.2),
+    new THREE.Vector3(0.9, 0.3, -2.2),
+    new THREE.Vector3(1.3, 0.4, -3.2),
+    new THREE.Vector3(1.5, 0.5, -4.5),
+    new THREE.Vector3(1.2, 0.7, -5.5),
+    new THREE.Vector3(0.8, 0.9, -6.5),
+    new THREE.Vector3(0.5, 1.0, -7.2),
+  ];
+  const flowCurve = new THREE.CatmullRomCurve3(flowPoints);
+
+  // Particles (BufferGeometry points for performance)
+  const particleCount = isMobile ? 300 : 800;
+  const pGeometry = new THREE.BufferGeometry();
+  const pPositions = new Float32Array(particleCount * 3);
+  const pSizes = new Float32Array(particleCount);
+  const pColors = new Float32Array(particleCount * 3);
+  const pOffsets = new Float32Array(particleCount);
+  const pSpeeds = new Float32Array(particleCount);
+  const pPhases = new Float32Array(particleCount);
+
+  const colorStart = new THREE.Color(0xc4b5fd); // light violet
+  const colorMid = new THREE.Color(0x7c3aed);   // violet
+  const colorEnd = new THREE.Color(0x4f46e5);   // indigo
+
+  for (let i = 0; i < particleCount; i++) {
+    pOffsets[i] = Math.random();
+    pSpeeds[i] = 0.15 + Math.random() * 0.6;
+    pPhases[i] = Math.random() * Math.PI * 2;
+    pSizes[i] = 1.5 + Math.random() * 3.5;
+
+    // Initial color based on path position
+    const t = pOffsets[i];
+    const col = t < 0.5 ? colorStart.clone().lerp(colorMid, t * 2) : colorMid.clone().lerp(colorEnd, (t - 0.5) * 2);
+    pColors[i * 3] = col.r;
+    pColors[i * 3 + 1] = col.g;
+    pColors[i * 3 + 2] = col.b;
+  }
+
+  pGeometry.setAttribute('position', new THREE.BufferAttribute(pPositions, 3));
+  pGeometry.setAttribute('size', new THREE.BufferAttribute(pSizes, 1));
+  pGeometry.setAttribute('color', new THREE.BufferAttribute(pColors, 3));
+
+  const pMaterial = new THREE.ShaderMaterial({
+    uniforms: { uPixelRatio: { value: Math.min(window.devicePixelRatio, 2) } },
+    vertexShader: `
+      attribute float size;
+      attribute vec3 color;
+      varying vec3 vColor;
+      uniform float uPixelRatio;
+      void main(){
+        vColor = color;
+        vec4 mvPos = modelViewMatrix * vec4(position, 1.0);
+        gl_PointSize = size * uPixelRatio * (80.0 / -mvPos.z);
+        gl_Position = projectionMatrix * mvPos;
+      }
+    `,
+    fragmentShader: `
+      varying vec3 vColor;
+      void main(){
+        float d = length(gl_PointCoord - 0.5);
+        if(d > 0.5) discard;
+        float alpha = smoothstep(0.5, 0.15, d);
+        gl_FragColor = vec4(vColor, alpha * 0.75);
+      }
+    `,
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+    vertexColors: true
+  });
+
+  const particlePoints = new THREE.Points(pGeometry, pMaterial);
+  scene.add(particlePoints);
+
+  // Stage 2: Reading ring
+  const ringGeo = new THREE.TorusGeometry(0.5, 0.04, 24, 48);
+  const ringMat = new THREE.MeshStandardMaterial({ color: 0x7c3aed, emissive: 0x7c3aed, emissiveIntensity: 0.6, roughness: 0.2, metalness: 0.8 });
+  const ring = new THREE.Mesh(ringGeo, ringMat);
+  ring.position.set(1.3, 0.4, -3.2);
+  ring.rotation.y = Math.PI * 0.3;
+  scene.add(ring);
+
+  // Inner ring glow
+  const innerRingGeo = new THREE.TorusGeometry(0.38, 0.015, 16, 48);
+  const innerRingMat = new THREE.MeshBasicMaterial({ color: 0xa78bfa, transparent: true, opacity: 0.4 });
+  const innerRing = new THREE.Mesh(innerRingGeo, innerRingMat);
+  innerRing.position.copy(ring.position);
+  innerRing.rotation.copy(ring.rotation);
+  scene.add(innerRing);
+
+  // Stage 3: Insight slabs
+  const slabPositions = [
+    new THREE.Vector3(-0.3, 1.2, -6.5),
+    new THREE.Vector3(0.8, 1.4, -6.8),
+    new THREE.Vector3(-0.5, 0.6, -7.2),
+    new THREE.Vector3(1.0, 0.7, -7.0),
+  ];
+  const slabs = [];
+  for (let i = 0; i < 4; i++) {
+    const sGeo = new THREE.BoxGeometry(0.85, 0.52, 0.03);
+    const sMat = new THREE.MeshStandardMaterial({
+      color: 0x1e1b4b,
+      emissive: 0x7c3aed,
+      emissiveIntensity: 0.15,
+      transparent: true,
+      opacity: 0.92,
+      roughness: 0.4,
+      metalness: 0.1
+    });
+    const slab = new THREE.Mesh(sGeo, sMat);
+    slab.position.copy(slabPositions[i]);
+    slab.rotation.y = (i * 0.4 - 0.6) * 0.3;
+    scene.add(slab);
+    slabs.push(slab);
+
+    // Edge glow
+    const edgeGeo = new THREE.EdgesGeometry(sGeo);
+    const edgeMat = new THREE.LineBasicMaterial({ color: 0xa78bfa, transparent: true, opacity: 0.55 });
+    const edges = new THREE.LineSegments(edgeGeo, edgeMat);
+    slab.add(edges);
+  }
+
+  // Labels
+  const labelEls = [
+    document.getElementById('lbl-0'),
+    document.getElementById('lbl-1'),
+    document.getElementById('lbl-2'),
+    document.getElementById('lbl-3'),
+  ];
+
+  // Scroll state
+  let scrollProgress = 0;
+  let targetProgress = 0;
+  let isTabVisible = true;
+
+  document.addEventListener('visibilitychange', () => {
+    isTabVisible = !document.hidden;
+  });
+
+  window.addEventListener('scroll', () => {
+    const scrollMax = document.getElementById('scroll-spacer').offsetHeight - window.innerHeight;
+    targetProgress = Math.min(1, Math.max(0, window.scrollY / scrollMax));
+    progressBar.style.width = (targetProgress * 100) + '%';
+  }, { passive: true });
+
+  // Resize handler
+  let resizeTimeout;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(() => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      pMaterial.uniforms.uPixelRatio.value = Math.min(window.devicePixelRatio, 2);
+    }, 100);
+  });
+
+  // Reusable vectors (no per-frame allocations)
+  const _camTarget = new THREE.Vector3();
+  const _lookTarget = new THREE.Vector3();
+  const _pt = new THREE.Vector3();
+
+  // Animation
+  const clock = new THREE.Clock();
+  let frameId;
+
+  function animate() {
+    frameId = requestAnimationFrame(animate);
+
+    if (!isTabVisible) return;
+
+    const t = clock.getElapsedTime();
+
+    // Damped scroll interpolation
+    scrollProgress += (targetProgress - scrollProgress) * 0.035;
+
+    // Camera with extra damping
+    cameraCurve.getPointAt(scrollProgress, _camTarget);
+    lookAtCurve.getPointAt(scrollProgress, _lookTarget);
+    camera.position.lerp(_camTarget, 0.06);
+    camera.lookAt(_lookTarget);
+
+    // Background shader
+    bgMat.uniforms.uTime.value = t;
+
+    // Ring pulse
+    const pulse = 1 + Math.sin(t * 2.5) * 0.08;
+    ring.scale.set(pulse, pulse, pulse);
+    ringMat.emissiveIntensity = 0.4 + Math.sin(t * 3) * 0.25;
+    innerRing.scale.set(pulse * 1.02, pulse * 1.02, pulse * 1.02);
+
+    // Particles along flow (buffer geometry update)
+    const positions = pGeometry.attributes.position.array;
+    const colors = pGeometry.attributes.color.array;
+
+    for (let i = 0; i < particleCount; i++) {
+      pOffsets[i] = (pOffsets[i] + 0.0012 * pSpeeds[i]) % 1;
+      const off = pOffsets[i];
+      flowCurve.getPointAt(off, _pt);
+
+      // Jittered spread that increases along path
+      const spread = 0.04 + off * 0.08;
+      const phase = pPhases[i];
+      const jx = Math.sin(phase + t * 0.7 + i * 0.3) * spread;
+      const jy = Math.cos(phase + t * 0.5 + i * 0.7) * spread * 0.6;
+      const jz = Math.sin(phase + t * 0.3 + i * 1.1) * spread * 0.4;
+
+      positions[i * 3] = _pt.x + jx;
+      positions[i * 3 + 1] = _pt.y + jy;
+      positions[i * 3 + 2] = _pt.z + jz;
+
+      // Color grading along path
+      const cr = off < 0.5
+        ? colorStart.r + (colorMid.r - colorStart.r) * off * 2
+        : colorMid.r + (colorEnd.r - colorMid.r) * (off - 0.5) * 2;
+      const cg = off < 0.5
+        ? colorStart.g + (colorMid.g - colorStart.g) * off * 2
+        : colorMid.g + (colorEnd.g - colorMid.g) * (off - 0.5) * 2;
+      const cb = off < 0.5
+        ? colorStart.b + (colorMid.b - colorStart.b) * off * 2
+        : colorMid.b + (colorEnd.b - colorMid.b) * (off - 0.5) * 2;
+      colors[i * 3] = cr;
+      colors[i * 3 + 1] = cg;
+      colors[i * 3 + 2] = cb;
+    }
+    pGeometry.attributes.position.needsUpdate = true;
+    pGeometry.attributes.color.needsUpdate = true;
+
+    // Insight slabs float with phase offset
+    for (let i = 0; i < slabs.length; i++) {
+      slabs[i].position.y = slabPositions[i].y + Math.sin(t * 0.6 + i * 1.8) * 0.04;
+      slabs[i].rotation.y = (i * 0.4 - 0.6) * 0.3 + Math.sin(t * 0.3 + i) * 0.015;
+    }
+
+    // Slab emissive ramp based on scroll
+    const slabVis = Math.max(0, (scrollProgress - 0.4) / 0.3);
+    for (let i = 0; i < slabs.length; i++) {
+      slabs[i].material.emissiveIntensity = 0.05 + slabVis * 0.2;
+      slabs[i].material.opacity = 0.5 + slabVis * 0.45;
+    }
+
+    // Update HTML labels
+    const showLabels = scrollProgress > 0.55;
+    for (let i = 0; i < 4; i++) {
+      if (showLabels) {
+        _pt.copy(slabs[i].position);
+        _pt.y += 0.35;
+        _pt.project(camera);
+        const x = (_pt.x * 0.5 + 0.5) * window.innerWidth;
+        const y = (-_pt.y * 0.5 + 0.5) * window.innerHeight;
+        labelEls[i].style.left = x + 'px';
+        labelEls[i].style.top = y + 'px';
+        labelEls[i].style.transform = 'translate(-50%,-50%)';
+        labelEls[i].classList.add('visible');
+      } else {
+        labelEls[i].classList.remove('visible');
+      }
+    }
+
+    // Point light subtle bob
+    pointLight1.position.y = 1 + Math.sin(t * 0.4) * 0.3;
+
+    renderer.render(scene, camera);
+  }
+
+  animate();
+}
+
+// Form handler (FormSubmit AJAX)
+document.getElementById('lead-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const form = e.target;
+  const btn = form.querySelector('.btn-submit');
+  btn.disabled = true;
+  btn.textContent = 'Sending...';
+
+  const data = new FormData(form);
+  const body = {};
+  data.forEach((v, k) => { body[k] = v; });
+
+  try {
+    const res = await fetch('https://formsubmit.co/ajax/retailguard.sales@gmail.com', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    if (res.ok) {
+      form.style.display = 'none';
+      document.getElementById('form-success').style.display = 'block';
+    } else {
+      btn.disabled = false;
+      btn.textContent = 'Get my free margin scan';
+      alert('Something went wrong. Please try again.');
+    }
+  } catch (err) {
+    btn.disabled = false;
+    btn.textContent = 'Get my free margin scan';
+    alert('Something went wrong. Please try again.');
+  }
+});
+</script>
+</body>
+</html>

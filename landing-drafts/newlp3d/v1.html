@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RetailGuard | See Your Margins Clearly</title>
+<meta name="description" content="RetailGuard reveals hidden margin leaks in your shop. See exactly where profit drains, scan invoices instantly, and ask questions in plain English.">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--violet:#7c3aed;--violet-glow:#a78bfa;--dark:#0f0a1a;--card:#1a1025;--text:#f1f0f5;--muted:#9ca3af;--accent:#7c3aed;--danger:#ef4444;--ok:#22c55e;--border:#2d2640}
+html{scroll-behavior:smooth}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--dark);color:var(--text);overflow-x:hidden;height:600vh}
+canvas#scene{position:fixed;inset:0;z-index:-1;width:100%;height:100%}
+
+/* Loading overlay */
+.loading-overlay{position:fixed;inset:0;z-index:100;background:var(--dark);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1rem;transition:opacity 0.6s ease}
+.loading-overlay.hidden{opacity:0;pointer-events:none}
+.loading-spinner{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--violet);border-radius:50%;animation:spin 0.8s linear infinite}
+.loading-text{color:var(--muted);font-size:0.85rem;letter-spacing:0.03em}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Fallback for no WebGL or reduced motion */
+.fallback-bg{position:fixed;inset:0;z-index:-1;background:linear-gradient(135deg,#0f0a1a 0%,#1a1035 40%,#2d1b69 100%);display:none}
+@media(prefers-reduced-motion:reduce){
+  canvas#scene{display:none!important}
+  .fallback-bg{display:block!important}
+  .loading-overlay{display:none!important}
+  .overlay-panel{opacity:1!important;transform:none!important;position:relative!important;margin:3rem auto!important;pointer-events:auto!important}
+  body{height:auto!important}
+  .scroll-progress{display:none!important}
+}
+
+/* Scroll progress bar */
+.scroll-progress{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--violet),var(--violet-glow));z-index:50;width:0%;transition:width 0.1s linear;border-radius:0 2px 2px 0}
+
+/* Overlay panels */
+.overlay-panel{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) translateY(20px);max-width:540px;width:88%;padding:2.75rem 2.5rem;border-radius:1.25rem;background:rgba(15,10,26,0.92);backdrop-filter:blur(16px);border:1px solid var(--border);opacity:0;pointer-events:none;transition:opacity 0.6s cubic-bezier(.4,0,.2,1),transform 0.6s cubic-bezier(.4,0,.2,1);z-index:10;box-shadow:0 24px 64px rgba(0,0,0,0.4)}
+.overlay-panel.visible{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) translateY(0)}
+.overlay-panel h2{font-size:1.65rem;font-weight:700;margin-bottom:0.85rem;line-height:1.25;letter-spacing:-0.01em}
+.overlay-panel p{color:var(--muted);line-height:1.7;margin-bottom:1.25rem;font-size:0.95rem}
+.overlay-panel .highlight{color:var(--danger);font-weight:600}
+.overlay-panel .ok{color:var(--ok);font-weight:600}
+.overlay-panel .supporting{font-size:0.85rem;color:var(--muted);opacity:0.8}
+
+/* CTA button */
+.btn-cta{display:inline-block;padding:0.9rem 2.25rem;border-radius:0.625rem;background:var(--violet);color:#fff;font-weight:600;font-size:1rem;text-decoration:none;border:none;cursor:pointer;transition:background 0.2s,transform 0.15s,box-shadow 0.2s;box-shadow:0 4px 16px rgba(124,58,237,0.3)}
+.btn-cta:hover{background:#6d28d9;transform:translateY(-1px);box-shadow:0 6px 24px rgba(124,58,237,0.4)}
+.btn-cta:active{transform:translateY(0)}
+
+/* Scroll indicator */
+.scroll-hint{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);color:var(--muted);font-size:0.8rem;z-index:20;opacity:1;transition:opacity 0.5s;display:flex;flex-direction:column;align-items:center;gap:0.4rem}
+.scroll-hint .arrow{animation:float 2.2s ease-in-out infinite;font-size:1.1rem}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+
+/* Pricing section */
+.pricing-section{position:relative;z-index:5;background:var(--dark);padding:6rem 1.5rem 4rem}
+.pricing-section h2{text-align:center;font-size:2rem;margin-bottom:0.6rem;letter-spacing:-0.01em}
+.pricing-section .sub{text-align:center;color:var(--muted);margin-bottom:3rem;max-width:480px;margin-left:auto;margin-right:auto;line-height:1.6}
+.pricing-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1.5rem;max-width:960px;margin:0 auto 4rem}
+.price-card{background:var(--card);border:1px solid var(--border);border-radius:1rem;padding:2rem;position:relative;transition:border-color 0.2s,transform 0.2s,box-shadow 0.2s}
+.price-card:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,0,0,0.3)}
+.price-card.popular{border-color:var(--violet);box-shadow:0 0 24px rgba(124,58,237,0.15)}
+.price-card .badge{position:absolute;top:-0.75rem;left:50%;transform:translateX(-50%);background:var(--violet);color:#fff;font-size:0.7rem;padding:0.25rem 0.85rem;border-radius:1rem;font-weight:600;letter-spacing:0.02em}
+.price-card h3{font-size:1.1rem;margin-bottom:0.5rem;font-weight:600}
+.price-card .price{font-size:2rem;font-weight:700;margin-bottom:0.25rem}
+.price-card .price span{font-size:0.9rem;font-weight:400;color:var(--muted)}
+.price-card ul{list-style:none;margin:1.25rem 0;padding:0}
+.price-card ul li{padding:0.45rem 0;color:var(--muted);font-size:0.9rem;border-bottom:1px solid var(--border)}
+.price-card ul li:last-child{border:none}
+
+/* Contact form */
+.contact-section{position:relative;z-index:5;background:var(--dark);padding:2rem 1.5rem 6rem}
+.contact-section h2{text-align:center;font-size:1.75rem;margin-bottom:0.6rem}
+.contact-section .sub{text-align:center;color:var(--muted);margin-bottom:2rem;line-height:1.6}
+.contact-form{max-width:460px;margin:0 auto;display:flex;flex-direction:column;gap:1rem}
+.contact-form input,.contact-form textarea{padding:0.9rem 1rem;border-radius:0.5rem;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:0.95rem;font-family:inherit;transition:border-color 0.2s}
+.contact-form input:focus,.contact-form textarea:focus{outline:none;border-color:var(--violet)}
+.contact-form input::placeholder,.contact-form textarea::placeholder{color:var(--muted)}
+.contact-form textarea{min-height:100px;resize:vertical}
+.form-success{display:none;text-align:center;color:var(--ok);font-weight:600;padding:2rem 0;font-size:1.05rem}
+
+/* Footer */
+.site-footer{position:relative;z-index:5;background:var(--dark);border-top:1px solid var(--border);padding:2rem 1.5rem;text-align:center;color:var(--muted);font-size:0.8rem}
+
+@media(max-width:640px){
+  .overlay-panel{padding:1.75rem 1.5rem;max-width:94%}
+  .overlay-panel h2{font-size:1.3rem}
+  .pricing-grid{grid-template-columns:1fr}
+  body{height:500vh}
+}
+</style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loader">
+  <div class="loading-spinner"></div>
+  <div class="loading-text">Entering your shop...</div>
+</div>
+
+<div class="scroll-progress" id="scrollProgress"></div>
+<canvas id="scene"></canvas>
+<div class="fallback-bg" id="fallback"></div>
+
+<!-- Panel 1: Hero at the shop door -->
+<div class="overlay-panel" id="panel-hero">
+  <h2>See exactly where your margin leaks before they drain your profit</h2>
+  <p>Typical opportunities identified can amount to thousands of euros per year, depending on store size.</p>
+  <a href="#contact" class="btn-cta">Get my free margin scan</a>
+</div>
+
+<!-- Panel 2: In the aisle, red cubes glowing -->
+<div class="overlay-panel" id="panel-leaks">
+  <h2>Every <span class="highlight">red item</span> is selling below cost</h2>
+  <p>Across a typical store, dozens of products may be leaking margin without anyone noticing. Cost changes, missed price updates, supplier creep. They add up silently every single week.</p>
+  <p class="supporting">The dashboard flags each issue so you can fix it in minutes.</p>
+</div>
+
+<!-- Panel 3: At the till -->
+<div class="overlay-panel" id="panel-invoice">
+  <h2>Scan any supplier invoice in seconds</h2>
+  <p>Snap a photo of the delivery docket. Instantly see which lines have changed cost, which are new, and which need a price review. No typing, no spreadsheets.</p>
+  <p class="supporting">Works with any supplier, any format.</p>
+</div>
+
+<!-- Panel 4: At the dashboard wall -->
+<div class="overlay-panel" id="panel-ask">
+  <h2>Ask your shop anything, in plain English</h2>
+  <p>"Which dairy products lost margin this month?" "What did I sell most of last Tuesday?" Get clear, honest answers from your own data without learning any software.</p>
+  <p class="supporting">Your data never leaves your account.</p>
+</div>
+
+<div class="scroll-hint" id="scrollHint"><span class="arrow">&#8595;</span>Scroll to explore</div>
+
+<!-- Pricing -->
+<div class="pricing-section" id="pricing">
+  <h2>Simple, transparent pricing</h2>
+  <p class="sub">All plans are net of VAT. No setup fee. Cancel any time.</p>
+  <div class="pricing-grid">
+    <div class="price-card">
+      <h3>Insight</h3>
+      <div class="price">&euro;500<span>/month</span></div>
+      <ul>
+        <li>Full margin dashboard</li>
+        <li>Alerts on cost changes</li>
+        <li>Drill down by department</li>
+        <li>Barcode lookup</li>
+        <li>Supplier analytics</li>
+      </ul>
+      <a href="#contact" class="btn-cta" style="width:100%;text-align:center">Get my free margin scan</a>
+    </div>
+    <div class="price-card popular">
+      <div class="badge">Most popular</div>
+      <h3>Complete</h3>
+      <div class="price">&euro;1,000<span>/month</span></div>
+      <ul>
+        <li>Everything in Insight</li>
+        <li>Invoice Scanner</li>
+        <li>Ask Your Shop</li>
+        <li>Trading patterns</li>
+        <li>Product performance</li>
+        <li>Priority support</li>
+      </ul>
+      <a href="#contact" class="btn-cta" style="width:100%;text-align:center">Get my free margin scan</a>
+    </div>
+    <div class="price-card">
+      <h3>Multi-site</h3>
+      <div class="price">&euro;1,500<span>/month</span></div>
+      <ul>
+        <li>Everything in Complete</li>
+        <li>Write-back (rolling out)</li>
+        <li>Morning report</li>
+        <li>Per-site onboarding</li>
+      </ul>
+      <a href="#contact" class="btn-cta" style="width:100%;text-align:center">Get my free margin scan</a>
+    </div>
+  </div>
+</div>
+
+<!-- Contact form -->
+<div class="contact-section" id="contact">
+  <h2>Get my free margin scan</h2>
+  <p class="sub">We will show you exactly where your shop is losing money. No charge, no commitment.</p>
+  <form class="contact-form" id="contactForm">
+    <input type="text" name="name" placeholder="Your name" required>
+    <input type="email" name="email" placeholder="Email address" required>
+    <input type="text" name="shop" placeholder="Shop name (optional)">
+    <textarea name="message" placeholder="Anything you want us to know?"></textarea>
+    <input type="hidden" name="_subject" value="RetailGuard lead (3d v1)">
+    <button type="submit" class="btn-cta" style="width:100%;text-align:center;font-size:1rem">Send</button>
+  </form>
+  <div class="form-success" id="formSuccess">Thank you! We will be in touch within 24 hours.</div>
+</div>
+
+<footer class="site-footer">&copy; 2026 RetailGuard. All rights reserved.</footer>
+
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js"}}
+</script>
+<script type="module">
+import * as THREE from 'three';
+
+const canvas = document.getElementById('scene');
+const fallback = document.getElementById('fallback');
+const scrollHint = document.getElementById('scrollHint');
+const loader = document.getElementById('loader');
+const scrollProgress = document.getElementById('scrollProgress');
+
+// WebGL check
+let renderer;
+try {
+  renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false, powerPreference: 'high-performance' });
+} catch(e) {
+  fallback.style.display = 'block';
+  canvas.style.display = 'none';
+  loader.classList.add('hidden');
+  showAllPanelsStatic();
+  throw e;
+}
+
+// Reduced motion check
+if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  fallback.style.display = 'block';
+  canvas.style.display = 'none';
+  loader.classList.add('hidden');
+  renderer.dispose();
+  showAllPanelsStatic();
+}
+
+function showAllPanelsStatic() {
+  document.querySelectorAll('.overlay-panel').forEach(p => {
+    p.style.position = 'relative';
+    p.style.opacity = '1';
+    p.style.pointerEvents = 'auto';
+    p.style.transform = 'none';
+    p.style.margin = '3rem auto';
+    p.style.top = 'auto';
+    p.style.left = 'auto';
+  });
+  document.body.style.height = 'auto';
+  if (scrollHint) scrollHint.style.display = 'none';
+}
+
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setClearColor(0x0f0a1a);
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.1;
+
+const scene = new THREE.Scene();
+scene.fog = new THREE.FogExp2(0x0f0a1a, 0.035);
+
+const camera = new THREE.PerspectiveCamera(58, window.innerWidth / window.innerHeight, 0.1, 100);
+
+// --- Lighting: key + fill + rim ---
+const ambient = new THREE.AmbientLight(0xffffff, 0.2);
+scene.add(ambient);
+
+// Key light (warm top-right)
+const keyLight = new THREE.DirectionalLight(0xfff5e6, 0.7);
+keyLight.position.set(4, 8, 2);
+scene.add(keyLight);
+
+// Fill light (cool left)
+const fillLight = new THREE.DirectionalLight(0xc4d4ff, 0.25);
+fillLight.position.set(-5, 3, -3);
+scene.add(fillLight);
+
+// Rim / back light (violet accent)
+const rimLight = new THREE.DirectionalLight(0xa78bfa, 0.3);
+rimLight.position.set(0, 5, -35);
+scene.add(rimLight);
+
+// Atmospheric point lights
+const violetLight1 = new THREE.PointLight(0x7c3aed, 2.5, 18);
+violetLight1.position.set(-3, 4, -6);
+scene.add(violetLight1);
+
+const violetLight2 = new THREE.PointLight(0xa78bfa, 1.8, 14);
+violetLight2.position.set(4, 3.5, -16);
+scene.add(violetLight2);
+
+const warmLight = new THREE.PointLight(0xfbbf24, 1.2, 12);
+warmLight.position.set(0, 3, -26);
+scene.add(warmLight);
+
+// Cool blue at the end for the dashboard
+const dashLight = new THREE.PointLight(0x818cf8, 2, 10);
+dashLight.position.set(0, 3, -33);
+scene.add(dashLight);
+
+// --- Materials ---
+const floorMat = new THREE.MeshStandardMaterial({ color: 0x15101f, roughness: 0.85, metalness: 0.05 });
+const shelfMat = new THREE.MeshStandardMaterial({ color: 0x2d2640, roughness: 0.6, metalness: 0.1 });
+const wallMat = new THREE.MeshStandardMaterial({ color: 0x161020, roughness: 0.85 });
+const tillMat = new THREE.MeshStandardMaterial({ color: 0x3d2860, roughness: 0.4, metalness: 0.15 });
+const dashMat = new THREE.MeshStandardMaterial({ color: 0x0a0515, emissive: 0x7c3aed, emissiveIntensity: 0.4, metalness: 0.3, roughness: 0.3 });
+const shelfBoardMat = new THREE.MeshStandardMaterial({ color: 0x3a2f50, roughness: 0.7 });
+const ceilingLightMat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xfff8e0, emissiveIntensity: 0.6 });
+
+// --- Floor (gradient feel via two planes) ---
+const floor = new THREE.Mesh(new THREE.PlaneGeometry(12, 42), floorMat);
+floor.rotation.x = -Math.PI / 2;
+floor.position.set(0, 0, -16);
+scene.add(floor);
+
+// Subtle floor grid lines
+const gridHelper = new THREE.GridHelper(12, 24, 0x1f1830, 0x1f1830);
+gridHelper.position.set(0, 0.01, -16);
+gridHelper.material.opacity = 0.15;
+gridHelper.material.transparent = true;
+scene.add(gridHelper);
+
+// --- Walls ---
+const leftWall = new THREE.Mesh(new THREE.BoxGeometry(0.15, 5.2, 42), wallMat);
+leftWall.position.set(-6, 2.6, -16);
+scene.add(leftWall);
+
+const rightWall = new THREE.Mesh(new THREE.BoxGeometry(0.15, 5.2, 42), wallMat);
+rightWall.position.set(6, 2.6, -16);
+scene.add(rightWall);
+
+const backWall = new THREE.Mesh(new THREE.BoxGeometry(12, 5.2, 0.15), wallMat);
+backWall.position.set(0, 2.6, -37);
+scene.add(backWall);
+
+// Ceiling
+const ceiling = new THREE.Mesh(new THREE.BoxGeometry(12, 0.12, 42), wallMat);
+ceiling.position.set(0, 5.2, -16);
+scene.add(ceiling);
+
+// Ceiling strip lights
+for (let i = 0; i < 6; i++) {
+  const stripLight = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.06, 4), ceilingLightMat);
+  stripLight.position.set(0, 5.1, -3 - i * 6);
+  scene.add(stripLight);
+}
+
+// --- Shelving units (more detailed) ---
+const isMobile = window.innerWidth < 768;
+
+function createShelfUnit(x, z, height) {
+  const group = new THREE.Group();
+  // Uprights
+  const upright = new THREE.BoxGeometry(0.08, height, 0.5);
+  const left = new THREE.Mesh(upright, shelfMat);
+  left.position.set(-0.6, height / 2, 0);
+  group.add(left);
+  const right = new THREE.Mesh(upright, shelfMat);
+  right.position.set(0.6, height / 2, 0);
+  group.add(right);
+  // Shelves (horizontal boards)
+  const shelfCount = Math.floor(height / 0.7);
+  for (let s = 0; s < shelfCount; s++) {
+    const board = new THREE.Mesh(new THREE.BoxGeometry(1.3, 0.05, 0.5), shelfBoardMat);
+    board.position.set(0, 0.4 + s * 0.7, 0);
+    group.add(board);
+  }
+  group.position.set(x, 0, z);
+  scene.add(group);
+}
+
+// Left aisle shelves
+for (let i = 0; i < 6; i++) {
+  const h = 2.8 + Math.random() * 0.6;
+  createShelfUnit(-4.5, -3 - i * 5, h);
+}
+// Right aisle shelves
+for (let i = 0; i < 6; i++) {
+  const h = 2.6 + Math.random() * 0.8;
+  createShelfUnit(4.5, -3 - i * 5, h);
+}
+
+// --- Product cubes (InstancedMesh) ---
+const cubeCount = isMobile ? 180 : 400;
+const cubeGeo = new THREE.BoxGeometry(1, 1, 1);
+const cubeMat = new THREE.MeshStandardMaterial({ roughness: 0.5, metalness: 0.05 });
+const cubes = new THREE.InstancedMesh(cubeGeo, cubeMat, cubeCount);
+
+const dummy = new THREE.Object3D();
+const colorArr = new THREE.Color();
+const leakIndices = new Set();
+
+while (leakIndices.size < 18) {
+  leakIndices.add(Math.floor(Math.random() * cubeCount));
+}
+
+const productColors = [0x22c55e, 0x3b82f6, 0xfbbf24, 0xf97316, 0x8b5cf6, 0x06b6d4, 0xec4899, 0x14b8a6, 0xf43f5e];
+
+for (let i = 0; i < cubeCount; i++) {
+  const side = i % 2 === 0 ? -1 : 1;
+  const x = side * (3.2 + Math.random() * 1.0);
+  const shelfRow = Math.floor(Math.random() * 4);
+  const y = 0.45 + shelfRow * 0.7;
+  const z = -1.5 - Math.random() * 30;
+  dummy.position.set(x, y, z);
+  dummy.rotation.set(0, Math.random() * 0.15, 0);
+  // Varied scale: some tall (bottles), some wide (boxes), some small (cans)
+  const scaleType = Math.random();
+  if (scaleType < 0.3) {
+    dummy.scale.set(0.18 + Math.random() * 0.1, 0.35 + Math.random() * 0.2, 0.15 + Math.random() * 0.08);
+  } else if (scaleType < 0.6) {
+    dummy.scale.set(0.25 + Math.random() * 0.15, 0.2 + Math.random() * 0.1, 0.2 + Math.random() * 0.1);
+  } else {
+    dummy.scale.set(0.15 + Math.random() * 0.08, 0.15 + Math.random() * 0.08, 0.15 + Math.random() * 0.08);
+  }
+  dummy.updateMatrix();
+  cubes.setMatrixAt(i, dummy.matrix);
+
+  if (leakIndices.has(i)) {
+    cubes.setColorAt(i, colorArr.setHex(0xef4444));
+  } else {
+    cubes.setColorAt(i, colorArr.setHex(productColors[i % productColors.length]));
+  }
+}
+cubes.instanceMatrix.needsUpdate = true;
+cubes.instanceColor.needsUpdate = true;
+scene.add(cubes);
+
+// Red glow overlay for leak items
+const leakMat = new THREE.MeshStandardMaterial({ color: 0xef4444, emissive: 0xef4444, emissiveIntensity: 0.9, transparent: true, opacity: 0.5 });
+const leakGeo = new THREE.SphereGeometry(0.22, 8, 8);
+const leakMeshes = [];
+const leakArr = Array.from(leakIndices);
+const mat4Temp = new THREE.Matrix4();
+const posTemp = new THREE.Vector3();
+for (const idx of leakArr) {
+  cubes.getMatrixAt(idx, mat4Temp);
+  posTemp.setFromMatrixPosition(mat4Temp);
+  const glow = new THREE.Mesh(leakGeo, leakMat);
+  glow.position.copy(posTemp);
+  scene.add(glow);
+  leakMeshes.push(glow);
+}
+
+// --- Till counter (more detailed) ---
+const tillBase = new THREE.Mesh(new THREE.BoxGeometry(3.2, 1.1, 1.4), tillMat);
+tillBase.position.set(0, 0.55, -29);
+scene.add(tillBase);
+
+const tillTop = new THREE.Mesh(new THREE.BoxGeometry(3.4, 0.06, 1.5), new THREE.MeshStandardMaterial({ color: 0x4a3070, roughness: 0.3, metalness: 0.2 }));
+tillTop.position.set(0, 1.13, -29);
+scene.add(tillTop);
+
+// Till screen
+const tillScreen = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.5, 0.05), new THREE.MeshStandardMaterial({ color: 0x111111, emissive: 0x22c55e, emissiveIntensity: 0.3 }));
+tillScreen.position.set(-0.8, 1.5, -29);
+tillScreen.rotation.x = -0.2;
+scene.add(tillScreen);
+
+// --- Dashboard wall ---
+const dashPanel = new THREE.Mesh(new THREE.BoxGeometry(5.5, 2.8, 0.08), dashMat);
+dashPanel.position.set(0, 2.9, -36.85);
+scene.add(dashPanel);
+
+// Dashboard screen border
+const dashBorder = new THREE.Mesh(new THREE.BoxGeometry(5.7, 3.0, 0.04), new THREE.MeshStandardMaterial({ color: 0x1a1025 }));
+dashBorder.position.set(0, 2.9, -36.9);
+scene.add(dashBorder);
+
+// Small chart bars on dashboard
+const barMat = new THREE.MeshStandardMaterial({ color: 0x7c3aed, emissive: 0x7c3aed, emissiveIntensity: 0.5 });
+for (let b = 0; b < 8; b++) {
+  const h = 0.3 + Math.random() * 1.2;
+  const bar = new THREE.Mesh(new THREE.BoxGeometry(0.3, h, 0.04), barMat);
+  bar.position.set(-2 + b * 0.55, 1.8 + h / 2, -36.8);
+  scene.add(bar);
+}
+
+// --- Door frame at entrance ---
+const doorFrame = new THREE.Mesh(new THREE.BoxGeometry(3, 4, 0.2), new THREE.MeshStandardMaterial({ color: 0x2a2040, roughness: 0.6 }));
+doorFrame.position.set(0, 2, 5);
+scene.add(doorFrame);
+const doorHole = new THREE.Mesh(new THREE.BoxGeometry(2.2, 3.5, 0.3), new THREE.MeshStandardMaterial({ color: 0x0f0a1a }));
+doorHole.position.set(0, 1.9, 5);
+scene.add(doorHole);
+
+// --- Camera path ---
+const pathPoints = isMobile ? [
+  new THREE.Vector3(0, 2, 5),
+  new THREE.Vector3(0, 1.8, -3),
+  new THREE.Vector3(0, 1.7, -12),
+  new THREE.Vector3(0, 1.6, -22),
+  new THREE.Vector3(0, 1.5, -27),
+  new THREE.Vector3(0, 2.2, -34)
+] : [
+  new THREE.Vector3(0, 2.2, 5.5),
+  new THREE.Vector3(-0.3, 2.0, -1),
+  new THREE.Vector3(0.2, 1.85, -7),
+  new THREE.Vector3(-0.2, 1.75, -13),
+  new THREE.Vector3(0.15, 1.7, -19),
+  new THREE.Vector3(0, 1.6, -24),
+  new THREE.Vector3(0, 1.55, -28),
+  new THREE.Vector3(0, 2.3, -34.5)
+];
+
+const cameraPath = new THREE.CatmullRomCurve3(pathPoints, false, 'catmullrom', 0.3);
+
+// --- Scroll state (damped) ---
+let currentT = 0;
+let targetT = 0;
+const lerpFactor = 0.04;
+
+// Panels config
+const panels = [
+  ['panel-hero', 0.0, 0.14],
+  ['panel-leaks', 0.2, 0.38],
+  ['panel-invoice', 0.44, 0.6],
+  ['panel-ask', 0.66, 0.84]
+];
+
+function updatePanels(t) {
+  for (const [id, start, end] of panels) {
+    const el = document.getElementById(id);
+    if (t >= start && t <= end) {
+      el.classList.add('visible');
+    } else {
+      el.classList.remove('visible');
+    }
+  }
+  if (t > 0.04 && scrollHint) scrollHint.style.opacity = '0';
+}
+
+// Glow animation for leak cubes
+let animTime = 0;
+function animateLeaks(dt) {
+  animTime += dt;
+  const pulse = 0.5 + Math.sin(animTime * 2.8) * 0.4;
+  leakMat.emissiveIntensity = pulse;
+  leakMat.opacity = 0.35 + pulse * 0.25;
+}
+
+// Resize handler
+function onResize() {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+}
+window.addEventListener('resize', onResize);
+
+// Visibility API: pause render when tab hidden
+let isTabVisible = true;
+document.addEventListener('visibilitychange', () => {
+  isTabVisible = !document.hidden;
+});
+
+// Reusable vectors (no per-frame allocations)
+const camPos = new THREE.Vector3();
+const lookPos = new THREE.Vector3();
+
+// Hide loader once first frame renders
+let loaderHidden = false;
+
+// --- Animation loop ---
+function animate() {
+  requestAnimationFrame(animate);
+
+  if (!isTabVisible) return;
+
+  const maxScroll = document.body.scrollHeight - window.innerHeight;
+  targetT = Math.min(Math.max(window.scrollY / maxScroll, 0), 1);
+  currentT += (targetT - currentT) * lerpFactor;
+
+  // Scroll progress bar
+  scrollProgress.style.width = (currentT * 100) + '%';
+
+  // Position camera along path (damped)
+  cameraPath.getPointAt(currentT, camPos);
+  camera.position.copy(camPos);
+
+  // Look ahead (smooth)
+  const lookT = Math.min(currentT + 0.04, 1);
+  cameraPath.getPointAt(lookT, lookPos);
+  camera.lookAt(lookPos);
+
+  updatePanels(currentT);
+  animateLeaks(0.016);
+
+  // Subtle idle camera sway
+  const sway = Math.sin(animTime * 0.5) * 0.003;
+  camera.rotation.z = sway;
+
+  renderer.render(scene, camera);
+
+  if (!loaderHidden) {
+    loaderHidden = true;
+    setTimeout(() => loader.classList.add('hidden'), 300);
+  }
+}
+
+animate();
+
+// --- Contact form submission (FormSubmit) ---
+const form = document.getElementById('contactForm');
+const formSuccess = document.getElementById('formSuccess');
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = form.querySelector('button[type="submit"]');
+  btn.disabled = true;
+  btn.textContent = 'Sending...';
+  const data = new FormData(form);
+  try {
+    const res = await fetch('https://formsubmit.co/ajax/retailguard.sales@gmail.com', {
+      method: 'POST',
+      body: data
+    });
+    if (res.ok) {
+      form.style.display = 'none';
+      formSuccess.style.display = 'block';
+    } else {
+      btn.disabled = false;
+      btn.textContent = 'Send';
+      alert('Something went wrong. Please try again.');
+    }
+  } catch(err) {
+    btn.disabled = false;
+    btn.textContent = 'Send';
+    alert('Something went wrong. Please try again.');
+  }
+});
+</script>
+</body>
+</html>

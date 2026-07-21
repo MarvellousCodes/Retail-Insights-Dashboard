@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RetailGuard - Margin &amp; Sales Analytics for Convenience Shops</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --violet:#6c47ff;--violet-light:#a78bfa;--violet-dark:#4c1d95;
+  --green:#10b981;--red:#ef4444;--orange:#f59e0b;
+  --gray-50:#f9fafb;--gray-100:#f3f4f6;--gray-200:#e5e7eb;--gray-300:#d1d5db;
+  --gray-500:#6b7280;--gray-700:#374151;--gray-900:#111827;
+  --radius:12px;--shadow:0 4px 24px rgba(0,0,0,.06);
+}
+html{scroll-behavior:smooth}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:var(--gray-900);line-height:1.6;overflow-x:hidden}
+a{color:var(--violet);text-decoration:none}
+img{max-width:100%;display:block}
+
+/* NAV */
+.nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(255,255,255,.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--gray-200);padding:14px 0}
+.nav-inner{max-width:1140px;margin:0 auto;padding:0 24px;display:flex;align-items:center;justify-content:space-between}
+.nav-logo{font-weight:700;font-size:1.25rem;color:var(--violet-dark)}
+.nav-cta{background:var(--violet);color:#fff;padding:10px 20px;border-radius:8px;font-weight:600;font-size:.9rem;transition:background .2s}
+.nav-cta:hover{background:var(--violet-dark)}
+
+/* HERO */
+.hero{position:relative;min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:120px 24px 80px;overflow:hidden}
+.hero-bg{position:absolute;inset:0;z-index:0;
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 30%, rgba(108,71,255,.25) 0%, transparent 60%),
+    radial-gradient(ellipse 70% 50% at 80% 70%, rgba(16,185,129,.2) 0%, transparent 55%),
+    radial-gradient(ellipse 60% 40% at 50% 50%, rgba(167,139,250,.15) 0%, transparent 50%),
+    radial-gradient(ellipse 90% 70% at 70% 20%, rgba(245,158,11,.1) 0%, transparent 55%);
+  background-size:200% 200%;
+  animation:meshDrift 12s ease-in-out infinite alternate;
+}
+@keyframes meshDrift{
+  0%{background-position:0% 0%}
+  25%{background-position:30% 60%}
+  50%{background-position:60% 30%}
+  75%{background-position:80% 70%}
+  100%{background-position:100% 100%}
+}
+.hero-content{position:relative;z-index:1;max-width:720px}
+.hero h1{font-size:clamp(2.2rem,5vw,3.5rem);font-weight:800;line-height:1.15;margin-bottom:20px;color:var(--gray-900)}
+.hero p{font-size:1.2rem;color:var(--gray-700);margin-bottom:32px;max-width:560px;margin-left:auto;margin-right:auto}
+.btn-primary{display:inline-block;background:var(--violet);color:#fff;padding:16px 32px;border-radius:10px;font-size:1.1rem;font-weight:700;transition:transform .2s,box-shadow .2s;cursor:pointer;border:none}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(108,71,255,.3)}
+.hero-trust{margin-top:18px;font-size:.85rem;color:var(--gray-500)}
+
+/* SECTION REVEALS */
+.reveal{opacity:0;transform:translateY(30px);transition:opacity .7s ease,transform .7s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+
+/* DUAL SPLIT */
+.section{padding:100px 24px}
+.section:nth-child(even){background:var(--gray-50)}
+.container{max-width:1140px;margin:0 auto}
+.dual{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center}
+.dual.reverse{direction:rtl}
+.dual.reverse>*{direction:ltr}
+.dual-artifact{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);padding:28px;border:1px solid var(--gray-200)}
+.dual-text h2{font-size:1.8rem;font-weight:700;margin-bottom:16px;line-height:1.3}
+.dual-text p{font-size:1.1rem;color:var(--gray-700);line-height:1.7}
+
+/* MINI TABLE */
+.mini-table{width:100%;border-collapse:collapse;font-size:.85rem}
+.mini-table th{text-align:left;padding:8px 10px;background:var(--gray-100);font-weight:600;border-bottom:1px solid var(--gray-200)}
+.mini-table td{padding:8px 10px;border-bottom:1px solid var(--gray-100)}
+.mini-table .leak{color:var(--red);font-weight:600}
+.mini-table .ok{color:var(--green);font-weight:600}
+
+/* CHART BARS */
+.bar-chart{display:flex;align-items:flex-end;gap:8px;height:140px;padding-top:12px}
+.bar-col{display:flex;flex-direction:column;align-items:center;flex:1}
+.bar{width:100%;border-radius:6px 6px 0 0;transition:height .6s ease}
+.bar-label{font-size:.7rem;color:var(--gray-500);margin-top:6px}
+
+/* INVOICE CARD */
+.invoice-card{font-size:.85rem}
+.invoice-card .ic-header{display:flex;justify-content:space-between;margin-bottom:12px;font-weight:600}
+.invoice-card .ic-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--gray-100)}
+.invoice-card .ic-flag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:.75rem;font-weight:600}
+.ic-flag.new{background:#dcfce7;color:#166534}
+.ic-flag.review{background:#fef3c7;color:#92400e}
+
+/* WEEK STRIP */
+.week-strip{background:linear-gradient(135deg,var(--violet-dark),var(--violet));color:#fff;padding:80px 24px;text-align:center}
+.week-strip h2{font-size:2rem;font-weight:700;margin-bottom:40px}
+.week-items{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:24px;max-width:900px;margin:0 auto}
+.week-item{background:rgba(255,255,255,.12);border-radius:var(--radius);padding:24px;backdrop-filter:blur(4px)}
+.week-item .day{font-weight:700;font-size:1.1rem;margin-bottom:8px}
+.week-item p{font-size:.9rem;opacity:.9}
+
+/* COUNTERS */
+.counters{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:32px;text-align:center;padding:80px 24px;max-width:900px;margin:0 auto}
+.counter-item .num{font-size:2.5rem;font-weight:800;color:var(--violet)}
+.counter-item .label{font-size:.9rem;color:var(--gray-500);margin-top:4px}
+
+/* PRICING */
+.pricing-section{padding:100px 24px;background:var(--gray-50)}
+.pricing-section h2{text-align:center;font-size:2rem;font-weight:700;margin-bottom:12px}
+.pricing-sub{text-align:center;color:var(--gray-500);margin-bottom:48px;font-size:.95rem}
+.pricing-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:28px;max-width:1000px;margin:0 auto}
+.price-card{background:#fff;border-radius:var(--radius);padding:36px 28px;border:1px solid var(--gray-200);box-shadow:var(--shadow);position:relative;display:flex;flex-direction:column}
+.price-card.popular{border-color:var(--violet);box-shadow:0 8px 32px rgba(108,71,255,.15)}
+.price-badge{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--violet);color:#fff;font-size:.75rem;font-weight:700;padding:4px 14px;border-radius:20px}
+.price-card h3{font-size:1.2rem;font-weight:700;margin-bottom:8px}
+.price-amount{font-size:2.2rem;font-weight:800;margin-bottom:4px}
+.price-period{font-size:.85rem;color:var(--gray-500);margin-bottom:20px}
+.price-features{list-style:none;flex:1}
+.price-features li{padding:8px 0;border-bottom:1px solid var(--gray-100);font-size:.9rem;color:var(--gray-700)}
+.price-features li::before{content:'';display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green);margin-right:10px}
+.price-cta{display:block;text-align:center;margin-top:24px;padding:14px;background:var(--violet);color:#fff;border-radius:8px;font-weight:600;transition:background .2s}
+.price-cta:hover{background:var(--violet-dark)}
+
+/* TESTIMONIAL */
+.testimonial{padding:80px 24px;text-align:center}
+.testimonial blockquote{max-width:640px;margin:0 auto;font-size:1.2rem;color:var(--gray-700);font-style:italic;line-height:1.7}
+.testimonial cite{display:block;margin-top:16px;font-size:.85rem;color:var(--gray-500);font-style:normal}
+.testimonial .composite-note{font-size:.75rem;color:var(--gray-500);margin-top:8px;opacity:.7}
+
+/* FAQ */
+.faq-section{padding:80px 24px;max-width:720px;margin:0 auto}
+.faq-section h2{text-align:center;font-size:1.8rem;font-weight:700;margin-bottom:40px}
+.faq-item{border-bottom:1px solid var(--gray-200);padding:20px 0}
+.faq-q{font-weight:600;cursor:pointer;display:flex;justify-content:space-between;align-items:center}
+.faq-q::after{content:'+';font-size:1.4rem;color:var(--gray-500);transition:transform .3s}
+.faq-item.open .faq-q::after{transform:rotate(45deg)}
+.faq-a{max-height:0;overflow:hidden;transition:max-height .4s ease,padding .3s;font-size:.95rem;color:var(--gray-700)}
+.faq-item.open .faq-a{max-height:400px;padding-top:12px}
+
+/* CONTACT */
+.contact-section{padding:100px 24px;background:var(--gray-50)}
+.contact-section h2{text-align:center;font-size:1.8rem;font-weight:700;margin-bottom:12px}
+.contact-sub{text-align:center;color:var(--gray-500);margin-bottom:36px}
+.contact-form{max-width:480px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+.contact-form input,.contact-form textarea{padding:14px 16px;border:1px solid var(--gray-200);border-radius:8px;font-size:1rem;font-family:inherit;transition:border-color .2s}
+.contact-form input:focus,.contact-form textarea:focus{outline:none;border-color:var(--violet)}
+.contact-form textarea{resize:vertical;min-height:100px}
+.form-success{display:none;text-align:center;padding:24px;background:#dcfce7;border-radius:var(--radius);color:#166534;font-weight:600}
+
+/* FOOTER */
+.footer{padding:40px 24px;text-align:center;font-size:.85rem;color:var(--gray-500);border-top:1px solid var(--gray-200)}
+
+/* MOBILE */
+@media(max-width:768px){
+  .dual{grid-template-columns:1fr;gap:32px}
+  .dual.reverse{direction:ltr}
+  .hero h1{font-size:2rem}
+  .counters{grid-template-columns:1fr 1fr}
+  .pricing-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-inner">
+    <div class="nav-logo">RetailGuard</div>
+    <a href="#contact" class="nav-cta">Get my free margin scan</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-content">
+    <h1>Find the margin leaks hiding in your shop, every single week</h1>
+    <p>RetailGuard connects to your till system (read only) and surfaces exactly which products cost you money, which suppliers overcharge, and what to fix first.</p>
+    <a href="#contact" class="btn-primary">Get my free margin scan</a>
+    <div class="hero-trust">No setup fee. No changes to your till. Results in 48 hours.</div>
+  </div>
+</section>
+
+<!-- COUNTERS -->
+<section class="counters reveal">
+  <div class="counter-item"><div class="num" data-target="500">0</div><div class="label">Margin issues found per shop (avg)</div></div>
+  <div class="counter-item"><div class="num" data-target="125">0</div><div class="label">Questions answered in plain English</div></div>
+  <div class="counter-item"><div class="num" data-target="48">0</div><div class="label">Hours to first insights</div></div>
+</section>
+
+<!-- FEATURE 1: MARGIN LEAKS -->
+<section class="section reveal">
+  <div class="container">
+    <div class="dual">
+      <div class="dual-artifact">
+        <table class="mini-table">
+          <thead><tr><th>Product</th><th>Cost</th><th>Price</th><th>Margin</th></tr></thead>
+          <tbody>
+            <tr><td>Fresh Cream 1L</td><td>&euro;1.85</td><td>&euro;1.99</td><td class="leak">7.0%</td></tr>
+            <tr><td>Sliced Pan White</td><td>&euro;1.22</td><td>&euro;1.89</td><td class="ok">35.4%</td></tr>
+            <tr><td>Bananas 5pk</td><td>&euro;1.60</td><td>&euro;1.49</td><td class="leak">-7.4%</td></tr>
+            <tr><td>Mineral Water 2L</td><td>&euro;0.38</td><td>&euro;0.99</td><td class="ok">61.6%</td></tr>
+            <tr><td>Chicken Fillet Roll</td><td>&euro;2.10</td><td>&euro;2.00</td><td class="leak">-4.8%</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="dual-text">
+        <h2>See every product selling below cost, without opening a spreadsheet</h2>
+        <p>RetailGuard checks thousands of lines every week and highlights the ones losing money. You see the list, sorted by how much each one costs you, and decide what to reprice.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURE 2: ASK IN PLAIN ENGLISH -->
+<section class="section reveal">
+  <div class="container">
+    <div class="dual reverse">
+      <div class="dual-artifact">
+        <div class="bar-chart">
+          <div class="bar-col"><div class="bar" style="height:85%;background:var(--violet)"></div><div class="bar-label">Mon</div></div>
+          <div class="bar-col"><div class="bar" style="height:60%;background:var(--violet-light)"></div><div class="bar-label">Tue</div></div>
+          <div class="bar-col"><div class="bar" style="height:72%;background:var(--violet)"></div><div class="bar-label">Wed</div></div>
+          <div class="bar-col"><div class="bar" style="height:55%;background:var(--violet-light)"></div><div class="bar-label">Thu</div></div>
+          <div class="bar-col"><div class="bar" style="height:100%;background:var(--violet)"></div><div class="bar-label">Fri</div></div>
+          <div class="bar-col"><div class="bar" style="height:92%;background:var(--violet)"></div><div class="bar-label">Sat</div></div>
+          <div class="bar-col"><div class="bar" style="height:48%;background:var(--violet-light)"></div><div class="bar-label">Sun</div></div>
+        </div>
+        <p style="text-align:center;font-size:.8rem;color:var(--gray-500);margin-top:12px">"What are my busiest days this month?"</p>
+      </div>
+      <div class="dual-text">
+        <h2>Ask any question about your shop in plain English, get a straight answer</h2>
+        <p>Type what you want to know. "Which supplier has the worst margins?" or "How did dairy do last week?" RetailGuard answers with numbers and charts, not jargon.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURE 3: INVOICE SCANNER -->
+<section class="section reveal">
+  <div class="container">
+    <div class="dual">
+      <div class="dual-artifact">
+        <div class="invoice-card">
+          <div class="ic-header"><span>Murphy's Farm Fresh</span><span style="color:var(--gray-500)">12 Jul 2026</span></div>
+          <div class="ic-row"><span>Local Honey 340g</span><span class="ic-flag new">New product</span></div>
+          <div class="ic-row"><span>Brown Bread 800g</span><span class="ic-flag new">New product</span></div>
+          <div class="ic-row"><span>Cheddar Block 200g</span><span class="ic-flag review">Check margin</span></div>
+          <div class="ic-row"><span>Free Range Eggs x6</span><span style="color:var(--green);font-weight:600">32% margin</span></div>
+          <div class="ic-row"><span>Butter 227g</span><span style="color:var(--green);font-weight:600">28% margin</span></div>
+        </div>
+      </div>
+      <div class="dual-text">
+        <h2>Snap a supplier invoice and know instantly if the prices work</h2>
+        <p>Upload or photograph any delivery invoice. RetailGuard reads the costs, matches them to your stock, and flags anything that would sell below your margin target. New products are highlighted so nothing slips in unpriced.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WEEK STRIP -->
+<section class="week-strip reveal">
+  <h2>Your week with RetailGuard</h2>
+  <div class="week-items">
+    <div class="week-item"><div class="day">Monday</div><p>Morning report lands on your desk: 6 products dropped below target over the weekend.</p></div>
+    <div class="week-item"><div class="day">Wednesday</div><p>Delivery arrives. Scan the invoice, spot a price rise on cheddar, adjust before it hits the shelf.</p></div>
+    <div class="week-item"><div class="day">Friday</div><p>Ask: "How did this week compare to last?" Get the answer in seconds, not hours.</p></div>
+    <div class="week-item"><div class="day">Month end</div><p>Export a supplier performance spreadsheet. Walk into the rep meeting with the numbers ready.</p></div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="pricing-section reveal" id="pricing">
+  <h2>Simple pricing, no surprises</h2>
+  <p class="pricing-sub">All prices net of VAT. No setup fee. Cancel any time.</p>
+  <div class="pricing-grid">
+    <div class="price-card">
+      <h3>Insight</h3>
+      <div class="price-amount">&euro;500<span style="font-size:1rem;font-weight:400">/mo</span></div>
+      <div class="price-period">Dashboard, alerts, and drill down</div>
+      <ul class="price-features">
+        <li>Margin leak dashboard</li>
+        <li>Weekly alerts by email</li>
+        <li>Product drill down</li>
+        <li>Barcode lookup</li>
+        <li>Supplier analytics</li>
+      </ul>
+      <a href="#contact" class="price-cta">Get my free margin scan</a>
+    </div>
+    <div class="price-card popular">
+      <div class="price-badge">Most popular</div>
+      <h3>Complete</h3>
+      <div class="price-amount">&euro;1,000<span style="font-size:1rem;font-weight:400">/mo</span></div>
+      <div class="price-period">Full toolkit for hands-on owners</div>
+      <ul class="price-features">
+        <li>Everything in Insight</li>
+        <li>Invoice Scanner</li>
+        <li>Ask Your Shop (plain English questions)</li>
+        <li>Trading patterns and peak hours</li>
+        <li>Product performance reports</li>
+        <li>Priority support</li>
+      </ul>
+      <a href="#contact" class="price-cta">Get my free margin scan</a>
+    </div>
+    <div class="price-card">
+      <h3>Multi-site</h3>
+      <div class="price-amount">&euro;1,500<span style="font-size:1rem;font-weight:400">/mo</span></div>
+      <div class="price-period">Everything, plus multi-location tools</div>
+      <ul class="price-features">
+        <li>Everything in Complete</li>
+        <li>Write-back (rolling out)</li>
+        <li>Morning report per site</li>
+        <li>Per-site onboarding</li>
+        <li>Cross-site comparisons</li>
+      </ul>
+      <a href="#contact" class="price-cta">Get my free margin scan</a>
+    </div>
+  </div>
+  <p style="text-align:center;margin-top:24px;font-size:.85rem;color:var(--gray-500)">Typical opportunities identified can amount to thousands of euros per year, depending on store size.</p>
+</section>
+
+<!-- TESTIMONIAL -->
+<section class="testimonial reveal">
+  <blockquote>"Within the first week we found 14 products selling below cost that had been that way for months. The scan paid for itself before the first invoice."</blockquote>
+  <cite>Example based on typical usage</cite>
+  <div class="composite-note">Composite illustrative example. Individual results vary by store size and product range.</div>
+</section>
+
+<!-- FAQ -->
+<section class="faq-section reveal">
+  <h2>Common questions</h2>
+  <div class="faq-item">
+    <div class="faq-q">Does it change anything on my till system?</div>
+    <div class="faq-a">No. RetailGuard connects read only. It cannot modify prices, stock levels, or any settings on your system. Your data stays exactly as it is.</div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q">How long does setup take?</div>
+    <div class="faq-a">We handle everything. A short remote session to connect, then your first results are ready within 48 hours. No hardware, no software to install on your end.</div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q">What till systems work with RetailGuard?</div>
+    <div class="faq-a">We currently support CBE and Touchstore (RS Back Office / Pervasive). If you use a different system, get in touch and we will confirm compatibility.</div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q">Can I try before I commit?</div>
+    <div class="faq-a">Yes. The free margin scan gives you a full report on your current stock, with no obligation. You see what RetailGuard finds before you decide.</div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q">Is my data safe?</div>
+    <div class="faq-a">Your data is encrypted in transit and at rest. Only you and your team can access it. We never share data between customers.</div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q">What if I have multiple shops?</div>
+    <div class="faq-a">The Multi-site plan covers all your locations with per-site breakdowns and cross-shop comparisons, so you can spot which site needs attention first.</div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section class="contact-section reveal" id="contact">
+  <h2>Get your free margin scan</h2>
+  <p class="contact-sub">Fill in your details and we will be in touch within one working day.</p>
+  <form class="contact-form" id="contactForm">
+    <input type="text" name="name" placeholder="Your name" required>
+    <input type="email" name="email" placeholder="Email address" required>
+    <input type="text" name="shop" placeholder="Shop name and location">
+    <input type="text" name="till" placeholder="Till system (e.g. CBE, Touchstore)">
+    <textarea name="message" placeholder="Anything else you'd like us to know?"></textarea>
+    <input type="hidden" name="_subject" value="RetailGuard lead (new-lp v2)">
+    <button type="submit" class="btn-primary" style="width:100%">Get my free margin scan</button>
+  </form>
+  <div class="form-success" id="formSuccess">Thanks! We will be in touch within one working day.</div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <p>&copy; 2026 RetailGuard. All rights reserved.</p>
+</footer>
+
+<script>
+// SECTION REVEALS
+const reveals = document.querySelectorAll('.reveal');
+const revealObs = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); revealObs.unobserve(e.target); } });
+}, { threshold: 0.15 });
+reveals.forEach(el => revealObs.observe(el));
+
+// ANIMATED COUNTERS
+const counters = document.querySelectorAll('[data-target]');
+const counterObs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (!e.isIntersecting) return;
+    const el = e.target;
+    const target = +el.dataset.target;
+    const duration = 1200;
+    const start = performance.now();
+    const tick = (now) => {
+      const progress = Math.min((now - start) / duration, 1);
+      el.textContent = Math.floor(progress * target).toLocaleString();
+      if (progress < 1) requestAnimationFrame(tick);
+      else el.textContent = target.toLocaleString();
+    };
+    requestAnimationFrame(tick);
+    counterObs.unobserve(el);
+  });
+}, { threshold: 0.5 });
+counters.forEach(el => counterObs.observe(el));
+
+// FAQ ACCORDION
+document.querySelectorAll('.faq-q').forEach(q => {
+  q.addEventListener('click', () => {
+    const item = q.parentElement;
+    item.classList.toggle('open');
+  });
+});
+
+// CONTACT FORM
+document.getElementById('contactForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const form = e.target;
+  const data = new FormData(form);
+  try {
+    const res = await fetch('https://formsubmit.co/ajax/retailguard.sales@gmail.com', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify(Object.fromEntries(data))
+    });
+    if (res.ok) {
+      form.style.display = 'none';
+      document.getElementById('formSuccess').style.display = 'block';
+    }
+  } catch (err) {
+    alert('Something went wrong. Please email retailguard.sales@gmail.com directly.');
+  }
+});
+</script>
+</body>
+</html>

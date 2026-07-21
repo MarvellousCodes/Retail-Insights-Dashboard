@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Departments &amp; Issues, 20 Ideas</title>
+<style>
+  :root{--v:#7c3aed;--vd:#6d28d9;--v50:#f5f3ff;--v100:#ede9fe;--v200:#ddd6fe;--g50:#f9fafb;--g100:#f3f4f6;--g200:#e5e7eb;--g400:#9ca3af;--g500:#6b7280;--g700:#374151;--g900:#111827;--green:#16a34a;--red:#dc2626;--amber:#d97706}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,sans-serif;background:#eef0f4;color:var(--g900);padding:40px 24px}
+  .wrap{max-width:1080px;margin:0 auto}
+  h1{font-size:24px;margin-bottom:4px}
+  .sub{font-size:13px;color:var(--g500);margin-bottom:28px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:18px}
+  .card{background:#fff;border:1px solid var(--g200);border-radius:16px;padding:18px;box-shadow:0 2px 8px rgba(17,24,39,.05)}
+  .card .n{display:inline-block;background:var(--v);color:#fff;border-radius:7px;font-size:11px;font-weight:800;padding:2px 8px;margin-bottom:8px}
+  .card h2{font-size:15px;margin-bottom:4px}
+  .card p{font-size:12px;color:var(--g500);line-height:1.5;margin-bottom:12px}
+  .mock{background:var(--g50);border:1px solid var(--g100);border-radius:12px;padding:12px;min-height:110px}
+  .kpi{display:inline-block;background:#fff;border:1px solid var(--g200);border-radius:9px;padding:7px 10px;margin:0 6px 6px 0}
+  .kpi .l{font-size:8.5px;color:var(--g400);text-transform:uppercase}
+  .kpi .v{font-size:14px;font-weight:800}
+  .up{color:var(--green)} .down{color:var(--red)}
+  .bars{display:flex;align-items:flex-end;gap:4px;height:64px}
+  .bars i{flex:1;background:var(--v200);border-radius:3px 3px 0 0}
+  .bars i.hot{background:var(--v)} .bars i.g{background:#86efac} .bars i.r{background:#fca5a5}
+  .ax{display:flex;justify-content:space-between;font-size:8px;color:var(--g400);margin-top:3px}
+  .row{display:flex;justify-content:space-between;align-items:center;font-size:11px;padding:5px 2px;border-bottom:1px solid var(--g100)}
+  .row:last-child{border:0}
+  .hbar{height:9px;border-radius:99px;background:var(--v);display:inline-block;vertical-align:middle}
+  .heat{display:grid;grid-template-columns:repeat(12,1fr);gap:2px}
+  .heat i{aspect-ratio:1;border-radius:2px;display:block}
+  .pill{font-size:9px;padding:2px 8px;border-radius:99px;font-weight:700}
+  .pg{background:#f0fdf4;color:var(--green)} .pr{background:#fef2f2;color:var(--red)} .pa{background:#fffbeb;color:var(--amber)} .pv{background:var(--v50);color:var(--vd)}
+  .donut{width:64px;height:64px;border-radius:50%;background:conic-gradient(var(--v) 0 38%, #a78bfa 38% 62%, var(--v200) 62% 82%, var(--g200) 82% 100%);position:relative;display:inline-block;vertical-align:middle;margin-right:12px}
+  .donut::after{content:"";position:absolute;inset:16px;background:var(--g50);border-radius:50%}
+  .sentence{font-size:13px;line-height:1.6}
+  .medal{font-size:16px;margin-right:4px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Departments and Issues, 20 ideas</h1>
+  <p class="sub">Ten ideas for the Departments page, ten for Issues. All buildable from existing data. Numbers illustrative.</p>
+  <div class="grid">
+
+  <div class="card" style="grid-column:1/-1;padding:10px 18px;background:var(--v50);border-color:var(--v200)"><h2 style="color:var(--vd)">Departments</h2></div>
+
+  <div class="card"><span class="n">1</span><h2>Department report cards</h2><p>Each department gets a grade from revenue trend, margin vs target, and dead stock. One glance triage.</p>
+    <div class="mock"><div class="row"><span><b>Grocery</b></span><span class="pill pg">A, healthy</span></div><div class="row"><span><b>Soft Drinks</b></span><span class="pill pr">D, margin 5pt under target</span></div><div class="row" style="border:0"><span><b>Newsagent</b></span><span class="pill pa">C, sales falling</span></div></div></div>
+
+  <div class="card"><span class="n">2</span><h2>Shelf space vs profit</h2><p>Share of products vs share of profit per department. Shows who earns their footprint.</p>
+    <div class="mock"><div class="row"><span>Confectionery</span><span>8% of products &rarr; <b class="up">14% of profit</b></span></div><div class="row" style="border:0"><span>Household</span><span>9% of products &rarr; <b class="down">3% of profit</b></span></div></div></div>
+
+  <div class="card"><span class="n">3</span><h2>Department drilldown story</h2><p>Click a department: its year shape, top and bottom products, margin ladder, all one page.</p>
+    <div class="mock"><div style="font-size:11px;font-weight:700;margin-bottom:6px">SOFT DRINKS</div><div class="bars" style="height:40px"><i style="height:55%"></i><i style="height:60%"></i><i style="height:72%"></i><i class="hot" style="height:100%"></i><i style="height:88%"></i><i style="height:70%"></i></div><div style="margin-top:6px"><span class="pill pg">star: Energy 500ml</span> <span class="pill pr">drag: Cola Multipack</span></div></div></div>
+
+  <div class="card"><span class="n">4</span><h2>Seasonal handover</h2><p>Which departments take over as seasons change. Timing for shelf swaps and orders.</p>
+    <div class="mock sentence" style="font-size:12px">Ice cream hands over to hot food in <b>late September</b>. Soup peaks <b>Nov to Feb</b>. Soft drinks carry <b>May to August</b>. <span class="pill pv">Next swap due in 9 weeks</span></div></div>
+
+  <div class="card"><span class="n">5</span><h2>Department momentum</h2><p>3-month trend arrows with the one product most responsible for the move.</p>
+    <div class="mock"><div class="row"><span>Bakery</span><span class="pill pg">&uarr; +9%, driven by breakfast rolls</span></div><div class="row" style="border:0"><span>Newsagent</span><span class="pill pr">&darr; -11%, magazines fading</span></div></div></div>
+
+  <div class="card"><span class="n">6</span><h2>Basket buddies</h2><p>Departments bought together by time of day, hints for placement and meal deals.</p>
+    <div class="mock sentence" style="font-size:12px">Morning: <b>bakery + hot drinks</b> move together.<br>Evening: <b>off licence + snacks</b>.<br><span class="pill pv">Meal deal opportunity: roll + coffee before 11am</span></div></div>
+
+  <div class="card"><span class="n">7</span><h2>Dead stock by department</h2><p>Where unsold products cluster, with cost tied up per department.</p>
+    <div class="mock"><div class="row"><span>Household</span><span><span class="hbar" style="width:90px;background:#f59e0b"></span> &euro;340 idle</span></div><div class="row" style="border:0"><span>Newsagent</span><span><span class="hbar" style="width:60px;background:#f59e0b"></span> &euro;210 idle</span></div></div></div>
+
+  <div class="card"><span class="n">8</span><h2>Target setter</h2><p>Edit each department's target margin right on the page, everything downstream recalculates.</p>
+    <div class="mock"><div class="row"><span>Soft Drinks target</span><span><b>38%</b> <span class="pill pv">edit</span></span></div><div class="row" style="border:0"><span style="color:var(--g400)">changing to 36% moves 12 products back on target</span><span></span></div></div></div>
+
+  <div class="card"><span class="n">9</span><h2>Same dept, last year</h2><p>Department vs itself a year ago, with the gap explained by risers and fallers.</p>
+    <div class="mock sentence" style="font-size:12px">Off Licence, June: <b>&euro;10,400</b> vs <b>&euro;9,050</b> last June (+15%).<br>Craft cans up &euro;900, wine flat, spirits up &euro;450.</div></div>
+
+  <div class="card"><span class="n">10</span><h2>Ask this department</h2><p>Ask prompts scoped to the department you are viewing.</p>
+    <div class="mock"><div style="background:#fff;border:1px solid var(--g200);border-radius:9px;padding:8px 10px;font-size:11px;color:var(--g400)">Ask about Soft Drinks...</div><div style="margin-top:8px"><span class="pill pv">Why is margin below target?</span> <span class="pill pv">Best sellers this month</span></div></div></div>
+
+  <div class="card" style="grid-column:1/-1;padding:10px 18px;background:#fef2f2;border-color:#fecaca"><h2 style="color:var(--red)">Issues</h2></div>
+
+  <div class="card"><span class="n">11</span><h2>Issues ranked by euros</h2><p>Not a list of problems, a list of money. Biggest recoverable amount first.</p>
+    <div class="mock"><div class="row"><span>6 products below cost</span><span class="pill pr">losing &euro;85/mo</span></div><div class="row"><span>7 unpriced cost rises</span><span class="pill pa">&euro;95/mo waiting</span></div><div class="row" style="border:0"><span>41 charm price gaps</span><span class="pill pv">&euro;110/mo available</span></div></div></div>
+
+  <div class="card"><span class="n">12</span><h2>Fix it from here</h2><p>Each issue row carries its suggested action inline: the new price, one tap to add to the fix queue.</p>
+    <div class="mock"><div class="row"><span>Cola Multipack below cost</span><span><b>&rarr; &euro;5.49</b> <span class="pill pg">queue fix</span></span></div><div class="row" style="border:0"><span>Butter margin drifting</span><span><b>&rarr; &euro;3.89</b> <span class="pill pg">queue fix</span></span></div></div></div>
+
+  <div class="card"><span class="n">13</span><h2>New since last visit</h2><p>Issues that appeared since you last looked, so nothing sneaks in silently.</p>
+    <div class="mock"><div class="row"><span class="pill pr">NEW</span><span>Energy Drink slipped below cost after last delivery</span></div><div class="row" style="border:0"><span class="pill pr">NEW</span><span>2 products stopped selling entirely</span></div></div></div>
+
+  <div class="card"><span class="n">14</span><h2>Issue age tags</h2><p>How long each problem has been open. A below-cost product open 90 days is a different conversation.</p>
+    <div class="mock"><div class="row"><span>Sparkling Water below cost</span><span class="pill pr">open 94 days, ~&euro;28 lost</span></div><div class="row" style="border:0"><span>Rolls margin drift</span><span class="pill pa">open 12 days</span></div></div></div>
+
+  <div class="card"><span class="n">15</span><h2>Snooze and mute</h2><p>Intentional exceptions (loss leaders, contract prices) can be muted with a note, list stays honest.</p>
+    <div class="mock"><div class="row"><span>Milk 2L below target</span><span class="pill pv">muted: loss leader, Patrick 12 Jun</span></div><div class="row" style="border:0"><span style="color:var(--g400)">muted issues excluded from totals</span><span></span></div></div></div>
+
+  <div class="card"><span class="n">16</span><h2>Weekly issues digest</h2><p>The page condensed to five sentences, same engine as the future morning report.</p>
+    <div class="mock sentence" style="font-size:12px">"Two new below-cost products this week, both drinks. The scan inbox has 7 unpriced cost rises worth &euro;95 a month. Oldest open issue is now 94 days."</div></div>
+
+  <div class="card"><span class="n">17</span><h2>Data quality corner</h2><p>Products with impossible margins, missing barcodes or 999.99 placeholder prices, kept separate from money issues.</p>
+    <div class="mock"><div class="row"><span>14 products priced &euro;999.99</span><span class="pill pv">not set up, ignore or fix</span></div><div class="row" style="border:0"><span>212 missing barcodes</span><span class="pill pv">hurts invoice scanning</span></div></div></div>
+
+  <div class="card"><span class="n">18</span><h2>Impact simulator</h2><p>Tick issues to see the combined monthly gain if you fixed them today.</p>
+    <div class="mock sentence">&#9745; below cost &#9745; cost rises &#9744; charm gaps<br><span class="pill pg" style="font-size:11px">Fixing selected: about +&euro;180/mo</span></div></div>
+
+  <div class="card"><span class="n">19</span><h2>Resolved this month</h2><p>The wins ledger: issues closed and euros recovered, proof the tool pays for itself.</p>
+    <div class="mock"><div class="row"><span>9 issues resolved in June</span><span class="pill pg">~&euro;230/mo recovered</span></div><div class="row" style="border:0"><span>Year to date</span><span class="pill pg">~&euro;1,340/mo recovered</span></div></div></div>
+
+  <div class="card"><span class="n">20</span><h2>Stale data banner</h2><p>When the till data stops arriving, say so loudly here and on the dashboard. Currently 22 days silent.</p>
+    <div class="mock"><div style="background:#fef2f2;border:1px solid #fecaca;border-radius:9px;padding:10px;font-size:11.5px;color:var(--red)"><b>Data has not updated in 22 days.</b> Your figures reflect 29 June. Check the shop PC export or contact support.</div></div></div>
+
+  </div>
+  <p style="font-size:11px;color:var(--g400);margin-top:22px">All numbers illustrative. Issues ideas 11, 12 and 18 reuse the what-if and price moves maths already built. Idea 20 reflects a real current problem, the sync has been down since 29 June.</p>
+</div>
+</body>
+</html>

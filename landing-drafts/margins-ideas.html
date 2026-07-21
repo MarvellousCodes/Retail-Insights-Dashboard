@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Margins Page, 20 Ideas</title>
+<style>
+  :root{--v:#7c3aed;--vd:#6d28d9;--v50:#f5f3ff;--v100:#ede9fe;--v200:#ddd6fe;--g50:#f9fafb;--g100:#f3f4f6;--g200:#e5e7eb;--g400:#9ca3af;--g500:#6b7280;--g700:#374151;--g900:#111827;--green:#16a34a;--red:#dc2626;--amber:#d97706}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,sans-serif;background:#eef0f4;color:var(--g900);padding:40px 24px}
+  .wrap{max-width:1080px;margin:0 auto}
+  h1{font-size:24px;margin-bottom:4px}
+  .sub{font-size:13px;color:var(--g500);margin-bottom:28px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:18px}
+  .card{background:#fff;border:1px solid var(--g200);border-radius:16px;padding:18px;box-shadow:0 2px 8px rgba(17,24,39,.05)}
+  .card .n{display:inline-block;background:var(--v);color:#fff;border-radius:7px;font-size:11px;font-weight:800;padding:2px 8px;margin-bottom:8px}
+  .card h2{font-size:15px;margin-bottom:4px}
+  .card p{font-size:12px;color:var(--g500);line-height:1.5;margin-bottom:12px}
+  .mock{background:var(--g50);border:1px solid var(--g100);border-radius:12px;padding:12px;min-height:110px}
+  .kpi{display:inline-block;background:#fff;border:1px solid var(--g200);border-radius:9px;padding:7px 10px;margin:0 6px 6px 0}
+  .kpi .l{font-size:8.5px;color:var(--g400);text-transform:uppercase}
+  .kpi .v{font-size:14px;font-weight:800}
+  .up{color:var(--green)} .down{color:var(--red)}
+  .bars{display:flex;align-items:flex-end;gap:4px;height:64px}
+  .bars i{flex:1;background:var(--v200);border-radius:3px 3px 0 0}
+  .bars i.hot{background:var(--v)} .bars i.g{background:#86efac} .bars i.r{background:#fca5a5}
+  .ax{display:flex;justify-content:space-between;font-size:8px;color:var(--g400);margin-top:3px}
+  .row{display:flex;justify-content:space-between;align-items:center;font-size:11px;padding:5px 2px;border-bottom:1px solid var(--g100)}
+  .row:last-child{border:0}
+  .hbar{height:9px;border-radius:99px;background:var(--v);display:inline-block;vertical-align:middle}
+  .heat{display:grid;grid-template-columns:repeat(12,1fr);gap:2px}
+  .heat i{aspect-ratio:1;border-radius:2px;display:block}
+  .pill{font-size:9px;padding:2px 8px;border-radius:99px;font-weight:700}
+  .pg{background:#f0fdf4;color:var(--green)} .pr{background:#fef2f2;color:var(--red)} .pa{background:#fffbeb;color:var(--amber)} .pv{background:var(--v50);color:var(--vd)}
+  .donut{width:64px;height:64px;border-radius:50%;background:conic-gradient(var(--v) 0 38%, #a78bfa 38% 62%, var(--v200) 62% 82%, var(--g200) 82% 100%);position:relative;display:inline-block;vertical-align:middle;margin-right:12px}
+  .donut::after{content:"";position:absolute;inset:16px;background:var(--g50);border-radius:50%}
+  .sentence{font-size:13px;line-height:1.6}
+  .medal{font-size:16px;margin-right:4px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Margins page, 20 ideas</h1>
+  <p class="sub">The current page is one chart and a product table. Everything below is buildable from data already in the system: product costs and prices, monthly sales, price history, department targets. Numbers illustrative.</p>
+  <div class="grid">
+
+  <div class="card"><span class="n">1</span><h2>Margin health strip</h2><p>The one-line answer up top: blended margin, how it moved, and how much is at risk.</p>
+    <div class="mock"><span class="kpi"><span class="l">Blended margin</span><br><span class="v">27.8%</span></span><span class="kpi"><span class="l">vs last month</span><br><span class="v up">+0.4pt</span></span><span class="kpi"><span class="l">Below target</span><br><span class="v down">88 products</span></span><span class="kpi"><span class="l">Recoverable</span><br><span class="v">&euro;640/mo</span></span></div></div>
+
+  <div class="card"><span class="n">2</span><h2>Margin ladder</h2><p>Every product placed on rungs: loss makers, thin, healthy, strong. Click a rung to see the products.</p>
+    <div class="mock"><div class="row"><span>Selling at a loss</span><span><span class="hbar" style="width:18px;background:#dc2626"></span> <b>6</b></span></div><div class="row"><span>Under 15%</span><span><span class="hbar" style="width:42px;background:#f59e0b"></span> <b>82</b></span></div><div class="row"><span>15 to 30%</span><span><span class="hbar" style="width:110px;background:#a78bfa"></span> <b>2,140</b></span></div><div class="row" style="border:0"><span>Over 30%</span><span><span class="hbar" style="width:150px;background:#16a34a"></span> <b>4,257</b></span></div></div></div>
+
+  <div class="card"><span class="n">3</span><h2>Money left on the table</h2><p>Turn margin gaps into euros: what fixing each below-target product is worth per month.</p>
+    <div class="mock"><div class="row"><span>Cola Multipack</span><span class="pill pg">+&euro;30/mo if repriced</span></div><div class="row"><span>Sharing Crisps 150g</span><span class="pill pg">+&euro;14/mo</span></div><div class="row"><span>Orange Juice 1L</span><span class="pill pg">+&euro;12/mo</span></div><div class="row" style="border:0"><span style="color:var(--g400)">Top 20 fixes together</span><span class="pill pv">+&euro;410/mo</span></div></div></div>
+
+  <div class="card"><span class="n">4</span><h2>Department targets scoreboard</h2><p>Each department against its own target margin, not one flat number for the whole shop.</p>
+    <div class="mock"><div class="row"><span>Confectionery (target 42%)</span><span><b class="up">44.1%</b> &#10003;</span></div><div class="row"><span>Soft Drinks (target 38%)</span><span><b class="down">33.2%</b> gap</span></div><div class="row" style="border:0"><span>Dairy (target 22%)</span><span><b class="up">23.0%</b> &#10003;</span></div></div></div>
+
+  <div class="card"><span class="n">5</span><h2>Margin drift alarm</h2><p>Products whose margin quietly shrank 3 months running, usually a cost creep nobody priced through.</p>
+    <div class="mock"><div class="row"><span>Butter 454g</span><span class="pill pa">31% &rarr; 27% &rarr; 24%</span></div><div class="row"><span>Rolls 6pk</span><span class="pill pa">38% &rarr; 35% &rarr; 31%</span></div><div class="row" style="border:0"><span style="color:var(--g400)">cause: supplier cost up, shelf price unchanged</span><span></span></div></div></div>
+
+  <div class="card"><span class="n">6</span><h2>Weighted, not average</h2><p>Show margin weighted by units sold. A 5% margin on your best seller matters more than 50% on a dust collector.</p>
+    <div class="mock sentence">Simple average margin: <b>31.2%</b><br>Weighted by what actually sells: <b>24.6%</b><br><span class="pill pa">Your big sellers run thinner than your shelf suggests</span></div></div>
+
+  <div class="card"><span class="n">7</span><h2>The 80/20 profit view</h2><p>How few products earn most of your profit. Focuses attention where it pays.</p>
+    <div class="mock"><div class="bars"><i class="hot" style="height:100%"></i><i class="hot" style="height:64%"></i><i style="height:38%"></i><i style="height:24%"></i><i style="height:15%"></i><i style="height:10%"></i><i style="height:7%"></i><i style="height:5%"></i></div><div class="ax"><span>top 200 products</span><span>= 78% of profit</span><span>rest</span></div></div></div>
+
+  <div class="card"><span class="n">8</span><h2>Cost rise inbox</h2><p>Fed by the invoice scanner: every cost increase that has not been priced through yet.</p>
+    <div class="mock"><div class="row"><span>Ocean Spray 1L</span><span class="pill pr">cost +22c, price unchanged</span></div><div class="row"><span>Coffee 12oz cups</span><span class="pill pr">cost +8c, price unchanged</span></div><div class="row" style="border:0"><span style="color:var(--g400)">from scans this month</span><span class="pill pv">7 waiting</span></div></div></div>
+
+  <div class="card"><span class="n">9</span><h2>Charm price nudges</h2><p>Products a few cent below a clean shelf price. Tiny moves, pure margin.</p>
+    <div class="mock"><div class="row"><span>Wine Gums 190g</span><span>&euro;2.41 &rarr; <b>&euro;2.49</b> <span class="pill pg">+&euro;9/mo</span></span></div><div class="row"><span>Bleach 750ml</span><span>&euro;1.93 &rarr; <b>&euro;1.99</b> <span class="pill pg">+&euro;5/mo</span></span></div><div class="row" style="border:0"><span style="color:var(--g400)">41 candidates found</span><span class="pill pv">+&euro;110/mo together</span></div></div></div>
+
+  <div class="card"><span class="n">10</span><h2>Margin map by department</h2><p>A treemap: box size = revenue, colour = margin health. The big red boxes are the story.</p>
+    <div class="mock" style="display:grid;grid-template-columns:2fr 1.2fr 1fr;grid-template-rows:1fr 1fr;gap:3px;height:110px"><div style="background:#86efac;border-radius:6px;grid-row:span 2;display:flex;align-items:end;padding:6px;font-size:9px;font-weight:700">Grocery</div><div style="background:#fca5a5;border-radius:6px;display:flex;align-items:end;padding:6px;font-size:9px;font-weight:700">Soft Drinks</div><div style="background:#a78bfa;border-radius:6px;display:flex;align-items:end;padding:6px;font-size:9px;font-weight:700">Dairy</div><div style="background:#86efac;border-radius:6px;display:flex;align-items:end;padding:6px;font-size:9px;font-weight:700">Bakery</div><div style="background:#fde68a;border-radius:6px;display:flex;align-items:end;padding:6px;font-size:9px;font-weight:700">Snacks</div></div></div>
+
+  <div class="card"><span class="n">11</span><h2>Fix queue</h2><p>A working to-do list: below-target products ordered by money impact, tick them off as you reprice.</p>
+    <div class="mock"><div class="row"><span>&#9744; Cola Multipack &rarr; &euro;5.49</span><span class="pill pg">+&euro;30/mo</span></div><div class="row"><span>&#9744; Energy Drink &rarr; &euro;2.09</span><span class="pill pg">+&euro;26/mo</span></div><div class="row" style="border:0"><span>&#9745; Sharing Crisps &rarr; &euro;2.69</span><span class="pill pv">done last week</span></div></div></div>
+
+  <div class="card"><span class="n">12</span><h2>Before and after receipts</h2><p>Each completed reprice tracked: predicted gain vs what actually happened. Builds trust in the numbers.</p>
+    <div class="mock"><div class="row"><span>Sharing Crisps reprice</span><span class="pill pg">predicted +&euro;14, actual +&euro;16</span></div><div class="row" style="border:0"><span>Orange Juice reprice</span><span class="pill pg">predicted +&euro;12, actual +&euro;11</span></div></div></div>
+
+  <div class="card"><span class="n">13</span><h2>Supplier margin league</h2><p>Average margin by supplier. Ammunition for the next negotiation.</p>
+    <div class="mock"><div class="row"><span>Coastal Drinks</span><span><span class="hbar" style="width:100px;background:#16a34a"></span> 36%</span></div><div class="row"><span>Valley Wholesale</span><span><span class="hbar" style="width:84px"></span> 31%</span></div><div class="row" style="border:0"><span>Celtic Household</span><span><span class="hbar" style="width:38px;background:#dc2626"></span> 14%</span></div></div></div>
+
+  <div class="card"><span class="n">14</span><h2>VAT band lens</h2><p>Margins split by VAT band, catches products priced as if they were in the wrong band.</p>
+    <div class="mock"><div class="row"><span>Zero rated</span><span>avg margin <b>29.4%</b></span></div><div class="row"><span>13.5%</span><span>avg margin <b>26.1%</b></span></div><div class="row" style="border:0"><span>23%</span><span>avg margin <b class="down">21.7%</b> <span class="pill pa">check pricing</span></span></div></div></div>
+
+  <div class="card"><span class="n">15</span><h2>New product watch</h2><p>Products added in the last 60 days and whether their opening margin landed on target.</p>
+    <div class="mock"><div class="row"><span>Iced Latte Can</span><span class="pill pg">opened at 38%, on target</span></div><div class="row" style="border:0"><span>Protein Bar Choc</span><span class="pill pr">opened at 18%, below 35% target</span></div></div></div>
+
+  <div class="card"><span class="n">16</span><h2>Margin by price point</h2><p>Where thin margins cluster: under &euro;2 impulse lines or big ticket items?</p>
+    <div class="mock"><div class="bars"><i class="r" style="height:35%"></i><i style="height:60%"></i><i style="height:75%"></i><i class="hot" style="height:90%"></i><i style="height:70%"></i></div><div class="ax"><span>&lt;&euro;1</span><span>&euro;1-2</span><span>&euro;2-5</span><span>&euro;5-10</span><span>&gt;&euro;10</span></div></div></div>
+
+  <div class="card"><span class="n">17</span><h2>What if, right here</h2><p>The price slider embedded on every product row. Test a reprice without leaving the page.</p>
+    <div class="mock"><div style="font-size:11px;font-weight:700;margin-bottom:6px">COLA MULTIPACK &middot; margin 17.8%</div><div style="height:8px;border-radius:99px;background:linear-gradient(90deg,var(--v) 55%,var(--g200) 55%)"></div><div class="ax"><span>&euro;4.49</span><span>try &euro;5.49 &rarr; 25.3%, can lose 36% of sales</span><span>&euro;6.49</span></div></div></div>
+
+  <div class="card"><span class="n">18</span><h2>Excluded and why</h2><p>Fuel, lottery, vouchers shown separately with their fixed commissions, so the shop margin is honest.</p>
+    <div class="mock"><div class="row"><span>Fuel</span><span class="pill pv">commission set by supplier</span></div><div class="row"><span>Lottery</span><span class="pill pv">fixed 6% commission</span></div><div class="row" style="border:0"><span style="color:var(--g400)">excluded from targets, shown for completeness</span><span></span></div></div></div>
+
+  <div class="card"><span class="n">19</span><h2>Monthly margin note</h2><p>Three plain sentences: what improved, what slipped, the single best action this month.</p>
+    <div class="mock sentence" style="font-size:12px">"Blended margin rose to 27.8%, the best since March, mostly from the Soft Drinks reprices. Butter and Rolls are drifting down as supplier costs creep. Best single action: price through the 7 cost rises sitting in your scan inbox, worth about &euro;95 a month."</div></div>
+
+  <div class="card"><span class="n">20</span><h2>Ask about margins</h2><p>Pre-filled Ask prompts scoped to margins, straight from this page.</p>
+    <div class="mock"><div style="background:#fff;border:1px solid var(--g200);border-radius:9px;padding:8px 10px;font-size:11px;color:var(--g400)">Ask about your margins...</div><div style="margin-top:8px"><span class="pill pv">Which department is furthest off target?</span> <span class="pill pv">What did repricing earn me this year?</span></div></div></div>
+
+  </div>
+  <p style="font-size:11px;color:var(--g400);margin-top:22px">All numbers illustrative. Ideas 8 and 12 connect to the invoice scanner and the price history work already built. Idea 17 embeds the what-if slider from the price moves feature.</p>
+</div>
+</body>
+</html>

@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>RetailGuard | Hero visual options</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{--v6:#7c3aed;--v5:#8b5cf6;--v2:#ddd6fe;--fu:#c026d3;--g9:#0b0b14;--gn:#22c55e;--am:#f59e0b;--rd:#ef4444;--wh:#fff;
+    --grad:linear-gradient(135deg,#7c3aed 0%,#c026d3 100%);}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:Inter,system-ui,sans-serif;background:#050509;color:#fff;-webkit-font-smoothing:antialiased}
+  .label{max-width:1140px;margin:0 auto;padding:34px 28px 0;font-size:12px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;color:var(--v5)}
+  .hero{background:var(--g9);padding:40px 0 70px;overflow:hidden;position:relative;border-bottom:1px solid rgba(255,255,255,.07)}
+  .orb{position:absolute;border-radius:50%;filter:blur(140px);opacity:.22}
+  .orb1{width:520px;height:520px;background:var(--v5);top:-160px;right:-60px}
+  .orb2{width:360px;height:360px;background:var(--fu);bottom:-60px;left:-100px}
+  .container{max-width:1140px;margin:0 auto;padding:0 28px;position:relative;z-index:2;display:grid;grid-template-columns:1.05fr 1fr;gap:48px;align-items:center}
+  @media(max-width:900px){.container{grid-template-columns:1fr}}
+  .pill{display:inline-flex;align-items:center;gap:8px;background:rgba(124,58,237,.15);border:1px solid rgba(124,58,237,.35);color:var(--v2);font-size:12.5px;font-weight:500;padding:6px 15px;border-radius:99px;margin-bottom:20px}
+  .dot{width:7px;height:7px;background:var(--gn);border-radius:50%}
+  h1{font-size:clamp(28px,3.6vw,44px);font-weight:900;line-height:1.07;letter-spacing:-1.4px}
+  .grad{background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+  .lead{font-size:15px;color:rgba(255,255,255,.55);margin:16px 0 22px;max-width:460px;line-height:1.6}
+  .btn{display:inline-flex;background:var(--grad);color:#fff;font-size:14px;font-weight:600;padding:12px 24px;border-radius:10px;text-decoration:none}
+
+  /* ---- Option 1: browser-framed dashboard ---- */
+  .browser{background:#12121c;border:1px solid rgba(255,255,255,.1);border-radius:16px;box-shadow:0 30px 80px rgba(0,0,0,.55);overflow:hidden}
+  .browser__bar{display:flex;align-items:center;gap:6px;padding:10px 14px;background:#191926;border-bottom:1px solid rgba(255,255,255,.07)}
+  .browser__bar i{width:10px;height:10px;border-radius:50%;display:block}
+  .browser__url{margin-left:10px;font-size:10.5px;color:rgba(255,255,255,.4);background:rgba(255,255,255,.06);border-radius:6px;padding:3px 10px}
+  .dash{padding:16px;display:flex;flex-direction:column;gap:12px}
+  .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .kpi{background:#181826;border:1px solid rgba(255,255,255,.08);border-top:3px solid var(--v6);border-radius:10px;padding:10px 12px}
+  .kpi small{font-size:8.5px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:rgba(255,255,255,.4);display:block}
+  .kpi b{font-size:17px;font-weight:900;letter-spacing:-.5px}
+  .kpi span{font-size:9.5px;font-weight:600}
+  .up{color:var(--gn)} .dn{color:var(--rd)}
+  .charts{display:grid;grid-template-columns:1.5fr 1fr;gap:10px}
+  .panel{background:#181826;border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:12px}
+  .panel small{font-size:9px;font-weight:700;color:rgba(255,255,255,.45);letter-spacing:.6px;text-transform:uppercase;display:block;margin-bottom:8px}
+  .bars{display:flex;align-items:flex-end;gap:5px;height:74px}
+  .bars i{flex:1;background:var(--v6);border-radius:3px 3px 0 0;display:block;opacity:.85}
+  .bars i:last-child{background:var(--grad);opacity:1}
+  .donut-wrap{display:flex;align-items:center;gap:10px}
+  .legend{font-size:9px;color:rgba(255,255,255,.55);line-height:1.9}
+  .legend i{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px}
+
+  /* ---- Option 2: phone scan ---- */
+  .phone-scene{position:relative;display:flex;justify-content:center}
+  .phone{width:230px;background:#12121c;border:1px solid rgba(255,255,255,.14);border-radius:30px;padding:12px 12px 18px;box-shadow:0 30px 80px rgba(0,0,0,.55)}
+  .phone__notch{width:80px;height:5px;background:rgba(255,255,255,.15);border-radius:99px;margin:2px auto 12px}
+  .scanline{background:#181826;border:1px solid rgba(255,255,255,.1);border-radius:14px;height:110px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center}
+  .barcode{display:flex;gap:3px;align-items:center}
+  .barcode i{display:block;background:rgba(255,255,255,.75);width:3px;height:44px}
+  .barcode i:nth-child(2n){height:34px;width:2px}
+  .barcode i:nth-child(3n){height:50px;width:4px}
+  .laser{position:absolute;left:10px;right:10px;top:50%;height:2px;background:var(--fu);box-shadow:0 0 12px var(--fu);border-radius:99px}
+  .verdict{margin-top:12px;background:#181826;border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:12px}
+  .verdict b{font-size:12.5px;display:block;margin-bottom:6px}
+  .vrow{display:flex;justify-content:space-between;font-size:10.5px;color:rgba(255,255,255,.55);padding:3px 0;border-bottom:1px dashed rgba(255,255,255,.08)}
+  .vrow b{font-size:10.5px;margin:0}
+  .vtag{margin-top:9px;text-align:center;font-size:11px;font-weight:800;color:#052e16;background:var(--gn);border-radius:8px;padding:6px}
+  .float-card{position:absolute;background:#181826;border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:10px 13px;box-shadow:0 16px 44px rgba(0,0,0,.5);font-size:10.5px}
+  .fc1{top:8%;right:2%;color:var(--am)} .fc1 b{color:#fff;display:block;font-size:11px}
+  .fc2{bottom:6%;left:0;color:var(--gn)} .fc2 b{color:#fff;display:block;font-size:11px}
+
+  /* ---- Option 3: ask answer stack ---- */
+  .stack{display:flex;flex-direction:column;gap:12px;max-width:430px;margin-left:auto}
+  @media(max-width:900px){.stack{margin-left:0}}
+  .ask-q{align-self:flex-end;background:var(--grad);color:#fff;font-size:13px;font-weight:600;padding:11px 16px;border-radius:16px 16px 4px 16px;box-shadow:0 12px 34px rgba(124,58,237,.35)}
+  .ask-a{background:#12121c;border:1px solid rgba(255,255,255,.12);border-radius:16px 16px 16px 4px;padding:16px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+  .ask-a small{font-size:9px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--v5);display:block;margin-bottom:8px}
+  .arow{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:rgba(255,255,255,.75);padding:6px 0;border-bottom:1px dashed rgba(255,255,255,.08)}
+  .arow:last-of-type{border-bottom:none}
+  .arow b.loss{color:var(--rd);font-weight:800}
+  .fix{margin-top:10px;background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.3);color:var(--gn);font-size:11px;font-weight:700;border-radius:9px;padding:8px 11px}
+  .meta{font-size:10px;color:rgba(255,255,255,.35);text-align:right}
+</style>
+</head>
+<body>
+
+<!-- ================= OPTION 1 ================= -->
+<div class="label">Option 1 · Browser-framed dashboard mock</div>
+<section class="hero">
+  <div class="orb orb1"></div><div class="orb orb2"></div>
+  <div class="container">
+    <div>
+      <div class="pill"><span class="dot"></span>In pilot with an Irish forecourt</div>
+      <h1>Increase retail profit <span class="grad">without replacing your POS.</span></h1>
+      <p class="lead">RetailGuard connects to your existing till system and shows exactly where you are losing profit and what to fix first.</p>
+      <a class="btn" href="#">Book a free margin scan</a>
+    </div>
+    <div class="browser">
+      <div class="browser__bar">
+        <i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i>
+        <span class="browser__url">myretailguard.com/dashboard</span>
+      </div>
+      <div class="dash">
+        <div class="kpis">
+          <div class="kpi"><small>This month</small><b>€1.1M</b> <span class="dn">-2.3% vs last</span></div>
+          <div class="kpi" style="border-top-color:var(--gn)"><small>Avg margin</small><b>34.2%</b> <span class="up">target 30%</span></div>
+          <div class="kpi" style="border-top-color:var(--rd)"><small>Margin at risk</small><b>€2,140</b> <span class="dn">88 lines</span></div>
+        </div>
+        <div class="charts">
+          <div class="panel">
+            <small>Sales, last 12 months</small>
+            <div class="bars"><i style="height:52%"></i><i style="height:48%"></i><i style="height:60%"></i><i style="height:56%"></i><i style="height:64%"></i><i style="height:58%"></i><i style="height:70%"></i><i style="height:66%"></i><i style="height:74%"></i><i style="height:69%"></i><i style="height:80%"></i><i style="height:88%"></i></div>
+          </div>
+          <div class="panel">
+            <small>Revenue mix</small>
+            <div class="donut-wrap">
+              <svg width="74" height="74" viewBox="0 0 42 42">
+                <circle cx="21" cy="21" r="15.9" fill="none" stroke="#26263a" stroke-width="7"/>
+                <circle cx="21" cy="21" r="15.9" fill="none" stroke="#7c3aed" stroke-width="7" stroke-dasharray="38 62" stroke-dashoffset="25"/>
+                <circle cx="21" cy="21" r="15.9" fill="none" stroke="#c026d3" stroke-width="7" stroke-dasharray="24 76" stroke-dashoffset="-13"/>
+                <circle cx="21" cy="21" r="15.9" fill="none" stroke="#22c55e" stroke-width="7" stroke-dasharray="16 84" stroke-dashoffset="-37"/>
+              </svg>
+              <div class="legend"><i style="background:#7c3aed"></i>Tobacco<br><i style="background:#c026d3"></i>Wines &amp; Spirits<br><i style="background:#22c55e"></i>Chilled</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= OPTION 2 ================= -->
+<div class="label">Option 2 · Point, snap, ask (phone scan composite)</div>
+<section class="hero">
+  <div class="orb orb1"></div><div class="orb orb2"></div>
+  <div class="container">
+    <div>
+      <div class="pill"><span class="dot"></span>In pilot with an Irish forecourt</div>
+      <h1>Point. Snap. Ask. <span class="grad">Know your margin in seconds.</span></h1>
+      <p class="lead">Point your phone at a shelf, snap an invoice, or just ask. RetailGuard turns your till data into straight answers.</p>
+      <a class="btn" href="#">Book a free margin scan</a>
+    </div>
+    <div class="phone-scene">
+      <div class="phone">
+        <div class="phone__notch"></div>
+        <div class="scanline">
+          <div class="barcode"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+          <div class="laser"></div>
+        </div>
+        <div class="verdict">
+          <b>Energy drink 500ml</b>
+          <div class="vrow"><span>Price</span><b>€2.10</b></div>
+          <div class="vrow"><span>Cost</span><b>€1.72</b></div>
+          <div class="vrow"><span>Margin</span><b style="color:var(--am)">18%</b></div>
+          <div class="vtag">Suggested: €2.45 -> 30%</div>
+        </div>
+      </div>
+      <div class="float-card fc1"><b>Invoice scanned</b>3 cost rises caught</div>
+      <div class="float-card fc2"><b>Ask Your Shop</b>"What am I losing money on?"</div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= OPTION 3 ================= -->
+<div class="label">Option 3 · One question, one answer (Ask card)</div>
+<section class="hero">
+  <div class="orb orb1"></div><div class="orb orb2"></div>
+  <div class="container">
+    <div>
+      <div class="pill"><span class="dot"></span>In pilot with an Irish forecourt</div>
+      <h1>Your shop already knows. <span class="grad">Now you can ask.</span></h1>
+      <p class="lead">Every answer below comes straight from your own till data, in about two seconds, read-only.</p>
+      <a class="btn" href="#">Book a free margin scan</a>
+    </div>
+    <div class="stack">
+      <div class="ask-q">Which products am I losing money on?</div>
+      <div class="ask-a">
+        <small>From your till data · read-only</small>
+        <div class="arow"><span>Hanlons bag 10c</span><b class="loss">-68% margin</b></div>
+        <div class="arow"><span>Seasonal pack small</span><b class="loss">-46% margin</b></div>
+        <div class="arow"><span>Aperitif 20cl</span><b class="loss">-45% margin</b></div>
+        <div class="fix">Fix these three and stop the leak this week</div>
+      </div>
+      <div class="meta">answered in 1.8s · illustrative example</div>
+    </div>
+  </div>
+</section>
+
+</body>
+</html>

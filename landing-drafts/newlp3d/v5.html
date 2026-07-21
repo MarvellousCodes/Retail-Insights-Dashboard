@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RetailGuard | Margin Analytics for Irish Convenience Shops</title>
+<meta name="description" content="See every product, every margin, every opportunity you are missing. RetailGuard maps your shop data so nothing slips through unnoticed.">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--violet:#7c3aed;--warm:#f59e0b;--red:#ef4444;--bg:#0a0a1a;--text:#f8fafc;--muted:#94a3b8;--card:rgba(15,15,35,0.88);--border:rgba(148,163,184,0.18)}
+html{scroll-behavior:smooth}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Inter',sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden;min-height:500vh}
+#canvas-wrap{position:fixed;inset:0;z-index:-1}
+canvas{display:block;width:100%;height:100%}
+/* Loading overlay */
+#loading{position:fixed;inset:0;z-index:100;background:var(--bg);display:flex;align-items:center;justify-content:center;transition:opacity .6s}
+#loading.done{opacity:0;pointer-events:none}
+#loading span{color:var(--muted);font-size:1rem;letter-spacing:.05em}
+/* Scroll progress */
+#scroll-progress{position:fixed;top:0;left:0;height:2px;background:var(--violet);z-index:50;width:0%;transition:width .05s linear;opacity:.7}
+/* Overlay waypoints */
+.overlay{position:relative;z-index:1;pointer-events:none}
+.overlay *{pointer-events:auto}
+.waypoint{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem}
+.wp-content{max-width:580px;text-align:center;opacity:0;transform:translateY(24px);transition:opacity .7s cubic-bezier(.4,0,.2,1),transform .7s cubic-bezier(.4,0,.2,1)}
+.wp-content.visible{opacity:1;transform:translateY(0)}
+h1{font-size:clamp(2.2rem,5vw,3.6rem);font-weight:800;line-height:1.08;letter-spacing:-.02em;margin-bottom:1rem}
+h2{font-size:clamp(1.5rem,3.2vw,2.3rem);font-weight:700;line-height:1.15;margin-bottom:.6rem}
+h3{font-size:1.2rem;font-weight:600;margin-bottom:.4rem}
+p{color:var(--muted);font-size:1.05rem;line-height:1.65;margin-bottom:1.4rem}
+.cta{display:inline-block;background:var(--violet);color:#fff;padding:.85rem 2.2rem;border-radius:8px;text-decoration:none;font-weight:600;font-size:1rem;transition:transform .2s,box-shadow .2s}
+.cta:hover{transform:translateY(-2px);box-shadow:0 10px 36px rgba(124,58,237,.35)}
+.badge{display:inline-block;background:rgba(124,58,237,.12);color:var(--violet);padding:.3rem .9rem;border-radius:20px;font-size:.78rem;font-weight:600;margin-bottom:1rem;letter-spacing:.02em;text-transform:uppercase}
+.sub{font-size:.92rem;color:var(--muted);margin-top:.6rem}
+/* Sections below fold */
+.sections{position:relative;z-index:2;background:var(--bg)}
+section{padding:5rem 2rem;max-width:880px;margin:0 auto}
+.features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:1.5rem;margin-top:2rem}
+.feature-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.5rem;transition:border-color .2s}
+.feature-card:hover{border-color:var(--violet)}
+.feature-card h3{color:var(--text);margin-bottom:.4rem}
+.feature-card p{font-size:.92rem;margin-bottom:0;color:var(--muted)}
+.pricing-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1.5rem;margin-top:2rem}
+.price-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:2rem;text-align:center;position:relative;transition:border-color .2s,box-shadow .2s}
+.price-card.popular{border-color:var(--violet);box-shadow:0 0 40px rgba(124,58,237,.12)}
+.popular-tag{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--violet);color:#fff;padding:.25rem 1rem;border-radius:20px;font-size:.72rem;font-weight:600;letter-spacing:.03em;text-transform:uppercase}
+.price{font-size:2.4rem;font-weight:800;margin:.5rem 0}
+.price span{font-size:.95rem;font-weight:400;color:var(--muted)}
+.price-features{text-align:left;margin:1.5rem 0;list-style:none}
+.price-features li{padding:.35rem 0;color:var(--muted);font-size:.88rem}
+.price-features li::before{content:'\2713';color:var(--violet);margin-right:.5rem;font-weight:700}
+.form-section{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:2.5rem;max-width:480px;margin:2rem auto 0}
+.form-section input,.form-section select{width:100%;padding:.8rem 1rem;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:1rem;margin-bottom:1rem;outline:none;transition:border-color .2s}
+.form-section input:focus,.form-section select:focus{border-color:var(--violet)}
+.form-section button{width:100%;padding:1rem;background:var(--violet);color:#fff;border:none;border-radius:8px;font-size:1rem;font-weight:600;cursor:pointer;transition:transform .2s,box-shadow .2s}
+.form-section button:hover{transform:translateY(-1px);box-shadow:0 6px 24px rgba(124,58,237,.3)}
+.form-msg{text-align:center;margin-top:1rem;font-size:.9rem}
+footer{text-align:center;padding:3rem 2rem;color:var(--muted);font-size:.82rem;border-top:1px solid var(--border)}
+/* Fallback */
+.fallback-hero{display:none;min-height:100vh;align-items:center;justify-content:center;text-align:center;padding:2rem;background:linear-gradient(160deg,#0a0a1a 0%,#1a1040 50%,#0a0a1a 100%)}
+@media(prefers-reduced-motion:reduce){.fallback-hero{display:flex}#canvas-wrap,.overlay .waypoint:not(:first-child),#scroll-progress{display:none}.overlay .waypoint:first-child{min-height:auto;padding-top:15vh}}
+@media(max-width:767px){.waypoint{padding:1.5rem}.form-section{padding:1.5rem}}
+</style>
+</head>
+<body>
+
+<div id="loading"><span>Loading scene...</span></div>
+<div id="scroll-progress"></div>
+
+<div class="fallback-hero">
+<div class="wp-content visible">
+<div class="badge">Margin analytics for Irish convenience shops</div>
+<h1>Your shop, seen properly</h1>
+<p>Every product. Every margin. Every opportunity you are missing today, mapped and measured.</p>
+<a href="#contact" class="cta">Get my free margin scan</a>
+</div>
+</div>
+
+<div id="canvas-wrap"></div>
+
+<div class="overlay">
+<div class="waypoint" id="wp-hero">
+<div class="wp-content">
+<div class="badge">Margin analytics for Irish convenience shops</div>
+<h1>Your shop, seen properly</h1>
+<p>Every product. Every margin. Every opportunity you are missing today, mapped and measured.</p>
+<a href="#contact" class="cta">Get my free margin scan</a>
+</div>
+</div>
+<div class="waypoint" id="wp-red">
+<div class="wp-content">
+<h2>These are the products losing you money</h2>
+<p>The glowing red district? Products selling below your target margin. In a typical forecourt, that can be dozens of lines slipping through unnoticed every week.</p>
+<p class="sub">Spotted automatically, before they cost you hundreds.</p>
+</div>
+</div>
+<div class="waypoint" id="wp-gold">
+<div class="wp-content">
+<h2>Friday evening is your gold mine</h2>
+<p>Your busiest hours drive most of your weekly margin. Know exactly which products fly off the shelf and whether the price is right.</p>
+<p class="sub">One glance. One number. Is it working?</p>
+</div>
+</div>
+<div class="waypoint" id="wp-reveal">
+<div class="wp-content">
+<h2>The full picture, always up to date</h2>
+<p>Typical opportunities identified can amount to thousands of euros per year, depending on store size.</p>
+<a href="#features" class="cta">See how it works</a>
+</div>
+</div>
+</div>
+
+<div class="sections">
+<section id="features">
+<h2 style="text-align:center">Everything you need to protect your margins</h2>
+<p style="text-align:center">One dashboard. Every product. Updated daily from your till system.</p>
+<div class="features-grid">
+<div class="feature-card">
+<h3>Margin Dashboard</h3>
+<p>See every product's cost, price, and margin at a glance. Filter by department, supplier, or flag status.</p>
+</div>
+<div class="feature-card">
+<h3>Below-cost Alerts</h3>
+<p>Instant flags when products sell below target. Catch pricing errors before they cost you hundreds.</p>
+</div>
+<div class="feature-card">
+<h3>Invoice Scanner</h3>
+<p>Snap a supplier invoice. Matched lines are checked against your current prices and flagged if margin drops.</p>
+</div>
+<div class="feature-card">
+<h3>Ask Your Shop</h3>
+<p>Type a plain English question about your data. "Best sellers last Friday?" "Weakest margins in dairy?" Answer in seconds.</p>
+</div>
+<div class="feature-card">
+<h3>Supplier Analytics</h3>
+<p>Track cost changes by supplier over time. Know who is squeezing your margin before it shows on the bottom line.</p>
+</div>
+<div class="feature-card">
+<h3>Morning Report</h3>
+<p>A daily summary on your desk before you open. Yesterday's margin issues, top sellers, and anything that needs attention.</p>
+</div>
+</div>
+</section>
+
+<section id="pricing">
+<h2 style="text-align:center">Simple, transparent pricing</h2>
+<p style="text-align:center">No setup fee. Cancel anytime. All prices net of VAT.</p>
+<div class="pricing-grid">
+<div class="price-card">
+<h3>Insight</h3>
+<div class="price">&euro;500<span>/mo</span></div>
+<ul class="price-features">
+<li>Margin dashboard</li>
+<li>Below-cost alerts</li>
+<li>Department drill-down</li>
+<li>Barcode lookup</li>
+<li>Supplier analytics</li>
+</ul>
+<a href="#contact" class="cta" style="width:100%;display:block;text-align:center">Get my free margin scan</a>
+</div>
+<div class="price-card popular">
+<div class="popular-tag">Most popular</div>
+<h3>Complete</h3>
+<div class="price">&euro;1,000<span>/mo</span></div>
+<ul class="price-features">
+<li>Everything in Insight</li>
+<li>Invoice Scanner</li>
+<li>Ask Your Shop</li>
+<li>Trading patterns</li>
+<li>Product performance</li>
+<li>Priority support</li>
+</ul>
+<a href="#contact" class="cta" style="width:100%;display:block;text-align:center">Get my free margin scan</a>
+</div>
+<div class="price-card">
+<h3>Multi-site</h3>
+<div class="price">&euro;1,500<span>/mo</span></div>
+<ul class="price-features">
+<li>Everything in Complete</li>
+<li>Write-back (rolling out)</li>
+<li>Morning report</li>
+<li>Per-site onboarding</li>
+<li>Multi-location view</li>
+</ul>
+<a href="#contact" class="cta" style="width:100%;display:block;text-align:center">Get my free margin scan</a>
+</div>
+</div>
+</section>
+
+<section id="contact">
+<h2 style="text-align:center">Get my free margin scan</h2>
+<p style="text-align:center">We will look at your product data and show you exactly where margin is leaking. No obligation, no charge.</p>
+<div class="form-section">
+<form id="lead-form">
+<input type="hidden" name="_subject" value="RetailGuard lead (Barcode City)">
+<input type="text" name="name" placeholder="Your name" required>
+<input type="email" name="email" placeholder="Email address" required>
+<input type="text" name="shop" placeholder="Shop name (optional)">
+<select name="size">
+<option value="">How many products do you stock?</option>
+<option>Under 2,000</option>
+<option>2,000 to 5,000</option>
+<option>5,000 to 15,000</option>
+<option>Over 15,000</option>
+</select>
+<button type="submit">Book my free margin scan</button>
+</form>
+<div class="form-msg" id="form-msg"></div>
+</div>
+</section>
+
+<footer>
+<p>&copy; 2026 RetailGuard. Margin analytics for Irish convenience shops.</p>
+</footer>
+</div>
+
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js"}}
+</script>
+<script type="module">
+import * as THREE from 'three';
+
+/* --- Config --- */
+const isMobile = window.innerWidth < 768;
+const BUILDING_COUNT = isMobile ? 100 : 280;
+const GRID_SIZE = isMobile ? 10 : 16;
+const RED_RATIO = 0.08;
+const MAX_PR = Math.min(window.devicePixelRatio, 2);
+
+const canvasWrap = document.getElementById('canvas-wrap');
+const loadingEl = document.getElementById('loading');
+const progressEl = document.getElementById('scroll-progress');
+
+/* --- WebGL init with fallback --- */
+let renderer;
+try {
+  const gl = document.createElement('canvas').getContext('webgl2') || document.createElement('canvas').getContext('webgl');
+  if (!gl) throw new Error('No WebGL');
+  renderer = new THREE.WebGLRenderer({ antialias: !isMobile, alpha: false, powerPreference: 'high-performance' });
+  renderer.setPixelRatio(MAX_PR);
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 0.75;
+  canvasWrap.appendChild(renderer.domElement);
+} catch (e) {
+  document.querySelector('.fallback-hero').style.display = 'flex';
+  canvasWrap.style.display = 'none';
+  document.querySelector('.overlay').style.display = 'none';
+  loadingEl.classList.add('done');
+  throw e;
+}
+
+/* --- Scene --- */
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x06060f);
+scene.fog = new THREE.Fog(0x06060f, 40, isMobile ? 70 : 120);
+
+const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.5, 300);
+
+/* --- Instanced buildings --- */
+const buildingGeo = new THREE.BoxGeometry(1, 1, 1);
+const buildingMat = new THREE.MeshStandardMaterial({
+  color: 0x2a2a5a,
+  roughness: 0.75,
+  metalness: 0.2,
+  emissive: 0x0a0a2a,
+  emissiveIntensity: 0.15
+});
+
+const buildings = new THREE.InstancedMesh(buildingGeo, buildingMat, BUILDING_COUNT);
+const dummy = new THREE.Object3D();
+const colorObj = new THREE.Color();
+const redSet = new Set();
+
+// Pre-determine red buildings
+const redCount = Math.floor(BUILDING_COUNT * RED_RATIO);
+while (redSet.size < redCount) { redSet.add(Math.floor(Math.random() * BUILDING_COUNT)); }
+
+// District colours (columns of the grid)
+const districtPalette = [
+  0x4f46e5, // Indigo
+  0x7c3aed, // Violet
+  0x06b6d4, // Cyan
+  0x059669, // Emerald
+  0xd97706, // Amber
+  0xec4899  // Pink
+];
+
+const gridSpacing = 2.6;
+const gridOffset = (GRID_SIZE * gridSpacing) / 2;
+
+for (let i = 0; i < BUILDING_COUNT; i++) {
+  const col = i % GRID_SIZE;
+  const row = Math.floor(i / GRID_SIZE);
+  const isRed = redSet.has(i);
+
+  // Height: varied with barcode feel (tall/short alternation + randomness)
+  const barH = isRed
+    ? 2 + Math.random() * 3.5
+    : 3 + Math.pow(Math.random(), 0.7) * 20;
+  const barW = 0.5 + Math.random() * 0.6;
+
+  const x = col * gridSpacing - gridOffset + (Math.random() - 0.5) * 0.3;
+  const z = row * gridSpacing - gridOffset + (Math.random() - 0.5) * 0.3;
+
+  dummy.position.set(x, barH / 2, z);
+  dummy.scale.set(barW, barH, barW);
+  dummy.updateMatrix();
+  buildings.setMatrixAt(i, dummy.matrix);
+
+  // Colour
+  if (isRed) {
+    colorObj.setHex(0xff2020);
+  } else {
+    const dIdx = col % districtPalette.length;
+    colorObj.setHex(districtPalette[dIdx]);
+    // Vary brightness per building
+    colorObj.offsetHSL(0, (Math.random() - 0.5) * 0.08, (Math.random() - 0.5) * 0.1);
+  }
+  buildings.setColorAt(i, colorObj);
+}
+buildings.instanceMatrix.needsUpdate = true;
+buildings.instanceColor.needsUpdate = true;
+buildings.castShadow = false;
+buildings.receiveShadow = false;
+scene.add(buildings);
+
+/* --- Window lights (small emissive planes on building faces) --- */
+const windowGeo = new THREE.PlaneGeometry(0.12, 0.12);
+const windowMat = new THREE.MeshBasicMaterial({ color: 0xffeebb, transparent: true, opacity: 0.6 });
+const windowCount = isMobile ? 200 : 600;
+const windows = new THREE.InstancedMesh(windowGeo, windowMat, windowCount);
+const wDummy = new THREE.Object3D();
+
+for (let w = 0; w < windowCount; w++) {
+  const bIdx = Math.floor(Math.random() * BUILDING_COUNT);
+  const col = bIdx % GRID_SIZE;
+  const row = Math.floor(bIdx / GRID_SIZE);
+  const x = col * gridSpacing - gridOffset;
+  const z = row * gridSpacing - gridOffset;
+  const isRed = redSet.has(bIdx);
+  const bH = isRed ? 3 : 5 + Math.random() * 15;
+
+  const wy = 0.5 + Math.random() * (bH - 1);
+  const face = Math.floor(Math.random() * 4);
+  const offset = (Math.random() - 0.5) * 0.35;
+
+  if (face === 0) { wDummy.position.set(x + 0.51, wy, z + offset); wDummy.rotation.set(0, Math.PI / 2, 0); }
+  else if (face === 1) { wDummy.position.set(x - 0.51, wy, z + offset); wDummy.rotation.set(0, -Math.PI / 2, 0); }
+  else if (face === 2) { wDummy.position.set(x + offset, wy, z + 0.51); wDummy.rotation.set(0, 0, 0); }
+  else { wDummy.position.set(x + offset, wy, z - 0.51); wDummy.rotation.set(0, Math.PI, 0); }
+
+  wDummy.updateMatrix();
+  windows.setMatrixAt(w, wDummy.matrix);
+}
+windows.instanceMatrix.needsUpdate = true;
+scene.add(windows);
+
+/* --- Ground --- */
+const ground = new THREE.Mesh(
+  new THREE.PlaneGeometry(140, 140),
+  new THREE.MeshStandardMaterial({ color: 0x080818, roughness: 1, metalness: 0 })
+);
+ground.rotation.x = -Math.PI / 2;
+ground.position.y = -0.05;
+scene.add(ground);
+
+/* --- Horizon glow (large dim sphere behind city) --- */
+const glowGeo = new THREE.SphereGeometry(80, 16, 8, 0, Math.PI * 2, Math.PI * 0.4, Math.PI * 0.2);
+const glowMat = new THREE.MeshBasicMaterial({ color: 0x1a0a3a, transparent: true, opacity: 0.35, side: THREE.BackSide });
+const glow = new THREE.Mesh(glowGeo, glowMat);
+glow.position.set(0, -10, -50);
+glow.scale.set(1.5, 0.5, 1);
+scene.add(glow);
+
+/* --- Lighting --- */
+scene.add(new THREE.AmbientLight(0x12122a, 0.5));
+
+const violetLight = new THREE.PointLight(0x7c3aed, 2.5, 90, 1.5);
+violetLight.position.set(-12, 30, -15);
+scene.add(violetLight);
+
+const warmLight = new THREE.PointLight(0xf59e0b, 1.8, 70, 1.5);
+warmLight.position.set(18, 22, 12);
+scene.add(warmLight);
+
+const rimLight = new THREE.DirectionalLight(0x3366cc, 0.4);
+rimLight.position.set(0, 50, 70);
+scene.add(rimLight);
+
+// Subtle red point light over red district
+const redLight = new THREE.PointLight(0xff3333, 1.2, 30, 2);
+redLight.position.set(0, 10, 0);
+scene.add(redLight);
+
+/* --- Scanner beam (volumetric feel) --- */
+const beamGroup = new THREE.Group();
+const beamWidth = isMobile ? 60 : 90;
+const beamGeo = new THREE.PlaneGeometry(beamWidth, 0.08);
+const beamMat = new THREE.MeshBasicMaterial({ color: 0x7c3aed, transparent: true, opacity: 0.4, side: THREE.DoubleSide });
+const beamLine = new THREE.Mesh(beamGeo, beamMat);
+beamLine.rotation.x = -Math.PI / 2;
+beamLine.position.y = 0.3;
+beamGroup.add(beamLine);
+
+// Glow plane under beam
+const beamGlowGeo = new THREE.PlaneGeometry(beamWidth, 2.5);
+const beamGlowMat = new THREE.MeshBasicMaterial({ color: 0x7c3aed, transparent: true, opacity: 0.06, side: THREE.DoubleSide });
+const beamGlow = new THREE.Mesh(beamGlowGeo, beamGlowMat);
+beamGlow.rotation.x = -Math.PI / 2;
+beamGlow.position.y = 0.2;
+beamGroup.add(beamGlow);
+
+scene.add(beamGroup);
+
+/* --- Camera flight path (smooth banked curve) --- */
+const flightPoints = isMobile
+  ? [
+      new THREE.Vector3(0, 45, 55),
+      new THREE.Vector3(-5, 28, 35),
+      new THREE.Vector3(3, 14, 15),
+      new THREE.Vector3(6, 7, 2),
+      new THREE.Vector3(-8, 10, -8),
+      new THREE.Vector3(0, 38, -25)
+    ]
+  : [
+      new THREE.Vector3(0, 55, 70),
+      new THREE.Vector3(-8, 38, 48),
+      new THREE.Vector3(-12, 22, 28),
+      new THREE.Vector3(4, 10, 12),
+      new THREE.Vector3(10, 6, 2),
+      new THREE.Vector3(5, 7, -8),
+      new THREE.Vector3(-14, 12, -18),
+      new THREE.Vector3(-18, 20, -28),
+      new THREE.Vector3(0, 48, -20),
+      new THREE.Vector3(0, 58, 10)
+    ];
+
+const curve = new THREE.CatmullRomCurve3(flightPoints, false, 'catmullrom', 0.35);
+
+/* --- Scroll state --- */
+let scrollY = 0;
+let smoothScroll = 0;
+
+function onScroll() { scrollY = window.scrollY; }
+window.addEventListener('scroll', onScroll, { passive: true });
+
+/* --- Waypoint visibility --- */
+const wpEls = document.querySelectorAll('.wp-content');
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.25 });
+wpEls.forEach(el => obs.observe(el));
+
+/* --- Visibility API: pause when tab hidden --- */
+let isTabVisible = true;
+document.addEventListener('visibilitychange', () => { isTabVisible = !document.hidden; });
+
+/* --- Reusable vectors (no per-frame allocations) --- */
+const _pos = new THREE.Vector3();
+const _look = new THREE.Vector3();
+
+/* --- Animation loop --- */
+let frameId;
+function animate() {
+  frameId = requestAnimationFrame(animate);
+  if (!isTabVisible) return;
+
+  const totalScroll = document.body.scrollHeight - window.innerHeight;
+  const rawT = totalScroll > 0 ? scrollY / totalScroll : 0;
+
+  // Smooth interpolation (damped follow)
+  smoothScroll += (rawT - smoothScroll) * 0.06;
+  const t = Math.max(0, Math.min(smoothScroll, 1));
+
+  // Scroll progress bar
+  progressEl.style.width = (t * 100) + '%';
+
+  // Camera position along curve
+  curve.getPointAt(t, _pos);
+  curve.getPointAt(Math.min(t + 0.015, 1), _look);
+  camera.position.copy(_pos);
+  camera.lookAt(_look);
+
+  // Scanner beam sweep
+  const time = performance.now() * 0.001;
+  const beamZ = -gridOffset + Math.sin(time * 0.35) * gridOffset * 1.4;
+  beamGroup.position.z = beamZ;
+  beamMat.opacity = 0.3 + Math.sin(time * 1.5) * 0.12;
+  beamGlowMat.opacity = 0.04 + Math.sin(time * 1.5) * 0.02;
+
+  // Subtle red light pulse
+  redLight.intensity = 1.0 + Math.sin(time * 2) * 0.3;
+
+  renderer.render(scene, camera);
+}
+
+/* --- Start --- */
+loadingEl.classList.add('done');
+animate();
+
+/* --- Resize handler --- */
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+/* --- Form handler (FormSubmit) --- */
+document.getElementById('lead-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const form = e.target;
+  const msg = document.getElementById('form-msg');
+  const btn = form.querySelector('button');
+  btn.disabled = true;
+  btn.textContent = 'Sending...';
+
+  const data = Object.fromEntries(new FormData(form));
+  try {
+    const res = await fetch('https://formsubmit.co/ajax/retailguard.sales@gmail.com', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    if (res.ok) {
+      msg.textContent = 'Thanks! We will be in touch within 24 hours.';
+      msg.style.color = '#10b981';
+      form.reset();
+    } else { throw new Error(); }
+  } catch {
+    msg.textContent = 'Something went wrong. Please email retailguard.sales@gmail.com directly.';
+    msg.style.color = '#ef4444';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Book my free margin scan';
+  }
+});
+</script>
+</body>
+</html>

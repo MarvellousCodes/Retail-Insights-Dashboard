@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sales Page, 20 Ideas</title>
+<style>
+  :root{--v:#7c3aed;--vd:#6d28d9;--v50:#f5f3ff;--v100:#ede9fe;--v200:#ddd6fe;--g50:#f9fafb;--g100:#f3f4f6;--g200:#e5e7eb;--g400:#9ca3af;--g500:#6b7280;--g700:#374151;--g900:#111827;--green:#16a34a;--red:#dc2626;--amber:#d97706}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,sans-serif;background:#eef0f4;color:var(--g900);padding:40px 24px}
+  .wrap{max-width:1080px;margin:0 auto}
+  h1{font-size:24px;margin-bottom:4px}
+  .sub{font-size:13px;color:var(--g500);margin-bottom:28px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:18px}
+  .card{background:#fff;border:1px solid var(--g200);border-radius:16px;padding:18px;box-shadow:0 2px 8px rgba(17,24,39,.05)}
+  .card .n{display:inline-block;background:var(--v);color:#fff;border-radius:7px;font-size:11px;font-weight:800;padding:2px 8px;margin-bottom:8px}
+  .card h2{font-size:15px;margin-bottom:4px}
+  .card p{font-size:12px;color:var(--g500);line-height:1.5;margin-bottom:12px}
+  .mock{background:var(--g50);border:1px solid var(--g100);border-radius:12px;padding:12px;min-height:110px}
+  .kpi{display:inline-block;background:#fff;border:1px solid var(--g200);border-radius:9px;padding:7px 10px;margin:0 6px 6px 0}
+  .kpi .l{font-size:8.5px;color:var(--g400);text-transform:uppercase}
+  .kpi .v{font-size:14px;font-weight:800}
+  .up{color:var(--green)} .down{color:var(--red)}
+  .bars{display:flex;align-items:flex-end;gap:4px;height:64px}
+  .bars i{flex:1;background:var(--v200);border-radius:3px 3px 0 0}
+  .bars i.hot{background:var(--v)} .bars i.g{background:#86efac} .bars i.r{background:#fca5a5}
+  .ax{display:flex;justify-content:space-between;font-size:8px;color:var(--g400);margin-top:3px}
+  .row{display:flex;justify-content:space-between;align-items:center;font-size:11px;padding:5px 2px;border-bottom:1px solid var(--g100)}
+  .row:last-child{border:0}
+  .hbar{height:9px;border-radius:99px;background:var(--v);display:inline-block;vertical-align:middle}
+  .heat{display:grid;grid-template-columns:repeat(12,1fr);gap:2px}
+  .heat i{aspect-ratio:1;border-radius:2px;display:block}
+  .pill{font-size:9px;padding:2px 8px;border-radius:99px;font-weight:700}
+  .pg{background:#f0fdf4;color:var(--green)} .pr{background:#fef2f2;color:var(--red)} .pa{background:#fffbeb;color:var(--amber)} .pv{background:var(--v50);color:var(--vd)}
+  .donut{width:64px;height:64px;border-radius:50%;background:conic-gradient(var(--v) 0 38%, #a78bfa 38% 62%, var(--v200) 62% 82%, var(--g200) 82% 100%);position:relative;display:inline-block;vertical-align:middle;margin-right:12px}
+  .donut::after{content:"";position:absolute;inset:16px;background:var(--g50);border-radius:50%}
+  .sentence{font-size:13px;line-height:1.6}
+  .medal{font-size:16px;margin-right:4px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Sales page, 20 ideas</h1>
+  <p class="sub">The current page is one product table. All of this can be built from data already in the system: monthly sales per product and department back to 2015, and transactions by day and hour. Numbers below are illustrative.</p>
+  <div class="grid">
+
+  <div class="card"><span class="n">1</span><h2>Sales Pulse strip</h2><p>The month at a glance across the top: this month, vs last month, vs the same month last year.</p>
+    <div class="mock"><span class="kpi"><span class="l">July so far</span><br><span class="v">&euro;41,280</span></span><span class="kpi"><span class="l">vs June</span><br><span class="v up">+4.2%</span></span><span class="kpi"><span class="l">vs last July</span><br><span class="v up">+9.8%</span></span><span class="kpi"><span class="l">Profit</span><br><span class="v">&euro;11,410</span></span></div></div>
+
+  <div class="card"><span class="n">2</span><h2>Revenue mountain</h2><p>12 months of revenue with profit shaded inside it, one glance shows the shape of the year.</p>
+    <div class="mock"><div class="bars"><i style="height:45%"></i><i style="height:40%"></i><i style="height:48%"></i><i style="height:56%"></i><i style="height:60%"></i><i style="height:52%"></i><i style="height:66%"></i><i style="height:70%"></i><i style="height:64%"></i><i style="height:58%"></i><i style="height:78%"></i><i class="hot" style="height:100%"></i></div><div class="ax"><span>Aug</span><span>Dec is your peak</span><span>Jul</span></div></div></div>
+
+  <div class="card"><span class="n">3</span><h2>Same month, last year</h2><p>June against last June, so seasonal swings never fool you. Department by department.</p>
+    <div class="mock"><div class="row"><span>Grocery</span><span><span class="hbar" style="width:70px"></span> <b class="up">+8%</b></span></div><div class="row"><span>Off Licence</span><span><span class="hbar" style="width:52px"></span> <b class="up">+15%</b></span></div><div class="row"><span>Newsagent</span><span><span class="hbar" style="width:28px;background:#fca5a5"></span> <b class="down">-11%</b></span></div></div></div>
+
+  <div class="card"><span class="n">4</span><h2>Top movers</h2><p>Biggest risers and fallers this month vs last. Catches trends while they are happening.</p>
+    <div class="mock"><div class="row"><span>Energy Drink 500ml</span><span class="pill pg">+124 units</span></div><div class="row"><span>Ice Cream 1L</span><span class="pill pg">+89 units</span></div><div class="row"><span>Hot Chocolate 400g</span><span class="pill pr">-64 units</span></div><div class="row"><span>Soup Tomato 400g</span><span class="pill pr">-41 units</span></div></div></div>
+
+  <div class="card"><span class="n">5</span><h2>Dead stock shelf</h2><p>Products that have not sold a single unit in 3 months or more. Money sitting on shelves.</p>
+    <div class="mock"><div class="row"><span>Phone Charger Cable</span><span class="pill pa">no sales in 6 mo</span></div><div class="row"><span>Gift Bag Large</span><span class="pill pa">no sales in 5 mo</span></div><div class="row"><span>Copybook A4 Pack</span><span class="pill pa">no sales in 4 mo</span></div><div class="row" style="border:0"><span style="color:var(--g400)">...and 34 more</span><span class="pill pv">worth ~&euro;820 at cost</span></div></div></div>
+
+  <div class="card"><span class="n">6</span><h2>Star products</h2><p>Top 10 by profit, not just by sales. The quiet earners get their medals.</p>
+    <div class="mock"><div class="row"><span><span class="medal">&#129351;</span>Coffee To Go</span><span><b>&euro;1,240</b> profit/mo</span></div><div class="row"><span><span class="medal">&#129352;</span>Deli Roll Meal Deal</span><span><b>&euro;980</b></span></div><div class="row"><span><span class="medal">&#129353;</span>Cigarettes 20pk</span><span><b>&euro;760</b></span></div></div></div>
+
+  <div class="card"><span class="n">7</span><h2>Week rhythm</h2><p>Average takings by day of week. Staffing and orders should follow this shape.</p>
+    <div class="mock"><div class="bars"><i style="height:48%"></i><i style="height:44%"></i><i style="height:52%"></i><i style="height:62%"></i><i class="hot" style="height:100%"></i><i style="height:84%"></i><i style="height:38%"></i></div><div class="ax"><span>Mon</span><span>Fri is 2.6x Sunday</span><span>Sun</span></div></div></div>
+
+  <div class="card"><span class="n">8</span><h2>Hour heatmap</h2><p>Day by hour grid coloured by takings. Shows the morning rush and the evening gold mine.</p>
+    <div class="mock"><div class="heat">${""}
+      <i style="background:#ede9fe"></i><i style="background:#ddd6fe"></i><i style="background:#c4b5fd"></i><i style="background:#ddd6fe"></i><i style="background:#ede9fe"></i><i style="background:#c4b5fd"></i><i style="background:#a78bfa"></i><i style="background:#8b5cf6"></i><i style="background:#7c3aed"></i><i style="background:#8b5cf6"></i><i style="background:#a78bfa"></i><i style="background:#ddd6fe"></i>
+      <i style="background:#ddd6fe"></i><i style="background:#c4b5fd"></i><i style="background:#a78bfa"></i><i style="background:#c4b5fd"></i><i style="background:#ddd6fe"></i><i style="background:#a78bfa"></i><i style="background:#8b5cf6"></i><i style="background:#7c3aed"></i><i style="background:#6d28d9"></i><i style="background:#7c3aed"></i><i style="background:#8b5cf6"></i><i style="background:#c4b5fd"></i>
+      <i style="background:#ede9fe"></i><i style="background:#ddd6fe"></i><i style="background:#c4b5fd"></i><i style="background:#ddd6fe"></i><i style="background:#ede9fe"></i><i style="background:#c4b5fd"></i><i style="background:#a78bfa"></i><i style="background:#8b5cf6"></i><i style="background:#7c3aed"></i><i style="background:#8b5cf6"></i><i style="background:#a78bfa"></i><i style="background:#ddd6fe"></i>
+    </div><div class="ax"><span>7am</span><span>5 to 7pm peak</span><span>10pm</span></div></div></div>
+
+  <div class="card"><span class="n">9</span><h2>Season wheel</h2><p>Which months carry the year. Plan stock and cash flow around your own pattern.</p>
+    <div class="mock" style="display:flex;align-items:center"><span class="donut"></span><div style="font-size:11px;line-height:1.7"><b>Dec</b> is 1.5x an average month<br><b>Jun to Aug</b> runs 12% above average<br><b>Jan</b> is the quiet one, plan promos</div></div></div>
+
+  <div class="card"><span class="n">10</span><h2>Revenue vs profit quadrant</h2><p>High sellers that earn little sit bottom right. That corner is where repricing starts.</p>
+    <div class="mock" style="position:relative;height:110px"><div style="position:absolute;inset:8px;border-left:2px solid var(--g200);border-bottom:2px solid var(--g200)"><i style="position:absolute;left:15%;top:20%;width:9px;height:9px;border-radius:50%;background:var(--v)"></i><i style="position:absolute;left:38%;top:35%;width:9px;height:9px;border-radius:50%;background:var(--v)"></i><i style="position:absolute;left:70%;top:28%;width:9px;height:9px;border-radius:50%;background:var(--v)"></i><i style="position:absolute;left:78%;top:75%;width:11px;height:11px;border-radius:50%;background:var(--red)"></i><i style="position:absolute;left:62%;top:82%;width:11px;height:11px;border-radius:50%;background:var(--red)"></i><span style="position:absolute;right:2px;bottom:2px;font-size:8.5px;color:var(--red);font-weight:700">sells loads, earns little</span></div></div></div>
+
+  <div class="card"><span class="n">11</span><h2>Basket size trend</h2><p>Average spend per customer visit, month by month. Small rises here compound fast.</p>
+    <div class="mock"><div class="bars"><i style="height:60%"></i><i style="height:62%"></i><i style="height:58%"></i><i style="height:66%"></i><i style="height:70%"></i><i class="hot" style="height:76%"></i></div><div class="ax"><span>Feb</span><span>&euro;8.20 &rarr; &euro;9.10 per visit</span><span>Jul</span></div></div></div>
+
+  <div class="card"><span class="n">12</span><h2>Department race</h2><p>Departments ranked with movement arrows, who is gaining share and who is slipping.</p>
+    <div class="mock"><div class="row"><span>1. Grocery <span class="pill pg">&uarr; steady</span></span><span>&euro;18.2k</span></div><div class="row"><span>2. Chilled &amp; Dairy <span class="pill pg">&uarr; +1 place</span></span><span>&euro;11.9k</span></div><div class="row"><span>3. Off Licence <span class="pill pr">&darr; -1 place</span></span><span>&euro;10.4k</span></div></div></div>
+
+  <div class="card"><span class="n">13</span><h2>Weather day flags</h2><p>Mark the sunny weekends and cold snaps on the sales chart, explains the spikes.</p>
+    <div class="mock"><div class="bars"><i style="height:50%"></i><i style="height:54%"></i><i class="g" style="height:96%"></i><i class="g" style="height:100%"></i><i style="height:56%"></i><i style="height:48%"></i><i style="height:44%"></i></div><div class="ax"><span></span><span>&#9728; heatwave weekend, ice cream +240%</span><span></span></div></div></div>
+
+  <div class="card"><span class="n">14</span><h2>This week vs your best week</h2><p>A gentle target: how far is this week from your record week, and what drove the record.</p>
+    <div class="mock sentence">This week: <b>&euro;9,840</b><br>Your best ever week: <b>&euro;12,300</b> (Christmas week)<br>Best normal week: <b>&euro;10,750</b> (bank holiday June)<br><span class="pill pv">You are 8% off your best normal week</span></div></div>
+
+  <div class="card"><span class="n">15</span><h2>One product, full story</h2><p>Click any product for its own page: monthly sales, price history, margin, best day.</p>
+    <div class="mock"><div style="font-size:11px;font-weight:700;margin-bottom:6px">COFFEE TO GO</div><div class="bars" style="height:44px"><i style="height:60%"></i><i style="height:66%"></i><i style="height:72%"></i><i style="height:70%"></i><i style="height:80%"></i><i class="hot" style="height:100%"></i></div><div style="margin-top:6px"><span class="pill pg">margin 71%</span> <span class="pill pv">best day: Fri</span> <span class="pill pv">trend: rising</span></div></div></div>
+
+  <div class="card"><span class="n">16</span><h2>Plain English monthly recap</h2><p>Three sentences a month, written from the numbers. Reads like a manager's note.</p>
+    <div class="mock sentence" style="font-size:12px">"June was your third best month this year at &euro;44,100, up 6% on May. Off Licence did the heavy lifting, helped by the June bank holiday. Watch Newsagent, down 11% for the second month running."</div></div>
+
+  <div class="card"><span class="n">17</span><h2>Shrinking products early warning</h2><p>Products fading quietly: three consecutive months of decline, before they become dead stock.</p>
+    <div class="mock"><div class="row"><span>Magazine Weekly</span><span><span class="pill pa">-8% &rarr; -12% &rarr; -15%</span></span></div><div class="row"><span>DVD Blank 10pk</span><span><span class="pill pa">3 months falling</span></span></div><div class="row" style="border:0"><span>Bus Timetable Cards</span><span><span class="pill pa">nearly dead</span></span></div></div></div>
+
+  <div class="card"><span class="n">18</span><h2>Supplier scoreboard</h2><p>Sales and margin rolled up by supplier, who earns their shelf space and who does not.</p>
+    <div class="mock"><div class="row"><span>Valley Wholesale</span><span><b>&euro;9.1k</b>/mo &middot; 31% margin</span></div><div class="row"><span>Coastal Drinks</span><span><b>&euro;4.2k</b>/mo &middot; 36% margin</span></div><div class="row" style="border:0"><span>Celtic Household</span><span><b>&euro;0.9k</b>/mo &middot; <b class="down">14% margin</b></span></div></div></div>
+
+  <div class="card"><span class="n">19</span><h2>Ask from here</h2><p>An Ask box on the Sales page pre-filled with sales questions, one tap to answers.</p>
+    <div class="mock"><div style="background:#fff;border:1px solid var(--g200);border-radius:9px;padding:8px 10px;font-size:11px;color:var(--g400)">Ask about your sales...</div><div style="margin-top:8px"><span class="pill pv">Why was Tuesday quiet?</span> <span class="pill pv">Best sellers after 6pm</span> <span class="pill pv">Compare this June to last</span></div></div></div>
+
+  <div class="card"><span class="n">20</span><h2>Morning report preview</h2><p>Yesterday in one card, waiting when the shop opens. The seed of the daily email Patrick asked for.</p>
+    <div class="mock sentence" style="font-size:12px"><b>Yesterday, Sunday 20 July</b><br>Takings &euro;1,180 &middot; 431 customers &middot; avg &euro;2.74<br>Quietest hour 2pm, busiest 11am<br><span class="pill pg">6% better than the last 4 Sundays</span></div></div>
+
+  </div>
+  <p style="font-size:11px;color:var(--g400);margin-top:22px">All numbers illustrative. Every idea is buildable from turnover_parsed (monthly product sales since 2015) and transactions_parsed (takings by day and hour). Ideas 16 and 20 tie into the morning report on Patrick's requirements list.</p>
+</div>
+</body>
+</html>

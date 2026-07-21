@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RetailGuard - Find the margin your shop is losing</title>
+<meta name="description" content="RetailGuard scans your shop data and finds the margin leaks costing you thousands every year.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --canvas:#F5F0E8;
+  --card:#FFFFFF;
+  --border:#1A1A1A;
+  --shadow:#1A1A1A;
+  --accent:#F5A623;
+  --accent-hover:#D4890E;
+  --text:#1A1A1A;
+  --muted:#6B6B6B;
+  --radius:4px;
+}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Inter',sans-serif;
+  background:var(--canvas);
+  color:var(--text);
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4{font-family:'Sora',sans-serif;line-height:1.1;font-weight:800}
+a{color:inherit;text-decoration:none}
+img{max-width:100%;display:block}
+
+/* Utility */
+.container{max-width:1120px;margin:0 auto;padding:0 24px}
+.btn{
+  display:inline-block;
+  font-family:'Sora',sans-serif;
+  font-weight:700;
+  font-size:1rem;
+  padding:16px 32px;
+  background:var(--accent);
+  color:var(--text);
+  border:2px solid var(--border);
+  box-shadow:4px 4px 0 var(--shadow);
+  cursor:pointer;
+  transition:transform .15s,box-shadow .15s;
+  text-align:center;
+}
+.btn:hover,.btn:focus{
+  transform:translate(4px,4px);
+  box-shadow:none;
+  background:var(--accent-hover);
+}
+.btn:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+
+/* Card base */
+.card{
+  background:var(--card);
+  border:2px solid var(--border);
+  box-shadow:4px 4px 0 var(--shadow);
+  padding:32px;
+  transform:rotate(0deg);
+  transition:transform .2s,box-shadow .2s;
+}
+.card--tilt-pos{transform:rotate(1deg)}
+.card--tilt-neg{transform:rotate(-1deg)}
+.card:hover{transform:rotate(0deg) !important}
+
+/* Reveal animation */
+.reveal{opacity:0;transform:translateY(24px);transition:opacity .5s ease,transform .5s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+@media(prefers-reduced-motion:reduce){
+  .reveal{opacity:1;transform:none;transition:none}
+  .card--tilt-pos,.card--tilt-neg{transform:none}
+}
+
+/* ========== NAV ========== */
+nav{
+  padding:20px 0;
+  border-bottom:2px solid var(--border);
+  background:var(--canvas);
+  position:sticky;top:0;z-index:100;
+}
+nav .container{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.nav-logo{font-family:'Sora',sans-serif;font-weight:800;font-size:1.25rem}
+.nav-cta{font-size:.875rem;padding:10px 20px}
+
+/* ========== HERO ========== */
+.hero{padding:80px 0 60px}
+.hero .container{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center}
+.hero h1{font-size:clamp(2.5rem,5vw,5rem);margin-bottom:24px;letter-spacing:-0.02em}
+.hero p{font-size:1.125rem;color:var(--muted);margin-bottom:32px;max-width:480px}
+.hero-visual .card{padding:24px;transform:rotate(2deg)}
+.hero-visual .card:hover{transform:rotate(0deg)}
+
+/* Mini UI vignette: margin table */
+.vignette-table{width:100%;border-collapse:collapse;font-size:.75rem}
+.vignette-table th{text-align:left;padding:6px 8px;border-bottom:2px solid var(--border);font-weight:700;background:var(--canvas)}
+.vignette-table td{padding:6px 8px;border-bottom:1px solid #e0e0e0}
+.vignette-table .leak{color:#c0392b;font-weight:600}
+
+/* ========== PROBLEM ========== */
+.problem{padding:64px 0;border-top:2px solid var(--border)}
+.problem-boxes{display:flex;flex-direction:column;gap:20px;max-width:720px;margin:0 auto}
+.problem-box{
+  border:2px solid var(--border);
+  padding:20px 24px;
+  font-size:1.25rem;
+  font-weight:500;
+  background:var(--card);
+  box-shadow:3px 3px 0 var(--shadow);
+}
+
+/* ========== ZIGZAG DIVIDER ========== */
+.zigzag{
+  height:20px;
+  background:repeating-linear-gradient(
+    135deg,
+    transparent,
+    transparent 8px,
+    var(--border) 8px,
+    var(--border) 9px
+  );
+  opacity:.15;
+  margin:0;
+}
+
+/* ========== FEATURES ========== */
+.features{padding:64px 0}
+.features h2{text-align:center;font-size:clamp(1.75rem,3vw,2.5rem);margin-bottom:48px}
+.features-stack{display:flex;flex-direction:column;gap:32px;max-width:800px;margin:0 auto}
+.feature-card{display:grid;grid-template-columns:64px 1fr;gap:20px;align-items:start}
+.feature-icon{
+  width:56px;height:56px;
+  background:var(--accent);
+  border:2px solid var(--border);
+  border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:3px 3px 0 var(--shadow);
+  flex-shrink:0;
+}
+.feature-icon svg{width:28px;height:28px}
+.feature-card h3{font-size:1.125rem;margin-bottom:6px}
+.feature-card p{color:var(--muted);font-size:.95rem}
+
+/* Feature mini-vignettes */
+.feature-vignette{
+  margin-top:12px;
+  border:2px solid var(--border);
+  background:var(--canvas);
+  padding:12px;
+  font-family:'Sora',monospace;
+  font-size:.7rem;
+  line-height:1.4;
+  box-shadow:2px 2px 0 var(--shadow);
+}
+
+/* ========== PRICING ========== */
+.pricing{padding:64px 0;border-top:2px solid var(--border)}
+.pricing h2{text-align:center;font-size:clamp(1.75rem,3vw,2.5rem);margin-bottom:48px}
+.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.price-card{
+  background:var(--card);
+  border:2px solid var(--border);
+  box-shadow:4px 4px 0 var(--shadow);
+  padding:32px 24px;
+  display:flex;flex-direction:column;
+}
+.price-card.popular{background:var(--accent);position:relative}
+.price-card.popular::before{
+  content:"Most popular";
+  position:absolute;top:-14px;left:50%;transform:translateX(-50%);
+  background:var(--text);color:var(--card);
+  font-family:'Sora',sans-serif;font-size:.75rem;font-weight:700;
+  padding:4px 14px;border:2px solid var(--border);
+}
+.price-card h3{font-size:1.25rem;margin-bottom:8px}
+.price-card .price{font-size:2rem;font-weight:800;font-family:'Sora',sans-serif;margin-bottom:4px}
+.price-card .period{font-size:.85rem;color:var(--muted);margin-bottom:20px}
+.price-card.popular .period{color:var(--text)}
+.price-card ul{list-style:none;flex:1;margin-bottom:24px}
+.price-card li{
+  padding:6px 0;
+  padding-left:24px;
+  position:relative;
+  font-size:.9rem;
+}
+.price-card li::before{
+  content:"";position:absolute;left:0;top:12px;
+  width:14px;height:14px;
+  border:2px solid var(--border);
+  background:var(--canvas);
+}
+.price-card.popular li::before{background:var(--card)}
+.price-card .btn{width:100%;font-size:.9rem;padding:12px 16px}
+
+/* ========== SOCIAL PROOF ========== */
+.proof{padding:48px 0}
+.proof-card{
+  max-width:640px;margin:0 auto;
+  transform:rotate(-1deg);
+}
+.proof-card blockquote{font-size:1.25rem;font-style:italic;margin-bottom:16px;line-height:1.5}
+.proof-card cite{font-size:.9rem;color:var(--muted);font-style:normal}
+
+/* ========== FAQ ========== */
+.faq{padding:64px 0;border-top:2px solid var(--border)}
+.faq h2{text-align:center;font-size:clamp(1.5rem,2.5vw,2rem);margin-bottom:40px}
+.faq-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;max-width:800px;margin:0 auto}
+.faq-item h4{font-size:1rem;margin-bottom:6px}
+.faq-item p{font-size:.9rem;color:var(--muted)}
+
+/* ========== CONTACT ========== */
+.contact{padding:64px 0}
+.contact h2{text-align:center;font-size:clamp(1.5rem,2.5vw,2rem);margin-bottom:32px}
+.contact-card{max-width:480px;margin:0 auto}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-weight:600;font-size:.85rem;margin-bottom:6px}
+.form-group input,.form-group textarea{
+  width:100%;
+  padding:12px 14px;
+  border:2px solid var(--border);
+  background:var(--card);
+  font-family:'Inter',sans-serif;
+  font-size:1rem;
+  transition:box-shadow .15s;
+}
+.form-group input:focus,.form-group textarea:focus{
+  outline:none;
+  box-shadow:3px 3px 0 var(--accent);
+}
+.form-group textarea{resize:vertical;min-height:80px}
+.form-msg{margin-top:12px;padding:12px;font-size:.9rem;display:none;border:2px solid var(--border)}
+.form-msg.success{display:block;background:#d4edda;color:#155724}
+.form-msg.error{display:block;background:#f8d7da;color:#721c24}
+
+/* ========== FOOTER ========== */
+footer{
+  padding:32px 0;
+  border-top:2px solid var(--border);
+  text-align:center;
+  font-size:.85rem;
+  color:var(--muted);
+}
+
+/* ========== RESPONSIVE ========== */
+@media(max-width:768px){
+  .hero .container{grid-template-columns:1fr;text-align:center}
+  .hero p{margin-left:auto;margin-right:auto}
+  .hero-visual{order:-1}
+  .hero-visual .card{transform:rotate(0)}
+  .pricing-grid{grid-template-columns:1fr}
+  .faq-grid{grid-template-columns:1fr}
+  .feature-card{grid-template-columns:1fr}
+  .feature-icon{margin:0 auto}
+  .feature-card{text-align:center}
+}
+@media(max-width:480px){
+  .container{padding:0 16px}
+  .hero{padding:48px 0 40px}
+  .hero h1{font-size:2.25rem}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="container">
+    <div class="nav-logo">RetailGuard</div>
+    <a href="#contact" class="btn nav-cta">Get my free margin scan</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-text">
+      <h1>Find the margin your shop is losing</h1>
+      <p>Typical opportunities identified can amount to thousands of euros per year, depending on store size.</p>
+      <a href="#contact" class="btn">Get my free margin scan</a>
+    </div>
+    <div class="hero-visual">
+      <div class="card" aria-hidden="true">
+        <table class="vignette-table">
+          <thead><tr><th>Product</th><th>Cost</th><th>Price</th><th>Margin</th></tr></thead>
+          <tbody>
+            <tr><td>Fresh Milk 2L</td><td>€1.82</td><td>€1.79</td><td class="leak">-1.7%</td></tr>
+            <tr><td>Sliced Pan 800g</td><td>€1.10</td><td>€1.45</td><td>24.1%</td></tr>
+            <tr><td>Cheddar Block 200g</td><td>€2.35</td><td>€2.29</td><td class="leak">-2.6%</td></tr>
+            <tr><td>Orange Juice 1L</td><td>€1.05</td><td>€1.89</td><td>44.4%</td></tr>
+            <tr><td>Free Range Eggs 6pk</td><td>€1.91</td><td>€1.85</td><td class="leak">-3.1%</td></tr>
+          </tbody>
+        </table>
+        <div style="margin-top:12px;font-size:.7rem;color:var(--muted);text-align:right;">Illustrative example data</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROBLEM -->
+<section class="problem reveal">
+  <div class="container">
+    <div class="problem-boxes">
+      <div class="problem-box">Supplier costs rise, but shelf prices stay the same. The gap grows quietly.</div>
+      <div class="problem-box">Thousands of products, hundreds of invoices. Nobody has time to check every line.</div>
+      <div class="problem-box">RetailGuard scans your data and shows exactly where the leaks are.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ZIGZAG -->
+<div class="zigzag" aria-hidden="true"></div>
+
+<!-- FEATURES -->
+<section class="features">
+  <div class="container">
+    <h2 class="reveal">Everything you need to protect your margins</h2>
+    <div class="features-stack">
+
+      <!-- Invoice Scanner -->
+      <div class="card card--tilt-pos feature-card reveal">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M4 4h16v16H4z"/><path d="M9 8h6M9 12h4"/></svg>
+        </div>
+        <div>
+          <h3>Invoice Scanner</h3>
+          <p>Photograph a supplier invoice. Every line is matched to your stock and flagged if it has changed since your last delivery.</p>
+          <div class="feature-vignette" aria-hidden="true">
+            INVOICE #4821, Murphy's Farm<br>
+            ✓ Fresh Milk 2L . . . . . . €1.82<br>
+            ⚠ Cheddar 200g . . . . . €2.35 <span style="color:#c0392b">+€0.12</span><br>
+            ✓ Eggs 6pk . . . . . . . . . €1.91
+          </div>
+        </div>
+      </div>
+
+      <!-- Ask your shop -->
+      <div class="card card--tilt-neg feature-card reveal">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+        </div>
+        <div>
+          <h3>Ask Your Shop</h3>
+          <p>Type a question in plain English. Get an instant answer drawn from your own sales data, not somebody else's benchmark.</p>
+          <div class="feature-vignette" aria-hidden="true">
+            Q: "What sold most in dairy last week?"<br>
+            A: Fresh Milk 2L. 312 units, €558 revenue
+          </div>
+        </div>
+      </div>
+
+      <!-- Price moves history -->
+      <div class="card card--tilt-pos feature-card reveal">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        </div>
+        <div>
+          <h3>Price Moves History</h3>
+          <p>See every cost and price change over time. Spot patterns: which suppliers creep up quarterly, which products never get repriced.</p>
+          <div class="feature-vignette" aria-hidden="true">
+            Cheddar 200g:<br>
+            Jan €2.10 → Mar €2.18 → Jun €2.35<br>
+            Shelf price unchanged since Nov: €2.29
+          </div>
+        </div>
+      </div>
+
+      <!-- Margin leak finder -->
+      <div class="card card--tilt-neg feature-card reveal">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        </div>
+        <div>
+          <h3>Margin Leak Finder</h3>
+          <p>One list of every product selling below cost or below your target margin. Sorted by weekly loss so you fix the biggest leaks first.</p>
+          <div class="feature-vignette" aria-hidden="true">
+            ▼ Weekly loss ranking:<br>
+            1. Fresh Milk 2L: €19.24/wk below target<br>
+            2. Cheddar 200g: €14.86/wk<br>
+            3. Eggs 6pk: €7.02/wk
+          </div>
+        </div>
+      </div>
+
+      <!-- Morning report -->
+      <div class="card card--tilt-pos feature-card reveal">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <div>
+          <h3>Morning Report</h3>
+          <p>A summary on your desk every morning before you open. Yesterday's margin issues by department, new cost changes, items that need attention today.</p>
+          <div class="feature-vignette" aria-hidden="true">
+            ☀ Morning Report, Tue 15 Jul<br>
+            3 new margin issues (Dairy, Deli)<br>
+            2 supplier cost increases detected<br>
+            Revenue yesterday: €4,218
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="pricing reveal">
+  <div class="container">
+    <h2>Simple, transparent pricing</h2>
+    <div class="pricing-grid">
+
+      <div class="price-card">
+        <h3>Insight</h3>
+        <div class="price">€500</div>
+        <div class="period">per month, net of VAT. No setup fee.</div>
+        <ul>
+          <li>Full margin dashboard</li>
+          <li>Margin leak alerts</li>
+          <li>Drill down by department</li>
+          <li>Barcode lookup</li>
+          <li>Supplier analytics</li>
+        </ul>
+        <a href="#contact" class="btn">Get my free margin scan</a>
+      </div>
+
+      <div class="price-card popular">
+        <h3>Complete</h3>
+        <div class="price">€1,000</div>
+        <div class="period">per month, net of VAT. No setup fee.</div>
+        <ul>
+          <li>Everything in Insight</li>
+          <li>Invoice Scanner</li>
+          <li>Ask Your Shop</li>
+          <li>Trading patterns</li>
+          <li>Product performance</li>
+          <li>Priority support</li>
+        </ul>
+        <a href="#contact" class="btn">Get my free margin scan</a>
+      </div>
+
+      <div class="price-card">
+        <h3>Multi-site</h3>
+        <div class="price">€1,500</div>
+        <div class="period">per month, net of VAT. No setup fee.</div>
+        <ul>
+          <li>Everything in Complete</li>
+          <li>Multiple store locations</li>
+          <li>Morning report</li>
+          <li>Per-site onboarding</li>
+          <li>Dedicated account manager</li>
+        </ul>
+        <a href="#contact" class="btn">Get my free margin scan</a>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- SOCIAL PROOF -->
+<section class="proof reveal">
+  <div class="container">
+    <div class="card proof-card">
+      <blockquote>"We found margin issues we had no idea about. It paid for itself within the first month."</blockquote>
+      <cite>Forecourt owner, Dublin</cite>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="faq reveal">
+  <div class="container">
+    <h2>Common questions</h2>
+    <div class="faq-grid">
+      <div class="faq-item">
+        <h4>How long does setup take?</h4>
+        <p>We connect to your existing point of sale data. Most shops are live within 48 hours with no disruption to daily operations.</p>
+      </div>
+      <div class="faq-item">
+        <h4>Do I need to install anything?</h4>
+        <p>No. RetailGuard runs in your browser. Works on any device you already own.</p>
+      </div>
+      <div class="faq-item">
+        <h4>Is my data safe?</h4>
+        <p>Your data stays on a dedicated, encrypted database. Nobody else can access it, and we never share it.</p>
+      </div>
+      <div class="faq-item">
+        <h4>Can I cancel any time?</h4>
+        <p>Yes. Monthly billing, no lock in, no setup fee. Cancel whenever you want.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section class="contact" id="contact">
+  <div class="container">
+    <h2>Get your free margin scan</h2>
+    <div class="card contact-card">
+      <form id="contact-form" action="https://formsubmit.co/ajax/retailguard.sales@gmail.com" method="POST">
+        <input type="hidden" name="_subject" value="Brutalist Clean Lead">
+        <input type="hidden" name="_captcha" value="false">
+        <div class="form-group">
+          <label for="name">Your name</label>
+          <input type="text" id="name" name="name" required autocomplete="name">
+        </div>
+        <div class="form-group">
+          <label for="email">Email address</label>
+          <input type="email" id="email" name="email" required autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label for="shop">Shop name</label>
+          <input type="text" id="shop" name="shop" required>
+        </div>
+        <div class="form-group">
+          <label for="message">Anything else? (optional)</label>
+          <textarea id="message" name="message" rows="3"></textarea>
+        </div>
+        <button type="submit" class="btn" style="width:100%">Get my free margin scan</button>
+        <div class="form-msg" id="form-success"></div>
+        <div class="form-msg" id="form-error"></div>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <p>&copy; 2026 RetailGuard. All rights reserved.</p>
+  </div>
+</footer>
+
+<script>
+// Scroll reveal
+(function(){
+  if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+    document.querySelectorAll('.reveal').forEach(function(el){el.classList.add('visible')});
+    return;
+  }
+  var observer=new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      if(entry.isIntersecting){
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  },{threshold:0.15,rootMargin:'0px 0px -40px 0px'});
+  document.querySelectorAll('.reveal').forEach(function(el){observer.observe(el)});
+})();
+
+// Form submit
+(function(){
+  var form=document.getElementById('contact-form');
+  var successEl=document.getElementById('form-success');
+  var errorEl=document.getElementById('form-error');
+  form.addEventListener('submit',function(e){
+    e.preventDefault();
+    successEl.className='form-msg';
+    errorEl.className='form-msg';
+    var data=new FormData(form);
+    fetch(form.action,{
+      method:'POST',
+      body:data,
+      headers:{'Accept':'application/json'}
+    }).then(function(res){
+      if(res.ok){
+        successEl.textContent='Thanks! We will be in touch within 24 hours.';
+        successEl.className='form-msg success';
+        form.reset();
+      }else{
+        throw new Error('Server returned '+res.status);
+      }
+    }).catch(function(err){
+      errorEl.textContent='Something went wrong. Please email retailguard.sales@gmail.com directly.';
+      errorEl.className='form-msg error';
+    });
+  });
+})();
+</script>
+</body>
+</html>

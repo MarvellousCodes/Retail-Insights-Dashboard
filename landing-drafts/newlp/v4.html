@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RetailGuard | See Every Margin Leak Before It Costs You</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --warm-dawn:#1a1510;
+  --morning:#fdf6ec;
+  --midday:#f8f4f0;
+  --afternoon:#f0f4f8;
+  --evening:#1e1b2e;
+  --night:#12101a;
+  --accent:#7c5cfc;
+  --accent-light:#a78bfa;
+  --text-dark:#1a1a1a;
+  --text-light:#f5f5f5;
+  --radius:12px;
+}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',sans-serif;line-height:1.6;overflow-x:hidden;background:var(--warm-dawn)}
+
+/* Progress line */
+.progress-track{position:fixed;left:24px;top:50%;transform:translateY(-50%);width:3px;height:60vh;background:rgba(124,92,252,0.15);border-radius:2px;z-index:100;display:none}
+.progress-fill{width:100%;background:var(--accent);border-radius:2px;transition:height .3s ease;height:0}
+@media(min-width:768px){.progress-track{display:block}}
+
+/* Nav dots */
+.nav-dots{position:fixed;right:24px;top:50%;transform:translateY(-50%);z-index:100;display:flex;flex-direction:column;gap:12px}
+.nav-dot{width:10px;height:10px;border-radius:50%;background:rgba(124,92,252,0.3);border:none;cursor:pointer;transition:all .3s}
+.nav-dot.active{background:var(--accent);transform:scale(1.4)}
+@media(max-width:767px){.nav-dots{right:12px;gap:10px}.nav-dot{width:8px;height:8px}}
+
+/* Sections */
+.scene{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:80px 24px;position:relative;transition:opacity .6s ease}
+.scene-inner{max-width:720px;width:100%;opacity:0;transform:translateY(40px);transition:opacity .8s ease,transform .8s ease}
+.scene-inner.visible{opacity:1;transform:translateY(0)}
+
+.scene-time{font-size:.875rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;opacity:.7}
+.scene-headline{font-size:clamp(1.75rem,4vw,2.75rem);font-weight:800;line-height:1.2;margin-bottom:20px}
+.scene-body{font-size:1.05rem;line-height:1.7;margin-bottom:28px}
+
+/* Scene 1: Dawn */
+.scene--dawn{background:linear-gradient(180deg,#1a1510 0%,#2d2318 100%);color:var(--text-light)}
+.scene--dawn .scene-time{color:#f0c674}
+
+/* Scene 2: Morning delivery */
+.scene--morning{background:var(--morning);color:var(--text-dark)}
+.scene--morning .scene-time{color:#d97706}
+
+/* Scene 3: Afternoon ask */
+.scene--afternoon{background:var(--afternoon);color:var(--text-dark)}
+.scene--afternoon .scene-time{color:var(--accent)}
+
+/* Scene 4: Evening rush */
+.scene--evening{background:linear-gradient(180deg,#1e1b2e 0%,#2a2545 100%);color:var(--text-light)}
+.scene--evening .scene-time{color:var(--accent-light)}
+
+/* Scene 5: Closing */
+.scene--closing{background:var(--night);color:var(--text-light)}
+.scene--closing .scene-time{color:#6ee7b7}
+
+/* Scene 6: Imagine */
+.scene--imagine{background:linear-gradient(135deg,#1e1b2e,#2d1f4e);color:var(--text-light)}
+
+/* Scene 7: Pricing */
+.scene--pricing{background:var(--midday);color:var(--text-dark);min-height:auto;padding:80px 24px}
+
+/* Scene 8: Form */
+.scene--form{background:var(--warm-dawn);color:var(--text-light);min-height:auto;padding:80px 24px}
+
+/* Invoice card animation */
+.invoice-card{background:#fff;border-radius:var(--radius);padding:24px;max-width:340px;margin:0 auto;box-shadow:0 8px 32px rgba(0,0,0,.08);position:relative;overflow:hidden}
+.invoice-card::after{content:'';position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(124,92,252,.12),transparent);animation:scanSweep 2.5s ease-in-out infinite}
+@keyframes scanSweep{0%{left:-100%}100%{left:200%}}
+.invoice-line{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f0f0f0;font-size:.85rem;color:#333}
+.invoice-line:last-child{border:none}
+.invoice-flag{color:#ef4444;font-weight:600;font-size:.75rem}
+.invoice-header{font-weight:700;font-size:.9rem;margin-bottom:12px;color:#333}
+.invoice-supplier{font-size:.8rem;color:#666;margin-bottom:16px}
+
+/* Chat bubble */
+.chat-container{max-width:380px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
+.chat-bubble{padding:14px 18px;border-radius:18px;font-size:.9rem;max-width:85%;animation:fadeUp .5s ease forwards;opacity:0}
+.chat-bubble--user{background:var(--accent);color:#fff;align-self:flex-end;border-bottom-right-radius:4px}
+.chat-bubble--bot{background:#fff;color:#333;align-self:flex-start;border-bottom-left-radius:4px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.chat-bubble:nth-child(1){animation-delay:.2s}
+.chat-bubble:nth-child(2){animation-delay:.8s}
+.chat-bubble:nth-child(3){animation-delay:1.4s}
+@keyframes fadeUp{to{opacity:1;transform:translateY(0)}from{opacity:0;transform:translateY(10px)}}
+
+/* Bar chart */
+.bar-chart{display:flex;align-items:flex-end;gap:6px;height:180px;padding:20px 0;justify-content:center}
+.bar{width:28px;border-radius:6px 6px 0 0;transition:height 1.2s cubic-bezier(.4,0,.2,1);background:var(--accent)}
+.bar.animate{height:var(--h)}
+@media(max-width:500px){.bar{width:20px}}
+
+/* Numbers card */
+.numbers-card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:var(--radius);padding:32px;max-width:400px;margin:0 auto}
+.numbers-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+.numbers-row:last-child{border:none}
+.numbers-label{font-size:.85rem;opacity:.7}
+.numbers-value{font-size:1.3rem;font-weight:700;color:var(--accent-light)}
+.counter{font-variant-numeric:tabular-nums}
+
+/* Feature pills */
+.feature-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-top:32px}
+.feature-pill{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:var(--radius);padding:20px;text-align:center}
+.feature-pill h4{font-size:.9rem;font-weight:600;margin-bottom:6px}
+.feature-pill p{font-size:.8rem;opacity:.7;line-height:1.4}
+
+/* Pricing */
+.pricing-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:24px;max-width:960px;margin:40px auto 0}
+.pricing-card{background:#fff;border-radius:var(--radius);padding:32px 24px;border:2px solid transparent;position:relative;text-align:center}
+.pricing-card--popular{border-color:var(--accent);box-shadow:0 8px 32px rgba(124,92,252,.12)}
+.pricing-badge{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;font-size:.7rem;font-weight:700;padding:4px 14px;border-radius:20px;letter-spacing:1px;text-transform:uppercase}
+.pricing-name{font-size:1.1rem;font-weight:700;margin-bottom:8px;color:#333}
+.pricing-price{font-size:2.2rem;font-weight:800;color:var(--text-dark);margin-bottom:4px}
+.pricing-price span{font-size:.9rem;font-weight:400;color:#666}
+.pricing-note{font-size:.75rem;color:#888;margin-bottom:20px}
+.pricing-features{text-align:left;list-style:none;margin-bottom:24px}
+.pricing-features li{font-size:.85rem;padding:6px 0;border-bottom:1px solid #f5f5f5;color:#444}
+.pricing-features li::before{content:'\2713';color:var(--accent);font-weight:700;margin-right:8px}
+.pricing-cta{display:inline-block;width:100%;padding:14px;border-radius:8px;font-weight:600;font-size:.9rem;text-decoration:none;transition:all .2s}
+.pricing-cta--primary{background:var(--accent);color:#fff}
+.pricing-cta--primary:hover{background:#6b4fe0}
+.pricing-cta--secondary{background:#f5f3ff;color:var(--accent)}
+.pricing-cta--secondary:hover{background:#ede9fe}
+
+/* Form */
+.form-container{max-width:520px;margin:0 auto}
+.form-container h2{font-size:clamp(1.5rem,3vw,2rem);font-weight:800;margin-bottom:8px;text-align:center}
+.form-container p{text-align:center;opacity:.7;margin-bottom:32px;font-size:.95rem}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-size:.8rem;font-weight:500;margin-bottom:6px;opacity:.8}
+.form-group input,.form-group textarea{width:100%;padding:12px 16px;border-radius:8px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.06);color:#fff;font-size:.9rem;font-family:inherit;transition:border-color .2s}
+.form-group input:focus,.form-group textarea:focus{outline:none;border-color:var(--accent)}
+.form-group textarea{resize:vertical;min-height:80px}
+.form-submit{width:100%;padding:16px;border:none;border-radius:8px;background:var(--accent);color:#fff;font-size:1rem;font-weight:700;cursor:pointer;transition:background .2s;margin-top:8px}
+.form-submit:hover{background:#6b4fe0}
+.form-success{display:none;text-align:center;padding:40px 20px}
+.form-success h3{font-size:1.3rem;margin-bottom:8px}
+.form-success p{opacity:.7}
+
+/* Footer */
+.footer{text-align:center;padding:40px 24px;background:var(--warm-dawn);color:rgba(255,255,255,.4);font-size:.8rem}
+
+/* Responsive */
+@media(max-width:600px){
+  .scene{padding:60px 20px}
+  .pricing-grid{grid-template-columns:1fr}
+  .feature-grid{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- Progress track -->
+<div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+
+<!-- Nav dots -->
+<nav class="nav-dots" id="navDots"></nav>
+
+<!-- Scene 1: 6:45am Opening -->
+<section class="scene scene--dawn" data-scene="0">
+  <div class="scene-inner">
+    <div class="scene-time">6:45 am</div>
+    <h1 class="scene-headline">You open the shutters. Another day, another thousand products on your shelves.</h1>
+    <p class="scene-body">Each one has a cost, a margin, and a story. Some are making you money. Some have been quietly bleeding margin for weeks. Today, you will know which is which.</p>
+    <p style="opacity:.5;font-size:.85rem;margin-top:24px">Typical opportunities identified can amount to thousands of euros per year, depending on store size.</p>
+  </div>
+</section>
+
+<!-- Scene 2: 9:00am Delivery -->
+<section class="scene scene--morning" data-scene="1">
+  <div class="scene-inner">
+    <div class="scene-time">9:00 am</div>
+    <h2 class="scene-headline">The delivery arrives. You snap the invoice on your phone.</h2>
+    <p class="scene-body">Before the driver is back in the van, every line is checked against what you actually charge. New products flagged. Price rises caught. No spreadsheet. No calculator.</p>
+    <div class="invoice-card">
+      <div class="invoice-header">Murphy's Farm Fresh</div>
+      <div class="invoice-supplier">INV-2847 | 12 lines</div>
+      <div class="invoice-line"><span>Organic Milk 2L</span><span>&#8364;2.10</span></div>
+      <div class="invoice-line"><span>Free Range Eggs 12pk</span><span>&#8364;3.45</span></div>
+      <div class="invoice-line"><span>Sourdough Loaf</span><span style="color:var(--accent);font-weight:600">&#8364;2.80 <span class="invoice-flag">+15%</span></span></div>
+      <div class="invoice-line"><span>Brown Bread 800g</span><span>&#8364;1.60</span></div>
+      <div class="invoice-line"><span>Local Honey 340g</span><span class="invoice-flag">NEW</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- Scene 3: 2:00pm Ask -->
+<section class="scene scene--afternoon" data-scene="2">
+  <div class="scene-inner">
+    <div class="scene-time">2:00 pm</div>
+    <h2 class="scene-headline">A quiet minute. You pull out your phone and ask a question.</h2>
+    <p class="scene-body">Plain English. No reports to run, no menus to navigate. Just ask what you want to know.</p>
+    <div class="chat-container">
+      <div class="chat-bubble chat-bubble--user">Which dairy lines lost margin this month?</div>
+      <div class="chat-bubble chat-bubble--bot">5 dairy products dropped below your 25% target this month. Kerrygold 454g fell to 18% after the June price rise. Full list with weekly units attached.</div>
+      <div class="chat-bubble chat-bubble--user">Show me top sellers with less than 20% margin</div>
+    </div>
+  </div>
+</section>
+
+<!-- Scene 4: 6:00pm Rush -->
+<section class="scene scene--evening" data-scene="3">
+  <div class="scene-inner">
+    <div class="scene-time">6:00 pm</div>
+    <h2 class="scene-headline">The evening rush hits. Your busiest hour, captured automatically.</h2>
+    <p class="scene-body">Sales patterns emerge without you lifting a finger. Which hours matter, which days spike, which products fly off the shelf when the schools close.</p>
+    <div class="bar-chart" id="barChart">
+      <div class="bar" style="--h:35%" data-label="4pm"></div>
+      <div class="bar" style="--h:55%" data-label="5pm"></div>
+      <div class="bar" style="--h:90%" data-label="6pm"></div>
+      <div class="bar" style="--h:100%" data-label="7pm"></div>
+      <div class="bar" style="--h:75%" data-label="8pm"></div>
+      <div class="bar" style="--h:40%" data-label="9pm"></div>
+    </div>
+    <p style="text-align:center;font-size:.8rem;opacity:.5;margin-top:8px">Illustrative evening transaction volume</p>
+  </div>
+</section>
+
+<!-- Scene 5: 9:30pm Closing -->
+<section class="scene scene--closing" data-scene="4">
+  <div class="scene-inner">
+    <div class="scene-time">9:30 pm</div>
+    <h2 class="scene-headline">You lock up. The day's numbers are already waiting.</h2>
+    <p class="scene-body">No end of day report to build. No export to run. Everything is there: what sold, what leaked, what changed.</p>
+    <div class="numbers-card">
+      <div class="numbers-row"><span class="numbers-label">Transactions today</span><span class="numbers-value counter" data-target="847">0</span></div>
+      <div class="numbers-row"><span class="numbers-label">Margin alerts</span><span class="numbers-value counter" data-target="12">0</span></div>
+      <div class="numbers-row"><span class="numbers-label">New supplier prices caught</span><span class="numbers-value counter" data-target="3">0</span></div>
+      <div class="numbers-row"><span class="numbers-label">Average margin</span><span class="numbers-value">26.4%</span></div>
+    </div>
+    <p style="text-align:center;font-size:.75rem;opacity:.4;margin-top:12px">Illustrative figures from a sample shop</p>
+  </div>
+</section>
+
+<!-- Scene 6: Imagine -->
+<section class="scene scene--imagine" data-scene="5">
+  <div class="scene-inner">
+    <div class="scene-time">Every single day</div>
+    <h2 class="scene-headline">Imagine every day like this. No guesswork. No surprises. Just clarity.</h2>
+    <p class="scene-body">RetailGuard connects read-only to your existing system. Nothing changes in how you run your shop. You just see everything clearly for the first time.</p>
+    <div class="feature-grid">
+      <div class="feature-pill"><h4>Margin Leak Finder</h4><p>Spots products selling below your target, ranked by weekly loss</p></div>
+      <div class="feature-pill"><h4>Plain English Questions</h4><p>Ask anything about your shop data in normal words</p></div>
+      <div class="feature-pill"><h4>Invoice Scanner</h4><p>Snap, check, catch price rises before they eat margin</p></div>
+      <div class="feature-pill"><h4>Spreadsheet Builder</h4><p>Get any report as a downloadable spreadsheet, instantly</p></div>
+      <div class="feature-pill"><h4>Sales Patterns</h4><p>See when, what, and how much sells without lifting a finger</p></div>
+      <div class="feature-pill"><h4>Read-only Connection</h4><p>We only look at the numbers. We never change anything in your system.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- Scene 7: Pricing -->
+<section class="scene scene--pricing" data-scene="6">
+  <div class="scene-inner" style="max-width:1000px">
+    <h2 style="text-align:center;font-size:clamp(1.5rem,3vw,2.2rem);font-weight:800;margin-bottom:8px;color:var(--text-dark)">Simple pricing. Cancel anytime.</h2>
+    <p style="text-align:center;color:#666;margin-bottom:8px">Net of VAT. No setup fee.</p>
+    <div class="pricing-grid">
+      <!-- Insight -->
+      <div class="pricing-card">
+        <div class="pricing-name">Insight</div>
+        <div class="pricing-price">&#8364;500<span>/mo</span></div>
+        <div class="pricing-note">For shops that want the full picture</div>
+        <ul class="pricing-features">
+          <li>Margin dashboard with alerts</li>
+          <li>Drill-down by department and supplier</li>
+          <li>Barcode lookup</li>
+          <li>Supplier analytics</li>
+        </ul>
+        <a href="#contact" class="pricing-cta pricing-cta--secondary">Get my free margin scan</a>
+      </div>
+      <!-- Complete -->
+      <div class="pricing-card pricing-card--popular">
+        <div class="pricing-badge">Most popular</div>
+        <div class="pricing-name">Complete</div>
+        <div class="pricing-price">&#8364;1,000<span>/mo</span></div>
+        <div class="pricing-note">Full toolkit for serious operators</div>
+        <ul class="pricing-features">
+          <li>Everything in Insight</li>
+          <li>Invoice Scanner</li>
+          <li>Plain English questions</li>
+          <li>Trading patterns</li>
+          <li>Product performance</li>
+          <li>Priority support</li>
+        </ul>
+        <a href="#contact" class="pricing-cta pricing-cta--primary">Get my free margin scan</a>
+      </div>
+      <!-- Multi-site -->
+      <div class="pricing-card">
+        <div class="pricing-name">Multi-site</div>
+        <div class="pricing-price">&#8364;1,500<span>/mo</span></div>
+        <div class="pricing-note">For groups running multiple locations</div>
+        <ul class="pricing-features">
+          <li>Everything in Complete</li>
+          <li>Write-back (rolling out)</li>
+          <li>Morning report</li>
+          <li>Per-site onboarding</li>
+        </ul>
+        <a href="#contact" class="pricing-cta pricing-cta--secondary">Get my free margin scan</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Scene 8: Contact Form -->
+<section class="scene scene--form" data-scene="7" id="contact">
+  <div class="scene-inner">
+    <div class="form-container">
+      <h2>Get my free margin scan</h2>
+      <p>We will look at your numbers and show you where margin is leaking. No charge, no obligation.</p>
+      <form id="contactForm">
+        <div class="form-group">
+          <label for="name">Your name</label>
+          <input type="text" id="name" name="name" required>
+        </div>
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" required>
+        </div>
+        <div class="form-group">
+          <label for="phone">Phone (optional)</label>
+          <input type="tel" id="phone" name="phone">
+        </div>
+        <div class="form-group">
+          <label for="shop">Shop name and location</label>
+          <input type="text" id="shop" name="shop">
+        </div>
+        <div class="form-group">
+          <label for="message">Anything else?</label>
+          <textarea id="message" name="message" rows="3"></textarea>
+        </div>
+        <input type="hidden" name="_subject" value="RetailGuard lead (new-lp v4)">
+        <input type="hidden" name="_template" value="table">
+        <button type="submit" class="form-submit">Get my free margin scan</button>
+      </form>
+      <div class="form-success" id="formSuccess">
+        <h3>Thanks! We will be in touch soon.</h3>
+        <p>We will look at your data and come back with a margin report within 48 hours.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+  <p>RetailGuard | Margin analytics for Irish convenience shops and forecourts</p>
+  <p style="margin-top:8px">Read-only. We never change your data.</p>
+</footer>
+
+<script>
+(function(){
+  // Scenes and nav dots
+  const scenes = document.querySelectorAll('.scene');
+  const navDotsContainer = document.getElementById('navDots');
+  const progressFill = document.getElementById('progressFill');
+
+  scenes.forEach((_, i) => {
+    const dot = document.createElement('button');
+    dot.className = 'nav-dot';
+    dot.setAttribute('aria-label', 'Go to section ' + (i + 1));
+    dot.addEventListener('click', () => {
+      scenes[i].scrollIntoView({ behavior: 'smooth' });
+    });
+    navDotsContainer.appendChild(dot);
+  });
+
+  const dots = document.querySelectorAll('.nav-dot');
+
+  // IntersectionObserver for reveals
+  const revealObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const inner = entry.target.querySelector('.scene-inner');
+        if (inner) inner.classList.add('visible');
+
+        // Trigger bar chart animation
+        if (entry.target.querySelector('.bar-chart')) {
+          entry.target.querySelectorAll('.bar').forEach(bar => {
+            bar.classList.add('animate');
+          });
+        }
+
+        // Trigger counters
+        entry.target.querySelectorAll('.counter').forEach(el => {
+          animateCounter(el);
+        });
+
+        // Update active dot
+        const idx = parseInt(entry.target.dataset.scene);
+        dots.forEach((d, i) => d.classList.toggle('active', i === idx));
+      }
+    });
+  }, { threshold: 0.3 });
+
+  scenes.forEach(s => revealObserver.observe(s));
+
+  // Progress bar on scroll
+  window.addEventListener('scroll', () => {
+    const scrollTop = window.scrollY;
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const pct = Math.min((scrollTop / docHeight) * 100, 100);
+    progressFill.style.height = pct + '%';
+  });
+
+  // Counter animation
+  function animateCounter(el) {
+    if (el.dataset.animated) return;
+    el.dataset.animated = '1';
+    const target = parseInt(el.dataset.target);
+    if (isNaN(target)) return;
+    const duration = 1500;
+    const start = performance.now();
+    function tick(now) {
+      const elapsed = now - start;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      el.textContent = Math.round(eased * target);
+      if (progress < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  }
+
+  // Form submit
+  const form = document.getElementById('contactForm');
+  const success = document.getElementById('formSuccess');
+  form.addEventListener('submit', function(e) {
+    e.preventDefault();
+    const data = new FormData(form);
+    fetch('https://formsubmit.co/ajax/retailguard.sales@gmail.com', {
+      method: 'POST',
+      body: data,
+      headers: { 'Accept': 'application/json' }
+    }).then(r => {
+      if (r.ok) {
+        form.style.display = 'none';
+        success.style.display = 'block';
+      } else {
+        alert('Something went wrong. Please try again or email us directly.');
+      }
+    }).catch(() => {
+      alert('Something went wrong. Please try again or email us directly.');
+    });
+  });
+})();
+</script>
+</body>
+</html>

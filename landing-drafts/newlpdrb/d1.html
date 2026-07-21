@@ -1,0 +1,1220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RetailGuard | Find the margin leaks hiding in your shop</title>
+  <meta name="description" content="RetailGuard scans your shop data and surfaces the products costing you money. Get your free margin scan today.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0A0A0F;
+      --card: #141420;
+      --border: #2A2A3C;
+      --accent: #7C5CFC;
+      --accent-glow: #7C5CFC33;
+      --green: #34D399;
+      --body-text: #B8B8CC;
+      --heading-text: #F0F0F8;
+      --font-display: 'Space Grotesk', sans-serif;
+      --font-body: 'Inter', sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--bg);
+      color: var(--body-text);
+      line-height: 1.6;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    h1, h2, h3, h4 {
+      font-family: var(--font-display);
+      color: var(--heading-text);
+      line-height: 1.1;
+    }
+
+    a { color: var(--accent); text-decoration: none; }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* ========== NAV ========== */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      background: rgba(10, 10, 15, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 0;
+    }
+
+    nav .container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .nav-logo {
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 1.25rem;
+      color: var(--heading-text);
+    }
+
+    .nav-links { display: flex; gap: 32px; align-items: center; }
+
+    .nav-links a {
+      color: var(--body-text);
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover { color: var(--heading-text); }
+
+    .nav-cta {
+      background: var(--accent);
+      color: #fff !important;
+      padding: 8px 20px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.875rem;
+      transition: box-shadow 0.3s, transform 0.2s;
+    }
+
+    .nav-cta:hover {
+      box-shadow: 0 0 24px var(--accent-glow);
+      transform: translateY(-1px);
+    }
+
+    /* ========== HERO ========== */
+    .hero {
+      padding: 160px 0 100px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-aura {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -60%);
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(124, 92, 252, 0.15) 0%, transparent 70%);
+      border-radius: 50%;
+      pointer-events: none;
+      animation: pulse-aura 4s ease-in-out infinite;
+    }
+
+    @keyframes pulse-aura {
+      0%, 100% { opacity: 1; transform: translate(-50%, -60%) scale(1); }
+      50% { opacity: 0.7; transform: translate(-50%, -60%) scale(1.05); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .hero-aura { animation: none; }
+      .bento-card { animation: none !important; }
+      .reveal { opacity: 1 !important; transform: none !important; transition: none !important; }
+    }
+
+    .hero h1 {
+      font-size: clamp(2.5rem, 6vw, 4.5rem);
+      font-weight: 800;
+      margin-bottom: 20px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero .subtitle {
+      font-size: clamp(1rem, 2vw, 1.25rem);
+      color: var(--body-text);
+      max-width: 560px;
+      margin: 0 auto 40px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .btn-primary {
+      display: inline-block;
+      background: var(--accent);
+      color: #fff;
+      font-family: var(--font-body);
+      font-weight: 600;
+      font-size: 1.05rem;
+      padding: 16px 36px;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      transition: box-shadow 0.3s, transform 0.2s;
+      position: relative;
+      z-index: 1;
+    }
+
+    .btn-primary:hover {
+      box-shadow: 0 0 40px var(--accent-glow), 0 8px 32px rgba(124, 92, 252, 0.3);
+      transform: translateY(-2px);
+    }
+
+    /* Bento preview */
+    .hero-bento {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      max-width: 900px;
+      margin: 64px auto 0;
+      perspective: 1200px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .bento-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.3s, border-color 0.3s;
+    }
+
+    .bento-card:nth-child(1) { transform: rotateY(2deg) rotateX(1deg); }
+    .bento-card:nth-child(2) { transform: rotateY(0deg) rotateX(-1deg); }
+    .bento-card:nth-child(3) { transform: rotateY(-2deg) rotateX(1deg); }
+
+    .bento-card:hover {
+      border-color: var(--accent);
+      transform: rotateY(0deg) rotateX(0deg) translateY(-4px);
+    }
+
+    .bento-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 16px;
+      padding: 1px;
+      background: conic-gradient(from 180deg, var(--accent), transparent 60%);
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      opacity: 0;
+      transition: opacity 0.4s;
+    }
+
+    .bento-card:hover::before { opacity: 1; }
+
+    .bento-label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--accent);
+      margin-bottom: 12px;
+      font-weight: 600;
+    }
+
+    .bento-value {
+      font-family: var(--font-display);
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--heading-text);
+      margin-bottom: 8px;
+    }
+
+    .bento-bar {
+      height: 4px;
+      border-radius: 2px;
+      background: var(--border);
+      margin-top: 8px;
+    }
+
+    .bento-bar-fill {
+      height: 100%;
+      border-radius: 2px;
+      background: var(--green);
+    }
+
+    /* Receipt torn edge on card 3 */
+    .bento-card.receipt-mask {
+      clip-path: polygon(0% 0%, 100% 0%, 100% 92%, 98% 94%, 96% 92%, 94% 94%, 92% 92%, 90% 94%, 88% 92%, 86% 94%, 84% 92%, 82% 94%, 80% 92%, 78% 94%, 76% 92%, 74% 94%, 72% 92%, 70% 94%, 68% 92%, 66% 94%, 64% 92%, 62% 94%, 60% 92%, 58% 94%, 56% 92%, 54% 94%, 52% 92%, 50% 94%, 48% 92%, 46% 94%, 44% 92%, 42% 94%, 40% 92%, 38% 94%, 36% 92%, 34% 94%, 32% 92%, 30% 94%, 28% 92%, 26% 94%, 24% 92%, 22% 94%, 20% 92%, 18% 94%, 16% 92%, 14% 94%, 12% 92%, 10% 94%, 8% 92%, 6% 94%, 4% 92%, 2% 94%, 0% 92%);
+    }
+
+    /* ========== SOCIAL PROOF ========== */
+    .proof-strip {
+      padding: 80px 0;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .proof-logos {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 48px;
+      margin-bottom: 48px;
+      flex-wrap: wrap;
+      opacity: 0.4;
+    }
+
+    .proof-logos span {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: var(--heading-text);
+      letter-spacing: 0.02em;
+    }
+
+    .proof-quote {
+      max-width: 640px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .proof-quote blockquote {
+      font-size: 1.15rem;
+      font-style: italic;
+      color: var(--heading-text);
+      margin-bottom: 16px;
+      line-height: 1.7;
+    }
+
+    .proof-quote cite {
+      font-style: normal;
+      font-size: 0.875rem;
+      color: var(--body-text);
+    }
+
+    /* ========== FEATURES BENTO ========== */
+    .features {
+      padding: 120px 0;
+    }
+
+    .features h2 {
+      text-align: center;
+      font-size: clamp(2rem, 4vw, 3rem);
+      margin-bottom: 16px;
+    }
+
+    .features .section-sub {
+      text-align: center;
+      max-width: 480px;
+      margin: 0 auto 64px;
+      color: var(--body-text);
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: auto auto;
+      gap: 16px;
+    }
+
+    .feature-cell {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.3s, transform 0.3s;
+    }
+
+    .feature-cell:hover {
+      border-color: var(--accent);
+      transform: translateY(-4px);
+    }
+
+    .feature-cell::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 16px;
+      padding: 1px;
+      background: conic-gradient(from 90deg, var(--accent), transparent 50%);
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      opacity: 0;
+      transition: opacity 0.4s;
+    }
+
+    .feature-cell:hover::before { opacity: 1; }
+
+    .feature-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: rgba(124, 92, 252, 0.12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+
+    .feature-icon svg { width: 20px; height: 20px; stroke: var(--accent); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+    .feature-cell h3 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .feature-cell p {
+      font-size: 0.9rem;
+      line-height: 1.5;
+      color: var(--body-text);
+      margin-bottom: 20px;
+    }
+
+    /* Mini UI vignettes */
+    .vignette {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+      font-size: 0.7rem;
+    }
+
+    .vignette-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 4px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .vignette-row:last-child { border-bottom: none; }
+
+    .vignette-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 6px;
+    }
+
+    .vignette-dot.red { background: #EF4444; }
+    .vignette-dot.green { background: var(--green); }
+    .vignette-dot.amber { background: #F59E0B; }
+
+    .vignette-bar {
+      width: 40px;
+      height: 3px;
+      background: var(--border);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .vignette-bar span {
+      display: block;
+      height: 100%;
+      border-radius: 2px;
+    }
+
+    .vignette-chat {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .vignette-bubble {
+      padding: 6px 10px;
+      border-radius: 10px;
+      font-size: 0.65rem;
+      max-width: 85%;
+    }
+
+    .vignette-bubble.user {
+      background: var(--accent);
+      color: #fff;
+      align-self: flex-end;
+      border-bottom-right-radius: 4px;
+    }
+
+    .vignette-bubble.bot {
+      background: var(--border);
+      color: var(--heading-text);
+      align-self: flex-start;
+      border-bottom-left-radius: 4px;
+    }
+
+    .vignette-scanner {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .vignette-barcode {
+      display: flex;
+      gap: 1px;
+      align-items: flex-end;
+    }
+
+    .vignette-barcode span {
+      width: 2px;
+      background: var(--accent);
+      border-radius: 1px;
+    }
+
+    .vignette-lines {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      flex: 1;
+    }
+
+    .vignette-line {
+      height: 3px;
+      border-radius: 2px;
+      background: var(--border);
+    }
+
+    .vignette-chart {
+      display: flex;
+      align-items: flex-end;
+      gap: 3px;
+      height: 32px;
+    }
+
+    .vignette-chart span {
+      width: 8px;
+      background: var(--accent);
+      border-radius: 2px 2px 0 0;
+      opacity: 0.6;
+    }
+
+    .vignette-chart span:nth-child(even) { opacity: 1; }
+
+    .vignette-report {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .vignette-report-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .vignette-report-icon {
+      width: 10px;
+      height: 10px;
+      border-radius: 3px;
+      background: var(--accent);
+      opacity: 0.5;
+    }
+
+    .vignette-report-text {
+      flex: 1;
+      height: 3px;
+      border-radius: 2px;
+      background: var(--border);
+    }
+
+    /* ========== PRICING ========== */
+    .pricing {
+      padding: 120px 0;
+      border-top: 1px solid var(--border);
+    }
+
+    .pricing h2 {
+      text-align: center;
+      font-size: clamp(2rem, 4vw, 3rem);
+      margin-bottom: 16px;
+    }
+
+    .pricing .section-sub {
+      text-align: center;
+      max-width: 480px;
+      margin: 0 auto 64px;
+    }
+
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    .price-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 36px 28px;
+      position: relative;
+      transition: border-color 0.3s, transform 0.3s;
+    }
+
+    .price-card:hover {
+      transform: translateY(-4px);
+    }
+
+    .price-card.popular {
+      border-color: var(--accent);
+      box-shadow: 0 0 40px var(--accent-glow);
+    }
+
+    .price-badge {
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--accent);
+      color: #fff;
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 4px 14px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .price-card h3 {
+      font-size: 1.1rem;
+      margin-bottom: 8px;
+    }
+
+    .price-amount {
+      font-family: var(--font-display);
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: var(--heading-text);
+      margin-bottom: 4px;
+    }
+
+    .price-period {
+      font-size: 0.8rem;
+      color: var(--body-text);
+      margin-bottom: 24px;
+    }
+
+    .price-features {
+      list-style: none;
+      margin-bottom: 32px;
+    }
+
+    .price-features li {
+      padding: 8px 0;
+      font-size: 0.875rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .price-features li:last-child { border-bottom: none; }
+
+    .price-features li::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--green);
+      flex-shrink: 0;
+    }
+
+    .price-card .btn-primary {
+      width: 100%;
+      text-align: center;
+      font-size: 0.9rem;
+      padding: 14px;
+    }
+
+    .price-note {
+      text-align: center;
+      margin-top: 24px;
+      font-size: 0.8rem;
+      color: var(--body-text);
+    }
+
+    /* ========== FAQ ========== */
+    .faq {
+      padding: 120px 0;
+      border-top: 1px solid var(--border);
+    }
+
+    .faq h2 {
+      text-align: center;
+      font-size: clamp(1.75rem, 3vw, 2.5rem);
+      margin-bottom: 56px;
+    }
+
+    .faq-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .faq-item {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+    }
+
+    .faq-item h4 {
+      font-size: 0.95rem;
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+
+    .faq-item p {
+      font-size: 0.85rem;
+      line-height: 1.5;
+    }
+
+    /* ========== CONTACT ========== */
+    .contact {
+      padding: 120px 0;
+      border-top: 1px solid var(--border);
+    }
+
+    .contact-card {
+      max-width: 520px;
+      margin: 0 auto;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 48px 40px;
+      text-align: center;
+    }
+
+    .contact-card h2 {
+      font-size: 1.75rem;
+      margin-bottom: 8px;
+    }
+
+    .contact-card .section-sub {
+      margin-bottom: 32px;
+      font-size: 0.9rem;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+      text-align: left;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 500;
+      margin-bottom: 6px;
+      color: var(--body-text);
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 12px 16px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--heading-text);
+      font-family: var(--font-body);
+      font-size: 0.9rem;
+      transition: border-color 0.2s;
+    }
+
+    .form-group input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .form-group input::placeholder { color: #555; }
+
+    .contact-card .btn-primary {
+      width: 100%;
+      margin-top: 8px;
+    }
+
+    .form-status {
+      margin-top: 16px;
+      font-size: 0.85rem;
+      min-height: 24px;
+    }
+
+    .form-status.success { color: var(--green); }
+    .form-status.error { color: #EF4444; }
+
+    /* ========== FOOTER ========== */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 40px 0;
+      text-align: center;
+      font-size: 0.8rem;
+      color: var(--body-text);
+    }
+
+    /* ========== SCROLL REVEAL ========== */
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ========== RESPONSIVE ========== */
+    @media (max-width: 768px) {
+      .nav-links a:not(.nav-cta) { display: none; }
+
+      .hero-bento {
+        grid-template-columns: 1fr;
+        max-width: 400px;
+      }
+
+      .bento-card:nth-child(1),
+      .bento-card:nth-child(2),
+      .bento-card:nth-child(3) { transform: none; }
+
+      .features-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .pricing-grid {
+        grid-template-columns: 1fr;
+        max-width: 400px;
+        margin: 0 auto;
+      }
+
+      .faq-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .proof-logos { gap: 24px; }
+
+      .contact-card { padding: 32px 24px; }
+    }
+
+    @media (max-width: 480px) {
+      .hero h1 { font-size: 2.2rem; }
+      .container { padding: 0 16px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <div class="container">
+      <div class="nav-logo">RetailGuard</div>
+      <div class="nav-links">
+        <a href="#features">Features</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#faq">Questions</a>
+        <a href="#contact" class="nav-cta">Get my free margin scan</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-aura"></div>
+    <div class="container">
+      <h1>Find the margin leaks<br>hiding in your shop</h1>
+      <p class="subtitle">RetailGuard scans your shop data and tells you exactly which products are costing you money, every single day.</p>
+      <a href="#contact" class="btn-primary">Get my free margin scan</a>
+
+      <div class="hero-bento">
+        <!-- Card 1: Margin table -->
+        <div class="bento-card">
+          <div class="bento-label">Margin Leaks</div>
+          <div class="bento-value">23 found</div>
+          <div class="bento-bar"><div class="bento-bar-fill" style="width: 68%"></div></div>
+          <div style="margin-top: 8px; font-size: 0.7rem; color: var(--green);">6 departments affected</div>
+        </div>
+        <!-- Card 2: Chat bubble -->
+        <div class="bento-card">
+          <div class="bento-label">Ask Your Shop</div>
+          <div class="vignette-chat" style="margin-top: 4px;">
+            <div class="vignette-bubble user">Top 5 sellers last week?</div>
+            <div class="vignette-bubble bot">1. Milk 2L 2. White bread...</div>
+          </div>
+        </div>
+        <!-- Card 3: Invoice scan (receipt mask) -->
+        <div class="bento-card receipt-mask">
+          <div class="bento-label">Invoice Scanner</div>
+          <div class="vignette-scanner">
+            <div class="vignette-barcode">
+              <span style="height: 14px;"></span>
+              <span style="height: 18px;"></span>
+              <span style="height: 10px;"></span>
+              <span style="height: 18px;"></span>
+              <span style="height: 12px;"></span>
+              <span style="height: 16px;"></span>
+              <span style="height: 14px;"></span>
+            </div>
+            <div class="vignette-lines">
+              <div class="vignette-line" style="width: 80%;"></div>
+              <div class="vignette-line" style="width: 60%;"></div>
+              <div class="vignette-line" style="width: 90%;"></div>
+            </div>
+          </div>
+          <div style="margin-top: 10px; font-size: 0.65rem; color: var(--green);">3 new products detected</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SOCIAL PROOF -->
+  <section class="proof-strip reveal">
+    <div class="container">
+      <div class="proof-logos">
+        <span>Centra</span>
+        <span>Spar</span>
+        <span>Londis</span>
+        <span>Mace</span>
+        <span>XL</span>
+      </div>
+      <div class="proof-quote">
+        <blockquote>"We had no idea how many products were actually selling below cost until the scan ran. It paid for itself in the first week."</blockquote>
+        <cite>Forecourt owner, Dublin</cite>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="features" id="features">
+    <div class="container">
+      <h2 class="reveal">Everything you need to protect your margins</h2>
+      <p class="section-sub reveal">Five tools that work together to show you where money goes and how to keep more of it.</p>
+
+      <div class="features-grid">
+        <!-- 1. Invoice Scanner -->
+        <div class="feature-cell reveal">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="M9 9h6M9 12h4M9 15h5"/></svg>
+          </div>
+          <h3>Invoice Scanner</h3>
+          <p>Snap a photo of any supplier invoice. It reads the lines, matches to your stock, and flags anything new or mispriced.</p>
+          <div class="vignette">
+            <div class="vignette-row">
+              <span><span class="vignette-dot green"></span>Milk 2L</span>
+              <span style="color: var(--green);">Matched</span>
+            </div>
+            <div class="vignette-row">
+              <span><span class="vignette-dot amber"></span>Oat Bars 6pk</span>
+              <span style="color: #F59E0B;">New</span>
+            </div>
+            <div class="vignette-row">
+              <span><span class="vignette-dot red"></span>Fresh Rolls</span>
+              <span style="color: #EF4444;">Review</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Ask Your Shop -->
+        <div class="feature-cell reveal">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          </div>
+          <h3>Ask Your Shop</h3>
+          <p>Type any question about your business in plain English. Get instant answers drawn straight from your own sales data.</p>
+          <div class="vignette">
+            <div class="vignette-chat">
+              <div class="vignette-bubble user">Best margin dept?</div>
+              <div class="vignette-bubble bot">Confectionery: 34.2% avg</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Price Moves History -->
+        <div class="feature-cell reveal">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          </div>
+          <h3>Price Moves History</h3>
+          <p>See every price change across your entire range, when it happened, and whether it helped or hurt your margin.</p>
+          <div class="vignette">
+            <div class="vignette-chart">
+              <span style="height: 40%;"></span>
+              <span style="height: 55%;"></span>
+              <span style="height: 45%;"></span>
+              <span style="height: 70%;"></span>
+              <span style="height: 60%;"></span>
+              <span style="height: 85%;"></span>
+              <span style="height: 75%;"></span>
+              <span style="height: 90%;"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. Margin Leak Finder -->
+        <div class="feature-cell reveal">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          </div>
+          <h3>Margin Leak Finder</h3>
+          <p>Automatically surfaces every product selling below your target margin. Sorted by how much each one costs you per week.</p>
+          <div class="vignette">
+            <div class="vignette-row">
+              <span style="color: var(--heading-text);">Fresh Cream 1L</span>
+              <span style="color: #EF4444;">-4.2%</span>
+            </div>
+            <div class="vignette-row">
+              <span style="color: var(--heading-text);">Sliced Pan 800g</span>
+              <span style="color: #EF4444;">-1.8%</span>
+            </div>
+            <div class="vignette-row">
+              <span style="color: var(--heading-text);">Butter 500g</span>
+              <span style="color: #F59E0B;">+0.3%</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. Morning Report -->
+        <div class="feature-cell reveal">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          </div>
+          <h3>Morning Report</h3>
+          <p>On your desk every morning before you open. Yesterday's sales, margin alerts by department, and anything that needs your attention.</p>
+          <div class="vignette">
+            <div class="vignette-report">
+              <div class="vignette-report-row">
+                <div class="vignette-report-icon"></div>
+                <div class="vignette-report-text" style="width: 75%;"></div>
+                <span style="font-size: 0.6rem; color: var(--green);">+3.1%</span>
+              </div>
+              <div class="vignette-report-row">
+                <div class="vignette-report-icon" style="background: #EF4444;"></div>
+                <div class="vignette-report-text" style="width: 60%;"></div>
+                <span style="font-size: 0.6rem; color: #EF4444;">2 alerts</span>
+              </div>
+              <div class="vignette-report-row">
+                <div class="vignette-report-icon" style="background: var(--green);"></div>
+                <div class="vignette-report-text" style="width: 85%;"></div>
+                <span style="font-size: 0.6rem; color: var(--body-text);">OK</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 6. Recovery claim card -->
+        <div class="feature-cell reveal" style="display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
+          <div style="font-size: 2.5rem; font-family: var(--font-display); font-weight: 800; color: var(--heading-text); margin-bottom: 12px;">Thousands recovered</div>
+          <p style="max-width: 260px;">Typical opportunities identified can amount to thousands of euros per year, depending on store size.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section class="pricing" id="pricing">
+    <div class="container">
+      <h2 class="reveal">Simple, honest pricing</h2>
+      <p class="section-sub reveal">No setup fees. No contracts. Cancel any time.</p>
+
+      <div class="pricing-grid">
+        <!-- Insight -->
+        <div class="price-card reveal">
+          <h3>Insight</h3>
+          <div class="price-amount">&euro;500</div>
+          <div class="price-period">per month, net of VAT</div>
+          <ul class="price-features">
+            <li>Live margin dashboard</li>
+            <li>Department drill-down</li>
+            <li>Barcode product lookup</li>
+            <li>Supplier analytics</li>
+            <li>Margin leak alerts</li>
+          </ul>
+          <a href="#contact" class="btn-primary">Get my free margin scan</a>
+        </div>
+
+        <!-- Complete -->
+        <div class="price-card popular reveal">
+          <div class="price-badge">Most popular</div>
+          <h3>Complete</h3>
+          <div class="price-amount">&euro;1,000</div>
+          <div class="price-period">per month, net of VAT</div>
+          <ul class="price-features">
+            <li>Everything in Insight</li>
+            <li>Invoice Scanner</li>
+            <li>Ask Your Shop</li>
+            <li>Price moves history</li>
+            <li>Trading pattern analysis</li>
+            <li>Product performance</li>
+            <li>Priority support</li>
+          </ul>
+          <a href="#contact" class="btn-primary">Get my free margin scan</a>
+        </div>
+
+        <!-- Multi-site -->
+        <div class="price-card reveal">
+          <h3>Multi-site</h3>
+          <div class="price-amount">&euro;1,500</div>
+          <div class="price-period">per month, net of VAT</div>
+          <ul class="price-features">
+            <li>Everything in Complete</li>
+            <li>Multiple store locations</li>
+            <li>Morning report per site</li>
+            <li>Per-site onboarding</li>
+            <li>Write-back (rolling out)</li>
+            <li>Dedicated account manager</li>
+          </ul>
+          <a href="#contact" class="btn-primary">Get my free margin scan</a>
+        </div>
+      </div>
+
+      <p class="price-note">No setup fee. All prices net of VAT.</p>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="faq" id="faq">
+    <div class="container">
+      <h2 class="reveal">Common questions</h2>
+      <div class="faq-grid">
+        <div class="faq-item reveal">
+          <h4>What data do you need from me?</h4>
+          <p>Just a daily export from your till system. We handle the rest. No manual entry, no spreadsheets.</p>
+        </div>
+        <div class="faq-item reveal">
+          <h4>How long does setup take?</h4>
+          <p>Most shops are scanning within a day. We connect to your existing system, no new hardware required.</p>
+        </div>
+        <div class="faq-item reveal">
+          <h4>Will this change anything in my till?</h4>
+          <p>RetailGuard is read-only by default. It looks at your data but never changes anything without your explicit approval.</p>
+        </div>
+        <div class="faq-item reveal">
+          <h4>What if I have multiple locations?</h4>
+          <p>The Multi-site plan covers all your shops under one account with separate reporting per location.</p>
+        </div>
+        <div class="faq-item reveal">
+          <h4>Is my data safe?</h4>
+          <p>Your data stays on a private, encrypted server. We never share it with anyone, ever.</p>
+        </div>
+        <div class="faq-item reveal">
+          <h4>Can I cancel at any time?</h4>
+          <p>Yes. Monthly billing, no contracts, no penalty. Pause or cancel whenever you like.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT FORM -->
+  <section class="contact" id="contact">
+    <div class="container">
+      <div class="contact-card reveal">
+        <h2>Get my free margin scan</h2>
+        <p class="section-sub">Tell us your shop name and we will run a free scan of your data. No commitment, no card required.</p>
+        <form id="contact-form" action="https://formsubmit.co/ajax/retailguard.sales@gmail.com" method="POST">
+          <input type="hidden" name="_subject" value="Midnight Bento Lead">
+          <input type="hidden" name="_captcha" value="false">
+          <input type="text" name="_honey" style="display:none">
+          <div class="form-group">
+            <label for="name">Your name</label>
+            <input type="text" id="name" name="name" placeholder="Patrick" required>
+          </div>
+          <div class="form-group">
+            <label for="email">Email address</label>
+            <input type="email" id="email" name="email" placeholder="you@yourshop.ie" required>
+          </div>
+          <div class="form-group">
+            <label for="shop">Shop name</label>
+            <input type="text" id="shop" name="shop" placeholder="Murphy's Centra, Swords" required>
+          </div>
+          <button type="submit" class="btn-primary">Get my free margin scan</button>
+          <div class="form-status" id="form-status" aria-live="polite"></div>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="container">
+      <p>&copy; 2026 RetailGuard. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script>
+    // Scroll reveal with IntersectionObserver (respects prefers-reduced-motion)
+    (function() {
+      var prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var reveals = document.querySelectorAll('.reveal');
+
+      if (prefersReduced) {
+        reveals.forEach(function(el) { el.classList.add('visible'); });
+        return;
+      }
+
+      var observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+      reveals.forEach(function(el, i) {
+        el.style.transitionDelay = (i % 3) * 80 + 'ms';
+        observer.observe(el);
+      });
+    })();
+
+    // Form submission with FormSubmit AJAX
+    (function() {
+      var form = document.getElementById('contact-form');
+      var status = document.getElementById('form-status');
+
+      form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        status.textContent = '';
+        status.className = 'form-status';
+
+        var data = new FormData(form);
+        var btn = form.querySelector('button[type="submit"]');
+        btn.disabled = true;
+        btn.textContent = 'Sending...';
+
+        fetch(form.action, {
+          method: 'POST',
+          body: data,
+          headers: { 'Accept': 'application/json' }
+        })
+        .then(function(response) {
+          if (response.ok) {
+            status.textContent = 'Thanks! We will be in touch within 24 hours.';
+            status.className = 'form-status success';
+            form.reset();
+          } else {
+            throw new Error('Form submission failed');
+          }
+        })
+        .catch(function() {
+          status.textContent = 'Something went wrong. Please email retailguard.sales@gmail.com directly.';
+          status.className = 'form-status error';
+        })
+        .finally(function() {
+          btn.disabled = false;
+          btn.textContent = 'Get my free margin scan';
+        });
+      });
+    })();
+  </script>
+
+</body>
+</html>

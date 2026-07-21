@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RetailGuard | Find the Margin Leaks Hiding in Your Shelves</title>
+<meta name="description" content="Dive through your product range and spot the items costing you margin every week. Free scan, no commitment. RetailGuard helps independent retailers recover thousands in lost margin each year.">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a10;--text:#e8e6f0;--muted:#8a87a0;--accent:#7c5cfc;
+  --card:rgba(18,17,28,0.92);--border:rgba(124,92,252,0.18);
+  --red:#ff3355;--green:#22dd77;--gold:#ffd666;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,-apple-system,sans-serif;line-height:1.6;overflow-x:hidden}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+
+/* Loading state */
+#loading-screen{position:fixed;inset:0;z-index:100;background:var(--bg);display:flex;align-items:center;justify-content:center;flex-direction:column;transition:opacity .6s}
+#loading-screen.hidden{opacity:0;pointer-events:none}
+#loading-screen .spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
+#loading-screen p{margin-top:1rem;color:var(--muted);font-size:.85rem}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Scroll progress indicator */
+#scroll-progress{position:fixed;top:0;left:0;width:0%;height:2px;background:linear-gradient(90deg,var(--accent),var(--green));z-index:50;transition:width .05s linear}
+
+/* Canvas */
+#scene-canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1}
+
+/* Scroll spacer for 3D dive */
+.dive-spacer{height:500vh;position:relative}
+
+/* Overlays pinned during dive */
+.dive-overlay{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:2;display:flex;align-items:center;justify-content:center}
+.dive-overlay .panel{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:16px;padding:2.5rem 3rem;max-width:540px;text-align:center;
+  backdrop-filter:blur(12px);opacity:0;transform:translateY(30px) scale(0.97);
+  transition:opacity .7s cubic-bezier(.4,0,.2,1),transform .7s cubic-bezier(.4,0,.2,1);pointer-events:auto;
+}
+.dive-overlay .panel.visible{opacity:1;transform:translateY(0) scale(1)}
+.dive-overlay .panel h1{font-size:clamp(1.6rem,4vw,2.4rem);font-weight:700;margin-bottom:.75rem;letter-spacing:-0.02em}
+.dive-overlay .panel p{color:var(--muted);font-size:1.05rem;line-height:1.7}
+.dive-overlay .panel .subtext{font-size:.85rem;color:var(--muted);margin-top:.75rem;font-style:italic;opacity:.8}
+
+/* Counter */
+#counter-panel{position:fixed;bottom:2rem;right:2rem;z-index:3;
+  background:var(--card);border:1px solid var(--border);border-radius:12px;
+  padding:1rem 1.5rem;backdrop-filter:blur(10px);opacity:0;transform:translateY(10px);
+  transition:opacity .5s,transform .5s cubic-bezier(.4,0,.2,1)}
+#counter-panel.visible{opacity:1;transform:translateY(0)}
+#counter-panel .label{font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+#counter-panel .value{font-size:2rem;font-weight:700;color:var(--green);font-variant-numeric:tabular-nums;transition:transform .15s}
+#counter-panel .value.bump{transform:scale(1.08)}
+
+/* Trailing DOM sections */
+.sections{position:relative;z-index:4;background:var(--bg)}
+.section{padding:5rem 1.5rem;max-width:800px;margin:0 auto}
+.section h2{font-size:clamp(1.4rem,3vw,2rem);font-weight:700;margin-bottom:1.5rem;text-align:center;letter-spacing:-0.01em}
+.section p,.section li{color:var(--muted);font-size:1rem;margin-bottom:1rem;line-height:1.7}
+.section ul{list-style:none;padding:0}
+.section ul li::before{content:'';display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--accent);margin-right:.75rem;vertical-align:middle}
+
+/* Pricing */
+.pricing-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1.5rem;margin-top:2rem}
+.price-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:2rem;text-align:center;position:relative;transition:transform .2s,border-color .2s}
+.price-card:hover{transform:translateY(-3px);border-color:rgba(124,92,252,0.35)}
+.price-card.popular{border-color:var(--accent)}
+.price-card.popular::after{content:'Most popular';position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;font-size:.7rem;padding:3px 12px;border-radius:20px;font-weight:600}
+.price-card h3{font-size:1.1rem;font-weight:600;margin-bottom:.5rem}
+.price-card .price{font-size:2rem;font-weight:700;margin-bottom:.5rem}
+.price-card .price span{font-size:.85rem;font-weight:400;color:var(--muted)}
+.price-card ul{text-align:left;font-size:.85rem;color:var(--muted);margin-top:1rem}
+.price-card ul li{margin-bottom:.4rem;padding-left:1.2rem;position:relative}
+.price-card ul li::before{content:'';position:absolute;left:0;top:7px;width:6px;height:6px;border-radius:50%;background:var(--green)}
+
+/* Form */
+.form-wrap{max-width:480px;margin:2rem auto 0}
+.form-wrap input,.form-wrap select{
+  width:100%;padding:.85rem 1rem;margin-bottom:1rem;border-radius:10px;
+  border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--text);font-size:.95rem;
+  transition:border-color .2s;
+}
+.form-wrap input:focus{border-color:var(--accent);outline:none}
+.form-wrap input::placeholder{color:var(--muted)}
+.form-wrap button{
+  width:100%;padding:1rem;border:none;border-radius:10px;
+  background:var(--accent);color:#fff;font-size:1rem;font-weight:600;cursor:pointer;
+  transition:transform .15s,box-shadow .15s;
+}
+.form-wrap button:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(124,92,252,.35)}
+.form-wrap button:active{transform:translateY(0)}
+.form-status{text-align:center;margin-top:1rem;font-size:.9rem}
+
+/* Footer */
+.footer{text-align:center;padding:3rem 1.5rem;font-size:.8rem;color:var(--muted)}
+
+/* Fallback */
+.fallback-content{display:none;padding:4rem 1.5rem;max-width:700px;margin:0 auto;text-align:center}
+.fallback-content h1{font-size:2rem;font-weight:700;margin-bottom:1rem}
+.fallback-content p{color:var(--muted);margin-bottom:1.5rem}
+body.no-webgl .dive-spacer,body.no-webgl #scene-canvas,body.no-webgl .dive-overlay,body.no-webgl #counter-panel,body.no-webgl #scroll-progress{display:none}
+body.no-webgl .fallback-content{display:block}
+body.no-webgl #loading-screen{display:none}
+
+/* Reduced motion */
+@media(prefers-reduced-motion:reduce){
+  .dive-spacer{height:auto!important}
+  #scene-canvas,#scroll-progress{display:none}
+  .dive-overlay{position:relative;height:auto}
+  .dive-overlay .panel{opacity:1;transform:none;position:relative;margin:2rem auto}
+  #counter-panel{position:relative;opacity:1;transform:none;margin:2rem auto}
+  #loading-screen{display:none}
+}
+
+@media(max-width:600px){
+  .dive-overlay .panel{padding:1.5rem;margin:0 1rem}
+  #counter-panel{bottom:1rem;right:1rem;padding:.75rem 1rem}
+  #counter-panel .value{font-size:1.4rem}
+  .pricing-grid{grid-template-columns:1fr}
+}
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<!-- Loading screen -->
+<div id="loading-screen">
+  <div class="spinner"></div>
+  <p>Preparing your dive...</p>
+</div>
+
+<!-- Scroll progress -->
+<div id="scroll-progress"></div>
+
+<!-- 3D Canvas -->
+<canvas id="scene-canvas"></canvas>
+
+<!-- Scroll spacer -->
+<div class="dive-spacer" id="dive-spacer">
+  <!-- Hero overlay -->
+  <div class="dive-overlay" id="overlay-hero">
+    <div class="panel visible" id="panel-hero">
+      <h1>Somewhere in these shelves, money is leaking</h1>
+      <p>Scroll down to dive through your stock and find the products costing you margin every single week.</p>
+    </div>
+  </div>
+
+  <!-- Mid overlay -->
+  <div class="dive-overlay" id="overlay-mid">
+    <div class="panel" id="panel-mid">
+      <h1 style="font-size:clamp(1.3rem,3vw,1.8rem)">40 to 60 products below target margin</h1>
+      <p>A typical shop this size has dozens of items quietly bleeding profit every week.</p>
+      <p class="subtext">(Illustrative figure, depending on store size)</p>
+    </div>
+  </div>
+
+  <!-- Recovery overlay -->
+  <div class="dive-overlay" id="overlay-recover">
+    <div class="panel" id="panel-recover">
+      <h1 style="color:var(--green)">They can be fixed</h1>
+      <p>Typical opportunities identified can amount to thousands of euros per year, depending on store size.</p>
+    </div>
+  </div>
+
+  <!-- CTA overlay at bottom -->
+  <div class="dive-overlay" id="overlay-cta">
+    <div class="panel" id="panel-cta">
+      <h1>See your own numbers</h1>
+      <p>One free scan. No commitment. We show you exactly which products are leaking and by how much.</p>
+      <a href="#form-section" style="display:inline-block;margin-top:1.5rem;padding:.85rem 2rem;background:var(--accent);color:#fff;border-radius:10px;font-weight:600;pointer-events:auto;transition:transform .15s,box-shadow .15s" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 24px rgba(124,92,252,.35)'" onmouseout="this.style.transform='';this.style.boxShadow=''">Get my free margin scan</a>
+    </div>
+  </div>
+</div>
+
+<!-- Counter -->
+<div id="counter-panel">
+  <div class="label">Recovered this year (illustrative)</div>
+  <div class="value" id="counter-value">&euro;0</div>
+</div>
+
+<!-- Fallback for no WebGL / reduced motion -->
+<div class="fallback-content">
+  <h1>Find the margin leaks hiding in your shelves</h1>
+  <p>A typical Irish convenience shop has 40 to 60 products selling below target margin at any time. Typical opportunities identified can amount to thousands of euros per year, depending on store size.</p>
+  <p><a href="#form-section" style="display:inline-block;padding:.85rem 2rem;background:var(--accent);color:#fff;border-radius:10px;font-weight:600">Get my free margin scan</a></p>
+</div>
+
+<!-- Trailing DOM sections -->
+<div class="sections">
+  <!-- How it works -->
+  <div class="section">
+    <h2>How the free scan works</h2>
+    <ul>
+      <li>You send us a recent stock export (CSV or spreadsheet). Takes 2 minutes from your till system.</li>
+      <li>We map every product's cost against its selling price and flag anything below your target margin.</li>
+      <li>Within 48 hours you get a clear report: which products, how much margin you are missing, and what price would fix it.</li>
+      <li>No software to install. No ongoing commitment. Just a snapshot of where you stand today.</li>
+    </ul>
+  </div>
+
+  <!-- Pricing -->
+  <div class="section" id="pricing-section">
+    <h2>Ongoing monitoring plans</h2>
+    <p style="text-align:center">All prices net of VAT. No setup fee. Cancel any time.</p>
+    <div class="pricing-grid">
+      <div class="price-card">
+        <h3>Insight</h3>
+        <div class="price">&euro;500<span>/mo</span></div>
+        <ul>
+          <li>Live margin dashboard</li>
+          <li>Alerts when products drop below target</li>
+          <li>Drill down by department</li>
+          <li>Barcode scan lookup</li>
+          <li>Supplier analytics</li>
+        </ul>
+      </div>
+      <div class="price-card popular">
+        <h3>Complete</h3>
+        <div class="price">&euro;1,000<span>/mo</span></div>
+        <ul>
+          <li>Everything in Insight</li>
+          <li>Invoice Scanner</li>
+          <li>Ask Your Shop (natural language queries)</li>
+          <li>Trading pattern detection</li>
+          <li>Product performance tracking</li>
+          <li>Priority support</li>
+        </ul>
+      </div>
+      <div class="price-card">
+        <h3>Multi-site</h3>
+        <div class="price">&euro;1,500<span>/mo</span></div>
+        <ul>
+          <li>Everything in Complete</li>
+          <li>Write-back (rolling out)</li>
+          <li>Morning report</li>
+          <li>Per-site onboarding</li>
+          <li>Cross-store comparison</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Form -->
+  <div class="section" id="form-section">
+    <h2>Get my free margin scan</h2>
+    <p style="text-align:center">Fill in your details and we will be in touch within one business day.</p>
+    <div class="form-wrap">
+      <form id="lead-form">
+        <input type="text" name="name" placeholder="Your name" required>
+        <input type="email" name="email" placeholder="Email address" required>
+        <input type="text" name="shop" placeholder="Shop name (optional)">
+        <input type="tel" name="phone" placeholder="Phone (optional)">
+        <input type="hidden" name="_subject" value="RetailGuard lead (3d v4)">
+        <button type="submit">Get my free margin scan</button>
+      </form>
+      <div class="form-status" id="form-status"></div>
+    </div>
+  </div>
+
+  <div class="footer">
+    &copy; 2026 RetailGuard. All figures shown are illustrative and depend on store size and product mix.
+  </div>
+</div>
+
+<!-- Three.js via importmap -->
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js"
+  }
+}
+</script>
+<script type="module">
+import * as THREE from 'three';
+
+// WebGL check
+const canvas = document.getElementById('scene-canvas');
+const loadingScreen = document.getElementById('loading-screen');
+let gl;
+try { gl = canvas.getContext('webgl2') || canvas.getContext('webgl'); } catch(e) {}
+if (!gl) {
+  document.body.classList.add('no-webgl');
+  throw new Error('No WebGL');
+}
+
+// Reduced motion check
+if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  document.body.classList.add('no-webgl');
+  throw new Error('Reduced motion');
+}
+
+// Setup
+const isMobile = window.innerWidth < 768;
+const INSTANCE_COUNT = isMobile ? 300 : 800;
+const LEAK_COUNT = isMobile ? 15 : 35;
+const DEPTH = 80;
+const DPR = Math.min(window.devicePixelRatio, 2);
+
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: !isMobile, alpha: false });
+renderer.setPixelRatio(DPR);
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setClearColor(0x0a0a10);
+
+const scene = new THREE.Scene();
+scene.fog = new THREE.FogExp2(0x0a0a10, 0.018);
+
+const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 200);
+camera.position.set(0, 5, 12);
+
+// Lights
+const ambient = new THREE.AmbientLight(0x2a2040, 0.5);
+scene.add(ambient);
+
+const spot = new THREE.SpotLight(0xffffff, 1.4, 120, Math.PI / 5, 0.6);
+spot.position.set(5, 10, 10);
+scene.add(spot);
+
+const rimLight = new THREE.DirectionalLight(0x7c5cfc, 0.35);
+rimLight.position.set(-5, 3, -5);
+scene.add(rimLight);
+
+// Red point lights for leak glow, distributed through field
+const redLights = [];
+for (let i = 0; i < 5; i++) {
+  const pl = new THREE.PointLight(0xff3355, 0.5, 18);
+  pl.position.set((Math.random() - 0.5) * 12, -DEPTH * (0.15 + i * 0.18), (Math.random() - 0.5) * 10);
+  scene.add(pl);
+  redLights.push(pl);
+}
+
+// Bottom green glow (appears as we recover)
+const greenLight = new THREE.PointLight(0x22dd77, 0, 30);
+greenLight.position.set(0, -DEPTH * 0.7, 0);
+scene.add(greenLight);
+
+// Instanced cubes with varied sizes
+const geo = new THREE.BoxGeometry(1, 1, 1);
+const mat = new THREE.MeshStandardMaterial({ roughness: 0.55, metalness: 0.25 });
+const mesh = new THREE.InstancedMesh(geo, mat, INSTANCE_COUNT);
+scene.add(mesh);
+
+const dummy = new THREE.Object3D();
+const baseColor = new THREE.Color(0x4a4560);
+const leakColor = new THREE.Color(0xff3355);
+const greenColor = new THREE.Color(0x22dd77);
+
+// Per-instance data
+const leakIndices = new Set();
+const instanceData = new Array(INSTANCE_COUNT);
+const recovered = new Array(INSTANCE_COUNT).fill(false);
+const flipProgress = new Float32Array(INSTANCE_COUNT); // 0 = red, 1 = green (for lerp)
+
+// Pick random leak indices
+while (leakIndices.size < LEAK_COUNT) {
+  leakIndices.add(Math.floor(Math.random() * INSTANCE_COUNT));
+}
+
+// Reusable vectors for animation (no per-frame allocations)
+const _pos = new THREE.Vector3();
+const _rot = new THREE.Euler();
+const _scale = new THREE.Vector3();
+const _matrix = new THREE.Matrix4();
+const _color = new THREE.Color();
+
+for (let i = 0; i < INSTANCE_COUNT; i++) {
+  const x = (Math.random() - 0.5) * 18;
+  const y = -Math.random() * DEPTH;
+  const z = (Math.random() - 0.5) * 14;
+  const rx = Math.random() * Math.PI;
+  const ry = Math.random() * Math.PI;
+  const rz = Math.random() * 0.5;
+  const isLeak = leakIndices.has(i);
+  const baseScale = isLeak ? (0.38 + Math.random() * 0.14) : (0.2 + Math.random() * 0.18);
+  const rotSpeed = (Math.random() - 0.5) * 0.3;
+
+  instanceData[i] = { x, y, z, rx, ry, rz, baseScale, rotSpeed, currentScale: baseScale };
+
+  dummy.position.set(x, y, z);
+  dummy.rotation.set(rx, ry, rz);
+  dummy.scale.setScalar(baseScale);
+  dummy.updateMatrix();
+  mesh.setMatrixAt(i, dummy.matrix);
+  mesh.setColorAt(i, isLeak ? leakColor : baseColor);
+}
+mesh.instanceMatrix.needsUpdate = true;
+mesh.instanceColor.needsUpdate = true;
+
+// Subtle floating particles (depth cues)
+const particleCount = isMobile ? 50 : 150;
+const particleGeo = new THREE.BufferGeometry();
+const particlePositions = new Float32Array(particleCount * 3);
+for (let i = 0; i < particleCount; i++) {
+  particlePositions[i * 3] = (Math.random() - 0.5) * 20;
+  particlePositions[i * 3 + 1] = -Math.random() * DEPTH;
+  particlePositions[i * 3 + 2] = (Math.random() - 0.5) * 16;
+}
+particleGeo.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
+const particleMat = new THREE.PointsMaterial({ color: 0x7c5cfc, size: 0.04, transparent: true, opacity: 0.4 });
+const particles = new THREE.Points(particleGeo, particleMat);
+scene.add(particles);
+
+// Floor grid
+const gridHelper = new THREE.GridHelper(30, 40, 0x7c5cfc, 0x1a1830);
+gridHelper.position.y = -DEPTH - 5;
+scene.add(gridHelper);
+
+// Floor glow plane
+const floorGeo = new THREE.PlaneGeometry(30, 30);
+const floorMat = new THREE.MeshBasicMaterial({ color: 0x7c5cfc, transparent: true, opacity: 0.05 });
+const floorMesh = new THREE.Mesh(floorGeo, floorMat);
+floorMesh.rotation.x = -Math.PI / 2;
+floorMesh.position.y = -DEPTH - 5;
+scene.add(floorMesh);
+
+// Scroll / animation state
+let scrollProgress = 0;
+let smoothProgress = 0;
+let cameraY = 5;
+let recoveredCount = 0;
+let displayedCount = 0;
+const TARGET_RECOVERY = 4800;
+const clock = new THREE.Clock();
+let isTabVisible = true;
+
+// Visibility API: pause when hidden
+document.addEventListener('visibilitychange', () => { isTabVisible = !document.hidden; });
+
+// Overlay panels
+const panelHero = document.getElementById('panel-hero');
+const panelMid = document.getElementById('panel-mid');
+const panelRecover = document.getElementById('panel-recover');
+const panelCta = document.getElementById('panel-cta');
+const counterPanel = document.getElementById('counter-panel');
+const counterValue = document.getElementById('counter-value');
+const scrollIndicator = document.getElementById('scroll-progress');
+
+function updateOverlays(p) {
+  panelHero.classList.toggle('visible', p < 0.15);
+  panelMid.classList.toggle('visible', p > 0.25 && p < 0.45);
+  panelRecover.classList.toggle('visible', p > 0.55 && p < 0.75);
+  panelCta.classList.toggle('visible', p > 0.85);
+  counterPanel.classList.toggle('visible', p > 0.4);
+}
+
+function updateRecovery(p, dt) {
+  const recoverStart = 0.4;
+  const recoverEnd = 0.82;
+  if (p < recoverStart) return;
+
+  const rp = Math.min((p - recoverStart) / (recoverEnd - recoverStart), 1);
+  const targetCount = Math.floor(rp * LEAK_COUNT);
+
+  let changed = false;
+  let idx = 0;
+  for (const li of leakIndices) {
+    if (idx < targetCount && !recovered[li]) {
+      recovered[li] = true;
+      changed = true;
+    }
+    // Smooth colour lerp for recovering cubes
+    if (recovered[li] && flipProgress[li] < 1) {
+      flipProgress[li] = Math.min(flipProgress[li] + dt * 2.5, 1);
+      _color.copy(leakColor).lerp(greenColor, flipProgress[li]);
+      mesh.setColorAt(li, _color);
+      // Scale pop on flip
+      const pop = 1 + 0.3 * Math.sin(flipProgress[li] * Math.PI);
+      instanceData[li].currentScale = instanceData[li].baseScale * pop;
+      changed = true;
+    }
+    idx++;
+  }
+  if (changed) mesh.instanceColor.needsUpdate = true;
+
+  // Green light intensity grows with recovery
+  greenLight.intensity = rp * 1.2;
+
+  // Fade red lights as recovery happens
+  for (const rl of redLights) {
+    rl.intensity = 0.5 * (1 - rp * 0.7);
+  }
+
+  // Counter with satisfying ramp
+  const targetDisplayed = Math.floor(rp * TARGET_RECOVERY);
+  if (targetDisplayed !== displayedCount) {
+    displayedCount = targetDisplayed;
+    counterValue.textContent = '\u20AC' + displayedCount.toLocaleString('en-IE');
+    // Bump animation
+    counterValue.classList.add('bump');
+    setTimeout(() => counterValue.classList.remove('bump'), 120);
+  }
+}
+
+// Scroll handler
+const spacer = document.getElementById('dive-spacer');
+function onScroll() {
+  const rect = spacer.getBoundingClientRect();
+  const total = spacer.offsetHeight - window.innerHeight;
+  scrollProgress = Math.max(0, Math.min(1, -rect.top / total));
+  // Progress bar
+  scrollIndicator.style.width = (scrollProgress * 100) + '%';
+}
+window.addEventListener('scroll', onScroll, { passive: true });
+
+// Animation loop
+let animFrame;
+function animate() {
+  animFrame = requestAnimationFrame(animate);
+
+  if (!isTabVisible) return;
+
+  const dt = Math.min(clock.getDelta(), 0.05); // cap delta to prevent jumps
+  const t = clock.getElapsedTime();
+
+  // Smooth damped scroll progress (no jerks)
+  smoothProgress += (scrollProgress - smoothProgress) * Math.min(dt * 4.5, 1);
+
+  // Camera dive with eased descent
+  const targetY = 5 - smoothProgress * (DEPTH + 10);
+  cameraY += (targetY - cameraY) * Math.min(dt * 5, 1);
+  camera.position.y = cameraY;
+  camera.position.x = Math.sin(t * 0.25) * 0.6;
+  camera.position.z = 12 + Math.cos(t * 0.15) * 0.4;
+  camera.lookAt(0, cameraY - 6, 0);
+
+  // Subtle cube rotation (no per-frame alloc due to reuse of dummy)
+  let matrixNeedsUpdate = false;
+  for (let i = 0; i < INSTANCE_COUNT; i++) {
+    const d = instanceData[i];
+    d.ry += d.rotSpeed * dt;
+    dummy.position.set(d.x, d.y, d.z);
+    dummy.rotation.set(d.rx, d.ry, d.rz);
+    dummy.scale.setScalar(d.currentScale);
+    dummy.updateMatrix();
+    mesh.setMatrixAt(i, dummy.matrix);
+    matrixNeedsUpdate = true;
+  }
+  if (matrixNeedsUpdate) mesh.instanceMatrix.needsUpdate = true;
+
+  // Particle subtle drift
+  const posAttr = particles.geometry.attributes.position;
+  for (let i = 0; i < particleCount; i++) {
+    posAttr.array[i * 3 + 1] += dt * 0.3;
+    if (posAttr.array[i * 3 + 1] > 5) posAttr.array[i * 3 + 1] = -DEPTH;
+  }
+  posAttr.needsUpdate = true;
+
+  updateOverlays(smoothProgress);
+  updateRecovery(smoothProgress, dt);
+
+  renderer.render(scene, camera);
+}
+
+// Start after setup
+loadingScreen.classList.add('hidden');
+animate();
+
+// Resize
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+</script>
+
+<!-- Form submission -->
+<script>
+document.getElementById('lead-form').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const btn = this.querySelector('button');
+  const status = document.getElementById('form-status');
+  const data = new FormData(this);
+  btn.disabled = true;
+  btn.textContent = 'Sending...';
+  status.textContent = '';
+  try {
+    const resp = await fetch('https://formsubmit.co/ajax/retailguard.sales@gmail.com', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify(Object.fromEntries(data))
+    });
+    if (resp.ok) {
+      status.textContent = 'Thanks! We will be in touch within one business day.';
+      status.style.color = 'var(--green)';
+      this.reset();
+    } else {
+      status.textContent = 'Something went wrong. Please email retailguard.sales@gmail.com directly.';
+      status.style.color = 'var(--red)';
+    }
+  } catch(err) {
+    status.textContent = 'Network error. Please email retailguard.sales@gmail.com directly.';
+    status.style.color = 'var(--red)';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Get my free margin scan';
+  }
+});
+</script>
+</body>
+</html>

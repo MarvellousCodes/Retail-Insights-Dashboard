@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RetailGuard Ask, 20 Mockups</title>
+<style>
+  :root{
+    --violet:#7c3aed; --violet-d:#6d28d9; --violet-50:#f5f3ff; --violet-100:#ede9fe; --violet-200:#ddd6fe; --violet-300:#c4b5fd; --violet-700:#6d28d9;
+    --g50:#f9fafb; --g100:#f3f4f6; --g200:#e5e7eb; --g300:#d1d5db; --g400:#9ca3af; --g500:#6b7280; --g600:#4b5563; --g700:#374151; --g800:#1f2937; --g900:#111827;
+    --amber-50:#fffbeb; --amber-200:#fde68a; --amber-700:#b45309;
+    --green-600:#16a34a;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif;background:#eef0f4;color:var(--g900);}
+  a{color:inherit}
+
+  /* ===== gallery chrome ===== */
+  .top{position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid var(--g200);padding:14px 20px;display:flex;align-items:center;gap:12px}
+  .top .logo{width:26px;height:26px;border-radius:8px;background:var(--violet);display:inline-flex;align-items:center;justify-content:center}
+  .top .logo svg{width:15px;height:15px;stroke:#fff}
+  .top h1{font-size:15px;font-weight:700}
+  .top .sub{font-size:12px;color:var(--g500)}
+  .wrap{display:grid;grid-template-columns:250px 1fr;min-height:calc(100vh - 55px)}
+  .rail{background:#fff;border-right:1px solid var(--g200);padding:12px;overflow-y:auto;position:sticky;top:55px;height:calc(100vh - 55px)}
+  .rail .grp{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--g400);margin:14px 6px 6px}
+  .rail button{display:block;width:100%;text-align:left;padding:8px 10px;border:0;background:none;border-radius:10px;font-size:12.5px;color:var(--g600);cursor:pointer;font-family:inherit}
+  .rail button:hover{background:var(--violet-50)}
+  .rail button.on{background:var(--violet-100);color:var(--violet-d);font-weight:600}
+  .rail button .n{display:inline-block;width:20px;color:var(--g400);font-variant-numeric:tabular-nums}
+  .rail button.on .n{color:var(--violet)}
+  .stage{padding:26px;display:flex;flex-direction:column;align-items:center;gap:14px}
+  .stagehead{width:100%;max-width:960px;display:flex;align-items:baseline;justify-content:space-between}
+  .stagehead h2{font-size:17px;font-weight:800}
+  .stagehead p{font-size:12.5px;color:var(--g500);max-width:560px;text-align:right}
+  .frame{width:100%;max-width:960px;background:#fff;border:1px solid var(--g200);border-radius:16px;box-shadow:0 12px 34px rgba(17,24,39,.09);overflow:hidden}
+  .bar{display:flex;align-items:center;gap:6px;background:var(--g50);border-bottom:1px solid var(--g200);padding:9px 14px}
+  .dot{width:9px;height:9px;border-radius:50%}
+  .bar .url{margin-left:10px;flex:1;background:#fff;border:1px solid var(--g200);border-radius:7px;font-size:11px;color:var(--g400);padding:3px 10px}
+  .mock{display:none}
+  .mock.on{display:block}
+  .navbtns{display:flex;gap:8px}
+  .navbtns button{border:1px solid var(--g200);background:#fff;border-radius:9px;padding:6px 13px;font-size:12px;cursor:pointer;color:var(--g600);font-family:inherit}
+  .navbtns button:hover{border-color:var(--violet-300);color:var(--violet-d)}
+
+  /* ===== shared app pieces ===== */
+  .app{min-height:560px;background:#fff}
+  .pad{padding:22px 26px}
+  .h-title{display:flex;align-items:center;gap:9px;margin-bottom:4px}
+  .h-title svg{width:20px;height:20px;stroke:var(--violet)}
+  .h-title b{font-size:19px;font-weight:800}
+  .desc{font-size:11.5px;color:var(--g500);margin-bottom:12px}
+  .meter{font-size:11px;color:var(--g500);margin-bottom:12px;display:flex;gap:12px}
+  .meter b{color:var(--g700)}
+  .in{display:flex;gap:8px;margin-bottom:12px}
+  .in input{flex:1;height:42px;padding:0 14px;border-radius:12px;border:1px solid var(--g200);font-size:13px;font-family:inherit;outline:none}
+  .in input:focus{border-color:var(--violet);box-shadow:0 0 0 3px var(--violet-100)}
+  .btn{display:inline-flex;align-items:center;gap:7px;padding:0 16px;height:42px;border-radius:12px;background:var(--violet);color:#fff;font-size:13px;font-weight:600;border:0;cursor:pointer;font-family:inherit;white-space:nowrap}
+  .btn:hover{background:var(--violet-d)}
+  .btn.sm{height:30px;padding:0 12px;font-size:11.5px;border-radius:9px}
+  .btn.ghost{background:#fff;color:var(--g600);border:1px solid var(--g200)}
+  .chips{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px}
+  .chip{padding:6px 12px;border-radius:999px;font-size:11.5px;background:var(--violet-50);color:var(--violet-d);border:1px solid transparent;cursor:pointer;font-family:inherit}
+  .chip:hover{background:var(--violet-100)}
+  .chip.o{background:#fff;border-color:var(--violet-200)}
+  .qa{border:1px solid var(--g200);border-radius:16px;box-shadow:0 1px 2px rgba(0,0,0,.04);overflow:hidden;margin-bottom:12px;background:#fff}
+  .qa .q{padding:10px 16px;border-bottom:1px solid var(--g100);font-size:13px;font-weight:600}
+  .qa .a{padding:14px 16px;font-size:13px;color:var(--g800);line-height:1.55}
+  .qa .ft{padding:0 16px 12px;display:flex;gap:14px;font-size:11px;color:var(--g400);align-items:center}
+  .qa .ft .sql{color:var(--g500);cursor:pointer;display:inline-flex;gap:5px;align-items:center}
+  .qa .ft .sql:hover{color:var(--violet)}
+  details.sqld{margin:0 16px 12px}
+  details.sqld summary{font-size:11px;color:var(--g500);cursor:pointer;list-style:none;display:inline-flex;gap:5px;align-items:center}
+  details.sqld summary:hover{color:var(--violet)}
+  details.sqld pre{margin-top:8px;background:var(--g900);color:var(--g100);font-size:10.5px;padding:10px 12px;border-radius:9px;overflow-x:auto;font-family:ui-monospace,Menlo,monospace}
+  .sheet{border:1px solid var(--violet-200);background:var(--violet-50);border-radius:16px;padding:16px;margin-bottom:14px}
+  .sheet h3{font-size:13px;font-weight:700;display:flex;gap:7px;align-items:center;margin-bottom:3px}
+  .sheet p{font-size:11.5px;color:var(--g500);margin-bottom:10px}
+  .clarify{background:var(--amber-50);border-color:var(--amber-200)}
+  .clarify .hint{font-size:11px;color:var(--amber-700);padding:0 16px 12px}
+  .split2{display:grid;grid-template-columns:220px 1fr}
+  .sidebox{border-right:1px solid var(--g200);background:var(--g50);padding:12px;min-height:560px}
+  .sidebox .sh{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+  .sidebox .sh span{font-size:11px;font-weight:700;color:var(--g600)}
+  .sitem{padding:8px 10px;border-radius:10px;font-size:11.5px;color:var(--g600);cursor:pointer;margin-bottom:2px}
+  .sitem:hover{background:var(--violet-50)}
+  .sitem.on{background:var(--violet-100);color:var(--violet-d);font-weight:600}
+  .sitem .t{display:block;font-size:9.5px;color:var(--g400);margin-top:2px;font-weight:400}
+  .tag{font-size:9.5px;background:var(--g100);color:var(--g500);padding:2px 7px;border-radius:99px}
+  .kpi{border:1px solid var(--g200);border-radius:13px;padding:11px 13px}
+  .kpi .l{font-size:10px;color:var(--g400);text-transform:uppercase;letter-spacing:.04em}
+  .kpi .v{font-size:16px;font-weight:800;margin-top:2px}
+  .bub-q{max-width:70%;margin-left:auto;background:var(--violet);color:#fff;border-radius:16px 16px 4px 16px;padding:10px 14px;font-size:13px;margin-bottom:10px}
+  .bub-a{max-width:78%;background:var(--g100);border-radius:16px 16px 16px 4px;padding:11px 14px;font-size:13px;line-height:1.55;margin-bottom:10px}
+  .bub-a .m{font-size:10.5px;color:var(--g400);margin-top:7px}
+  .rowline{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid var(--g100);font-size:12.5px}
+  .rowline:hover{background:var(--violet-50);cursor:pointer}
+  .minitable{width:100%;border-collapse:collapse;font-size:11px}
+  .minitable th{text-align:left;color:var(--g400);font-weight:600;padding:5px 8px;border-bottom:1px solid var(--g200)}
+  .minitable td{padding:5px 8px;border-bottom:1px solid var(--g100);color:var(--g700)}
+  .pill-t{display:inline-flex;background:var(--g100);border-radius:11px;padding:3px}
+  .pill-t span{padding:6px 16px;border-radius:9px;font-size:12px;color:var(--g500);cursor:pointer}
+  .pill-t span.on{background:#fff;color:var(--g900);font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+  .charty{display:flex;align-items:flex-end;gap:5px;height:70px;margin-top:10px}
+  .charty i{flex:1;background:var(--violet-200);border-radius:4px 4px 0 0}
+  .charty i.hot{background:var(--violet)}
+  .note{font-size:10px;color:var(--g400);margin-top:8px}
+  .fabb{position:absolute;bottom:18px;right:18px;width:46px;height:46px;border-radius:50%;background:var(--violet);display:flex;align-items:center;justify-content:center;box-shadow:0 8px 20px rgba(124,58,237,.4)}
+  .fabb svg{width:20px;height:20px;stroke:#fff}
+  .rel{position:relative}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+  .ic{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <span class="logo"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7l8-4z"/></svg></span>
+  <div>
+    <h1>Ask Your Shop, 20 layout mockups</h1>
+    <div class="sub">All numbers illustrative. Click the rail or use the arrows. Inputs, chips and SQL expanders are interactive.</div>
+  </div>
+</div>
+
+<div class="wrap">
+  <nav class="rail" id="rail"></nav>
+
+  <main class="stage">
+    <div class="stagehead">
+      <h2 id="mname"></h2>
+      <p id="mdesc"></p>
+    </div>
+
+    <div class="frame">
+      <div class="bar">
+        <span class="dot" style="background:#f87171"></span><span class="dot" style="background:#fbbf24"></span><span class="dot" style="background:#34d399"></span>
+        <span class="url">myretailguard.com/app.html · Ask your shop</span>
+      </div>
+      <div id="mocks"></div>
+    </div>
+
+    <div class="navbtns">
+      <button onclick="nav(-1)">&larr; Previous</button>
+      <button onclick="nav(1)">Next &rarr;</button>
+    </div>
+  </main>
+</div>
+
+<script>
+const SPARK = '<svg class="ic" viewBox="0 0 24 24"><path d="M12 3l1.9 5.8L20 10l-6.1 1.2L12 17l-1.9-5.8L4 10l6.1-1.2L12 3z"/></svg>';
+const SEND  = '<svg class="ic" viewBox="0 0 24 24"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>';
+const SHEET = '<svg class="ic" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 3v18"/></svg>';
+const CODE  = '<svg class="ic" viewBox="0 0 24 24"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/></svg>';
+const PLUS  = '<svg class="ic" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>';
+const CHART = '<svg class="ic" viewBox="0 0 24 24"><path d="M3 3v18h18M8 17V9m4 8V5m4 12v-6"/></svg>';
+const PIN   = '<svg class="ic" viewBox="0 0 24 24"><path d="M12 17v5M5 9l7-6 7 6v6a2 2 0 01-2 2H7a2 2 0 01-2-2V9z"/></svg>';
+const GAUGE = '<svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 12l4-4"/></svg>';
+
+const Q1 = "Which drinks am I losing money on?";
+const A1 = "You have 6 drink lines selling below cost. The biggest is Cola Multipack 6x330ml, bought at \u20AC4.10 and selling at \u20AC3.89, losing \u20AC0.21 a unit across 240 units sold this month. Fixing all 6 would recover roughly \u20AC310 a month.";
+const Q2 = "Top 3 departments by sales revenue?";
+const A2 = "Your top departments this year are Grocery at \u20AC241,300, Chilled and Dairy at \u20AC186,450, and Off Licence at \u20AC112,900. Together they make up 61% of total revenue.";
+const Q3 = "What's my busiest day of the week?";
+const A3 = "Friday is your busiest day with an average of 812 transactions, about 22% above your weekly average. Sunday is the quietest at 431.";
+const QC = "How are sales doing?";
+const AC = "Just to be sure I give you the right answer, do you mean sales for the most recent month, the last 12 months, or compared to last year?";
+const SQL = "SELECT p.description, p.unit_cost, p.retail1,\n       (p.retail1 - p.unit_cost) AS margin_eur\nFROM products_parsed p\nWHERE p.retail1 < p.unit_cost AND p.margin_valid\nORDER BY margin_eur ASC LIMIT 6;";
+
+const sugg = c => `<div class="chips">${["Which 5 products am I losing money on?","Top 3 departments by revenue?","Suppliers with lowest margin?","Busiest day of the week?"].map(s=>`<span class="chip${c?" o":""}">${s}</span>`).join("")}</div>`;
+const meter = `<div class="meter"><span style="display:inline-flex;gap:5px;align-items:center">${GAUGE} <b>4/40</b> today</span><span>\u20AC0.038 / \u20AC15 this month</span></div>`;
+const askIn = (ph)=>`<div class="in"><input placeholder="${ph||'e.g. which drinks am I losing money on?'}"><button class="btn">${SEND} Ask</button></div>`;
+const qa = (q,a,opts={}) => `
+  <div class="qa${opts.clarify?' clarify':''}">
+    <div class="q">${q}</div>
+    <div class="a">${a}</div>
+    ${opts.clarify?'<div class="hint">Type your reply above to continue.</div>':`
+    <details class="sqld"><summary>${CODE} Show SQL &middot; <span style="color:var(--g400)">${opts.rows||6} rows</span></summary><pre>${SQL}</pre></details>`}
+  </div>`;
+const sheetBox = `
+  <div class="sheet">
+    <h3>${SHEET} Build a spreadsheet</h3>
+    <p>Describe the list you want and download it as an Excel file.</p>
+    <div class="in" style="margin-bottom:8px"><input placeholder="e.g. every product below 25% margin with suggested price"><button class="btn">${SHEET} Build Excel</button></div>
+    <div class="chips" style="margin:0">${["Products below cost","Supplier spend + margin","Top 100 by sales","No barcode"].map(s=>`<span class="chip o">${s}</span>`).join("")}</div>
+  </div>`;
+const header = (sub)=>`<div class="h-title">${SPARK.replace('class="ic"','class="ic" style="width:20px;height:20px"')}<b>Ask your shop</b></div><div class="desc">${sub||"Ask a plain-English question about your stock, margins, departments, sales or suppliers."}</div>`;
+
+const MOCKS = [
+{ g:"Familiar", name:"1 · Classic Flat List", desc:"The original. Spreadsheet on top, ask below, flat newest-first answers.",
+  html:`<div class="app pad" style="max-width:760px;margin:0 auto">${header("Ask a plain-English question, or build a spreadsheet below.")}${meter}${sheetBox}${askIn()}${sugg()}${qa(Q1,A1)}${qa(Q2,A2)}</div>` },
+
+{ g:"Familiar", name:"2 · Conversations Sidebar", desc:"The current live layout. Grouped threads on the left, active conversation on the right.",
+  html:`<div class="app split2">
+    <div class="sidebox">
+      <div class="sh"><span>Conversations</span><button class="btn sm">${PLUS} New</button></div>
+      <div class="sitem on">Which drinks am I losing money on?<span class="t">3 messages · 2h ago</span></div>
+      <div class="sitem">Top departments by revenue<span class="t">1 message · yesterday</span></div>
+      <div class="sitem">Busiest trading day<span class="t">2 messages · 3d ago</span></div>
+    </div>
+    <div class="pad">${header()}${meter}${askIn()}${qa(Q1,A1)}${qa(QC,AC,{clarify:true})}</div>
+  </div>` },
+
+{ g:"Familiar", name:"3 · Tabs: Ask | Spreadsheet", desc:"Two clean tabs. Ask stays focused, the spreadsheet builder gets its own space.",
+  html:`<div class="app pad" style="max-width:760px;margin:0 auto">${header()}
+    <div style="margin-bottom:16px"><span class="pill-t"><span class="on">Ask</span><span>Spreadsheet</span></span></div>
+    ${meter}${askIn()}${sugg()}${qa(Q1,A1)}${qa(Q3,A3,{rows:7})}</div>` },
+
+{ g:"Familiar", name:"4 · Flat + Recent Rail", desc:"Flat answers with a slim recent-questions rail for jumping back, no threading.",
+  html:`<div class="app split2">
+    <div class="sidebox">
+      <div class="sh"><span>Recent</span></div>
+      <div class="sitem on">Drinks losing money<span class="t">6 rows · 2h</span></div>
+      <div class="sitem">Top 3 departments<span class="t">3 rows · 1d</span></div>
+      <div class="sitem">Busiest day<span class="t">7 rows · 3d</span></div>
+      <div class="sitem">Low margin suppliers<span class="t">12 rows · 4d</span></div>
+    </div>
+    <div class="pad">${header()}${meter}${askIn()}${sugg()}${qa(Q1,A1)}</div>
+  </div>` },
+
+{ g:"Chat", name:"5 · Chat Bubbles", desc:"Messenger feel. Your questions right, answers left, composer at the bottom.",
+  html:`<div class="app pad rel" style="max-width:720px;margin:0 auto;display:flex;flex-direction:column;min-height:560px">
+    ${header()}${meter}
+    <div style="flex:1">
+      <div class="bub-q">${Q1}</div>
+      <div class="bub-a">${A1}<div class="m">6 rows · Show SQL</div></div>
+      <div class="bub-q">${Q3}</div>
+      <div class="bub-a">${A3}<div class="m">7 rows · Show SQL</div></div>
+    </div>
+    ${askIn("Message Ask your shop...")}</div>` },
+
+{ g:"Chat", name:"6 · Docked Composer", desc:"Answers scroll in the middle, the ask box stays pinned to the bottom like a chat app.",
+  html:`<div class="app" style="display:flex;flex-direction:column;min-height:560px">
+    <div class="pad" style="border-bottom:1px solid var(--g100);padding-bottom:14px">${header()}</div>
+    <div class="pad" style="flex:1;background:var(--g50)">${qa(Q2,A2,{rows:3})}${qa(Q1,A1)}</div>
+    <div class="pad" style="border-top:1px solid var(--g200);padding-top:14px;padding-bottom:16px;background:#fff">${askIn()}<div class="meter" style="margin:0">${GAUGE} <b>4/40</b> today</div></div>
+  </div>` },
+
+{ g:"Chat", name:"7 · Full-Page Assistant", desc:"The floating widget concept expanded into a full page with a warm intro state.",
+  html:`<div class="app pad" style="max-width:640px;margin:0 auto;display:flex;flex-direction:column;min-height:560px;justify-content:center;text-align:center">
+    <div style="width:52px;height:52px;border-radius:16px;background:var(--violet-100);display:flex;align-items:center;justify-content:center;margin:0 auto 14px">${SPARK.replace('class="ic"','class="ic" style="width:26px;height:26px;stroke:var(--violet)"')}</div>
+    <b style="font-size:21px;margin-bottom:6px">What would you like to know?</b>
+    <div class="desc" style="margin-bottom:18px">Stock, margins, departments, sales or suppliers. Plain English is fine.</div>
+    ${askIn()}
+    <div class="chips" style="justify-content:center">${["Losing money on drinks?","Top departments","Busiest day","Supplier margins"].map(s=>`<span class="chip">${s}</span>`).join("")}</div>
+  </div>` },
+
+{ g:"Chat", name:"8 · Split Screen", desc:"Ask panel fixed on the left, the latest answer gets the whole right side.",
+  html:`<div class="app" style="display:grid;grid-template-columns:340px 1fr;min-height:560px">
+    <div class="pad" style="border-right:1px solid var(--g200)">${header()}${meter}${askIn()}${sugg()}</div>
+    <div class="pad" style="background:var(--g50)">
+      <div class="tag" style="margin-bottom:10px;display:inline-block">Latest answer</div>
+      ${qa(Q1,A1)}
+      <table class="minitable"><tr><th>Product</th><th>Cost</th><th>Price</th><th>Margin</th></tr>
+      <tr><td>Cola Multipack 6x330ml</td><td>\u20AC4.10</td><td>\u20AC3.89</td><td style="color:#dc2626">-\u20AC0.21</td></tr>
+      <tr><td>Energy Drink 500ml</td><td>\u20AC1.24</td><td>\u20AC1.15</td><td style="color:#dc2626">-\u20AC0.09</td></tr>
+      <tr><td>Sparkling Water 2L</td><td>\u20AC0.92</td><td>\u20AC0.89</td><td style="color:#dc2626">-\u20AC0.03</td></tr></table>
+    </div>
+  </div>` },
+
+{ g:"Search", name:"9 · Centered Search Hero", desc:"Search-engine style. One big box in the middle, answers appear underneath.",
+  html:`<div class="app pad" style="max-width:680px;margin:0 auto;padding-top:70px;text-align:center">
+    <div class="h-title" style="justify-content:center">${SPARK.replace('class="ic"','class="ic" style="width:24px;height:24px"')}<b style="font-size:24px">Ask your shop</b></div>
+    <div class="desc" style="margin-bottom:20px">Every answer comes straight from your own sales and stock data.</div>
+    <div class="in" style="max-width:560px;margin:0 auto 14px"><input style="height:48px;border-radius:99px;padding:0 22px" placeholder="Ask anything about your shop..."><button class="btn" style="height:48px;border-radius:99px">${SEND} Ask</button></div>
+    <div class="chips" style="justify-content:center;margin-bottom:26px">${["Losing money on drinks?","Top departments","Busiest day"].map(s=>`<span class="chip">${s}</span>`).join("")}</div>
+    <div style="text-align:left">${qa(Q1,A1)}</div>
+  </div>` },
+
+{ g:"Search", name:"10 · Command Palette", desc:"Spotlight style overlay. Press ask anywhere, results drop in a floating panel.",
+  html:`<div class="app rel" style="background:var(--g100)">
+    <div class="pad" style="filter:blur(2px);opacity:.5">${header()}${meter}${qa(Q2,A2,{rows:3})}</div>
+    <div style="position:absolute;inset:0;background:rgba(17,24,39,.35);display:flex;justify-content:center;padding-top:60px">
+      <div style="width:560px;height:fit-content;background:#fff;border-radius:18px;box-shadow:0 24px 60px rgba(0,0,0,.3);overflow:hidden">
+        <div style="display:flex;gap:10px;align-items:center;padding:15px 18px;border-bottom:1px solid var(--g100)">${SPARK}<input style="border:0;outline:none;font-size:14.5px;flex:1;font-family:inherit" placeholder="Ask your shop anything..."></div>
+        <div class="rowline"><span>Which drinks am I losing money on?</span><span class="tag">2h ago</span></div>
+        <div class="rowline"><span>Top 3 departments by revenue</span><span class="tag">1d ago</span></div>
+        <div class="rowline"><span>Busiest day of the week</span><span class="tag">3d ago</span></div>
+        <div style="padding:10px 18px;font-size:10.5px;color:var(--g400);background:var(--g50)">Enter to ask · Esc to close</div>
+      </div>
+    </div>
+  </div>` },
+
+{ g:"Search", name:"11 · Search + Detail Pane", desc:"Email-client pattern. Searchable question list left, full answer with table right.",
+  html:`<div class="app" style="display:grid;grid-template-columns:290px 1fr;min-height:560px">
+    <div style="border-right:1px solid var(--g200)">
+      <div style="padding:14px"><div class="in" style="margin:0"><input placeholder="Search past questions..." style="height:36px;font-size:12px"></div></div>
+      <div class="rowline" style="background:var(--violet-50)"><div><b style="font-size:12px">Drinks losing money</b><span class="t" style="display:block;font-size:10px;color:var(--g400)">6 rows · 2h ago</span></div></div>
+      <div class="rowline"><div><b style="font-size:12px;font-weight:500">Top 3 departments</b><span style="display:block;font-size:10px;color:var(--g400)">3 rows · 1d</span></div></div>
+      <div class="rowline"><div><b style="font-size:12px;font-weight:500">Busiest day</b><span style="display:block;font-size:10px;color:var(--g400)">7 rows · 3d</span></div></div>
+    </div>
+    <div class="pad">${header()}${askIn()}${qa(Q1,A1)}</div>
+  </div>` },
+
+{ g:"Data-first", name:"12 · Answer Cards Grid", desc:"Answers as a two-column card wall, good for scanning many past answers.",
+  html:`<div class="app pad">${header()}${meter}${askIn()}
+    <div class="grid2">${qa(Q1,A1)}${qa(Q2,A2,{rows:3})}${qa(Q3,A3,{rows:7})}${qa("Suppliers with lowest margin?","Your 3 lowest margin suppliers are Fresh Farm Foods at 14.2%, Daily Bakery Co at 16.8%, and Green Valley Produce at 17.1%. All three sit well below your 28% store average.",{rows:3})}</div>
+  </div>` },
+
+{ g:"Data-first", name:"13 · Compact Table", desc:"Dense ops view. Every question one row, expand for the answer and SQL.",
+  html:`<div class="app pad">${header()}${meter}${askIn()}
+    <div style="border:1px solid var(--g200);border-radius:14px;overflow:hidden">
+      <div class="rowline" style="background:var(--g50);font-weight:600;font-size:11px;color:var(--g500)"><span style="flex:1">Question</span><span style="width:70px">Rows</span><span style="width:70px">When</span></div>
+      <details><summary class="rowline" style="list-style:none"><span style="flex:1">${Q1}</span><span style="width:70px">6</span><span style="width:70px">2h ago</span></summary><div class="pad" style="background:var(--g50);font-size:12.5px;line-height:1.55">${A1}</div></details>
+      <div class="rowline"><span style="flex:1">${Q2}</span><span style="width:70px">3</span><span style="width:70px">1d ago</span></div>
+      <div class="rowline"><span style="flex:1">${Q3}</span><span style="width:70px">7</span><span style="width:70px">3d ago</span></div>
+      <div class="rowline"><span style="flex:1">Suppliers with lowest margin?</span><span style="width:70px">3</span><span style="width:70px">4d ago</span></div>
+    </div><div class="note">Click a row to expand the full answer.</div>
+  </div>` },
+
+{ g:"Data-first", name:"14 · Answer + Chart", desc:"Answers get a small chart when the data suits it, numbers plus a picture.",
+  html:`<div class="app pad" style="max-width:760px;margin:0 auto">${header()}${meter}${askIn()}
+    <div class="qa"><div class="q">${Q3}</div><div class="a">${A3}
+      <div class="charty"><i style="height:38%"></i><i style="height:52%"></i><i style="height:47%"></i><i style="height:60%"></i><i class="hot" style="height:100%"></i><i style="height:72%"></i><i style="height:30%"></i></div>
+      <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--g400);margin-top:4px"><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span></div>
+    </div><div class="ft"><span class="sql">${CODE} Show SQL</span><span>7 rows</span></div></div>
+    ${qa(Q1,A1)}</div>` },
+
+{ g:"Data-first", name:"15 · Ask + Mini KPIs", desc:"A strip of live shop numbers above the ask box so the page is useful before you type.",
+  html:`<div class="app pad" style="max-width:800px;margin:0 auto">${header()}
+    <div class="grid3" style="margin-bottom:16px">
+      <div class="kpi"><div class="l">Sales this month</div><div class="v">\u20AC48,210</div></div>
+      <div class="kpi"><div class="l">Avg margin</div><div class="v">27.8%</div></div>
+      <div class="kpi"><div class="l">Below-cost lines</div><div class="v" style="color:#dc2626">14</div></div>
+    </div>
+    ${askIn()}${sugg()}${qa(Q1,A1)}</div>` },
+
+{ g:"Organised", name:"16 · Timeline", desc:"History grouped by day with a soft timeline spine, easy to find that answer from Tuesday.",
+  html:`<div class="app pad" style="max-width:740px;margin:0 auto">${header()}${meter}${askIn()}
+    <div class="grp" style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--g400);margin:6px 0 8px">Today</div>
+    <div style="border-left:2px solid var(--violet-200);padding-left:16px">${qa(Q1,A1)}</div>
+    <div class="grp" style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--g400);margin:14px 0 8px">Yesterday</div>
+    <div style="border-left:2px solid var(--g200);padding-left:16px">${qa(Q2,A2,{rows:3})}</div>
+  </div>` },
+
+{ g:"Organised", name:"17 · Pinned Answers", desc:"Star the answers you keep coming back to. Pinned strip on top, history below.",
+  html:`<div class="app pad" style="max-width:780px;margin:0 auto">${header()}${meter}${askIn()}
+    <div style="display:flex;gap:6px;align-items:center;margin-bottom:8px;font-size:11px;font-weight:700;color:var(--g500)">${PIN} PINNED</div>
+    <div class="grid2" style="margin-bottom:16px">
+      <div class="qa" style="border-color:var(--violet-200);margin:0"><div class="q" style="font-size:12px">${Q1}</div><div class="a" style="font-size:11.5px">6 lines below cost, \u20AC310/month recoverable.</div></div>
+      <div class="qa" style="border-color:var(--violet-200);margin:0"><div class="q" style="font-size:12px">${Q3}</div><div class="a" style="font-size:11.5px">Friday, 812 transactions on average.</div></div>
+    </div>
+    <div style="font-size:11px;font-weight:700;color:var(--g500);margin-bottom:8px">HISTORY</div>${qa(Q2,A2,{rows:3})}</div>` },
+
+{ g:"Organised", name:"18 · Guided Categories", desc:"Pick a topic first, get tailored suggestions, then ask. Gentle for new users.",
+  html:`<div class="app pad" style="max-width:740px;margin:0 auto">${header("What do you want to look at?")}
+    <div class="grid3" style="margin-bottom:16px">
+      ${[["Margins","Find products losing you money"],["Sales","Trends, busy times, top sellers"],["Suppliers","Spend and margin by supplier"]].map(([t,d],i)=>`<div class="kpi" style="cursor:pointer;${i==0?'border-color:var(--violet);background:var(--violet-50)':''}"><div class="v" style="font-size:14px">${t}</div><div class="l" style="text-transform:none;letter-spacing:0;margin-top:3px">${d}</div></div>`).join("")}
+    </div>
+    <div class="chips">${["Which products are below cost?","Where is my margin weakest?","What should I reprice first?"].map(s=>`<span class="chip">${s}</span>`).join("")}</div>
+    ${askIn("Or ask your own question about margins...")}${qa(Q1,A1)}</div>` },
+
+{ g:"Organised", name:"19 · Three Columns", desc:"Ask, history and spreadsheets side by side, everything visible at once.",
+  html:`<div class="app" style="display:grid;grid-template-columns:1.3fr 1fr 1fr;min-height:560px">
+    <div class="pad" style="border-right:1px solid var(--g200)">${header()}${askIn()}${sugg()}</div>
+    <div class="pad" style="border-right:1px solid var(--g200);background:var(--g50)"><div style="font-size:11px;font-weight:700;color:var(--g500);margin-bottom:10px">RECENT ANSWERS</div>
+      <div class="qa" style="margin-bottom:10px"><div class="q" style="font-size:11.5px">${Q1}</div><div class="a" style="font-size:11px">6 lines below cost, \u20AC310/mo recoverable.</div></div>
+      <div class="qa"><div class="q" style="font-size:11.5px">${Q3}</div><div class="a" style="font-size:11px">Friday, 812 transactions avg.</div></div></div>
+    <div class="pad" style="background:var(--violet-50)"><div style="font-size:11px;font-weight:700;color:var(--violet-d);margin-bottom:10px">SPREADSHEETS</div>
+      <div class="in" style="margin-bottom:8px"><input placeholder="Describe a list..." style="height:36px;font-size:11.5px"></div>
+      <button class="btn sm" style="width:100%;justify-content:center">${SHEET} Build Excel</button>
+      <div class="note">Recent: below-cost-products.xlsx · supplier-margins.xlsx</div></div>
+  </div>` },
+
+{ g:"Organised", name:"20 · Zen Minimal", desc:"Nothing but the question and the answer. History tucked behind one link.",
+  html:`<div class="app pad rel" style="max-width:620px;margin:0 auto;padding-top:56px">
+    <div class="h-title" style="margin-bottom:14px">${SPARK.replace('class="ic"','class="ic" style="width:20px;height:20px"')}<b>Ask</b></div>
+    <div class="in"><input style="height:50px;font-size:15px;border-width:2px" placeholder="Ask anything about your shop..."><button class="btn" style="height:50px">${SEND}</button></div>
+    <div style="margin-top:28px">
+      <div style="font-size:12px;color:var(--g400);margin-bottom:6px">${Q1}</div>
+      <div style="font-size:15px;line-height:1.7;color:var(--g800)">${A1}</div>
+      <div style="margin-top:14px;font-size:11px;color:var(--g400)">6 rows · Show SQL · Copy</div>
+    </div>
+    <div style="position:absolute;bottom:20px;left:26px;font-size:11px;color:var(--g400);cursor:pointer">View history (24)</div>
+    <div class="fabb">${SPARK.replace('class="ic"','')}</div>
+  </div>` },
+];
+
+const rail = document.getElementById("rail"), mocks = document.getElementById("mocks");
+let cur = 0, lastG = "";
+MOCKS.forEach((m,i)=>{
+  if(m.g!==lastG){ lastG=m.g; const g=document.createElement("div"); g.className="grp"; g.textContent=m.g; rail.appendChild(g); }
+  const b=document.createElement("button"); b.innerHTML=`<span class="n">${i+1}</span>${m.name.split("· ")[1]}`; b.onclick=()=>go(i); rail.appendChild(b);
+  const d=document.createElement("div"); d.className="mock"; d.innerHTML=m.html; mocks.appendChild(d);
+});
+function go(i){
+  cur=(i+MOCKS.length)%MOCKS.length;
+  document.querySelectorAll(".rail button").forEach((b,j)=>b.classList.toggle("on",j===cur));
+  document.querySelectorAll(".mock").forEach((m,j)=>m.classList.toggle("on",j===cur));
+  document.getElementById("mname").textContent=MOCKS[cur].name;
+  document.getElementById("mdesc").textContent=MOCKS[cur].desc;
+}
+function nav(d){ go(cur+d); }
+document.addEventListener("keydown",e=>{ if(e.key==="ArrowRight")nav(1); if(e.key==="ArrowLeft")nav(-1); });
+go(0);
+</script>
+</body>
+</html>

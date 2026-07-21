@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RetailGuard - Know Where Your Margins Leak</title>
+<meta name="description" content="RetailGuard finds the margin leaks hiding in your shop data. Get your free margin scan today.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&family=Inter:wght@400;500&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#09090B;--surface:#18181B;--surface-el:#27272A;--border:#3F3F46;
+  --body:#A1A1AA;--heading:#FAFAFA;--accent:#10B981;--accent-glow:#10B98133;
+  --accent-hover:#059669;--danger:#EF4444;--grad-start:#10B981;--grad-end:#0891B2;
+  --radius:16px;--nav-h:72px;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:'Inter',sans-serif;font-weight:400;color:var(--body);background:var(--bg);line-height:1.6;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4{font-family:'Space Grotesk',sans-serif;font-weight:700;color:var(--heading);line-height:1.1;letter-spacing:-0.02em}
+.mono{font-family:'IBM Plex Mono',monospace;font-weight:500}
+a{color:var(--accent);text-decoration:none;transition:color 200ms}
+a:hover{color:var(--accent-hover)}
+img{max-width:100%;display:block}
+button{cursor:pointer;border:none;font-family:inherit}
+
+/* Container */
+.container{max-width:1100px;margin:0 auto;padding:0 24px}
+
+/* Nav */
+.nav{position:sticky;top:0;z-index:100;padding:20px 0;border-bottom:1px solid transparent;transition:padding 200ms ease,background 200ms ease,border-color 200ms ease,backdrop-filter 200ms ease}
+.nav.scrolled{padding:12px 0;background:rgba(9,9,11,0.85);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom-color:var(--border)}
+.nav-inner{display:flex;align-items:center;justify-content:space-between;max-width:1100px;margin:0 auto;padding:0 24px}
+.nav-logo{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:20px;color:var(--heading)}
+.nav-links{display:flex;align-items:center;gap:32px}
+.nav-links a{color:var(--body);font-size:14px;font-weight:500;transition:color 150ms}
+.nav-links a:hover{color:var(--heading)}
+.btn-primary{display:inline-flex;align-items:center;justify-content:center;padding:12px 24px;background:var(--accent);color:#fff;font-weight:500;font-size:15px;border-radius:8px;transition:background 200ms ease,box-shadow 300ms ease,transform 150ms ease;box-shadow:0 0 0 0 var(--accent-glow)}
+.btn-primary:hover{background:var(--accent-hover);box-shadow:0 0 20px 4px rgba(16,185,129,0.27);transform:translateY(-1px);color:#fff}
+.btn-primary:active{transform:translateY(0)}
+.btn-ghost{display:inline-flex;align-items:center;padding:12px 24px;background:transparent;border:1px solid var(--border);color:var(--heading);font-weight:500;font-size:15px;border-radius:8px;transition:border-color 200ms,background 200ms}
+.btn-ghost:hover{border-color:var(--accent);background:rgba(16,185,129,0.05);color:var(--heading)}
+
+/* Hero */
+.hero{padding:100px 0 80px;text-align:center;position:relative;overflow:hidden}
+.hero h1{font-size:clamp(40px,6vw,72px);margin-bottom:20px;max-width:900px;margin-left:auto;margin-right:auto}
+.hero-sub{font-size:18px;color:var(--body);max-width:560px;margin:0 auto 36px;line-height:1.7}
+.hero-cta-wrap{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-bottom:64px}
+.hero-screenshot{position:relative;max-width:920px;margin:0 auto}
+.hero-screenshot-frame{border-radius:var(--radius);overflow:hidden;border:1px solid var(--border);box-shadow:0 24px 64px rgba(0,0,0,0.4)}
+.hero-orb{position:absolute;bottom:-30%;left:50%;transform:translateX(-50%);width:600px;height:600px;border-radius:50%;background:radial-gradient(ellipse at center,rgba(16,185,129,0.25) 0%,rgba(8,145,178,0.12) 40%,transparent 70%);animation:pulse 8s ease-in-out infinite;pointer-events:none;z-index:-1}
+@keyframes pulse{0%,100%{transform:translateX(-50%) scale(1);opacity:0.4}50%{transform:translateX(-50%) scale(1.05);opacity:0.5}}
+
+/* Proof strip */
+.proof{border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:40px 0;text-align:center}
+.proof p{font-size:14px;color:var(--body);margin-bottom:20px;text-transform:uppercase;letter-spacing:0.05em;font-weight:500}
+.proof-logos{display:flex;align-items:center;justify-content:center;gap:40px;flex-wrap:wrap;opacity:0.4}
+.proof-logos span{font-family:'Space Grotesk',sans-serif;font-size:16px;color:var(--body);font-weight:700}
+
+/* Features */
+.features{padding:100px 0}
+.features-header{text-align:center;margin-bottom:64px}
+.features-header h2{font-size:clamp(32px,4vw,48px);margin-bottom:16px}
+.features-header p{font-size:18px;color:var(--body);max-width:520px;margin:0 auto}
+.features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px}
+.feature-card{background:rgba(24,24,27,0.6);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(63,63,70,0.5);border-radius:var(--radius);padding:32px;transition:transform 200ms ease,border-color 200ms ease}
+.feature-card:hover{transform:translateY(-2px);border-color:rgba(16,185,129,0.4)}
+.feature-icon{width:48px;height:48px;margin-bottom:20px;display:flex;align-items:center;justify-content:center}
+.feature-icon svg{width:32px;height:32px;stroke:var(--accent);stroke-width:1.5;fill:none}
+.feature-card h3{font-size:20px;margin-bottom:10px}
+.feature-card p{font-size:15px;line-height:1.7}
+.feature-card .data-pop{font-family:'IBM Plex Mono',monospace;font-size:18px;color:var(--accent);font-weight:500}
+
+/* How it works */
+.how{padding:100px 0;position:relative}
+.how-header{text-align:center;margin-bottom:64px}
+.how-header h2{font-size:clamp(32px,4vw,48px);margin-bottom:16px}
+.how-header p{font-size:18px;color:var(--body);max-width:480px;margin:0 auto}
+.timeline{max-width:600px;margin:0 auto;position:relative;padding-left:60px}
+.timeline::before{content:'';position:absolute;left:19px;top:20px;bottom:20px;width:2px;background:var(--accent);opacity:0.4}
+.timeline-step{position:relative;margin-bottom:48px}
+.timeline-step:last-child{margin-bottom:0}
+.timeline-num{position:absolute;left:-60px;top:0;width:40px;height:40px;border-radius:50%;border:2px solid var(--accent);background:var(--bg);display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:14px;color:var(--accent);font-weight:500}
+.timeline-step h3{font-size:20px;margin-bottom:8px}
+.timeline-step p{font-size:15px;line-height:1.7}
+
+/* Pricing */
+.pricing{padding:100px 0}
+.pricing-header{text-align:center;margin-bottom:64px}
+.pricing-header h2{font-size:clamp(32px,4vw,48px);margin-bottom:16px}
+.pricing-header p{font-size:18px;color:var(--body);max-width:480px;margin:0 auto}
+.pricing-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px;max-width:960px;margin:0 auto}
+.pricing-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:36px;position:relative;transition:transform 200ms ease,box-shadow 200ms ease}
+.pricing-card:hover{transform:translateY(-4px);box-shadow:0 12px 40px rgba(0,0,0,0.3)}
+.pricing-card.popular{border-top:3px solid var(--accent)}
+.pricing-card.popular .popular-badge{display:inline-block;background:rgba(16,185,129,0.15);color:var(--accent);font-size:12px;font-weight:600;padding:4px 12px;border-radius:20px;margin-bottom:16px;text-transform:uppercase;letter-spacing:0.05em}
+.popular-badge{display:none}
+.pricing-card h3{font-size:18px;color:var(--heading);margin-bottom:8px}
+.pricing-price{font-family:'Space Grotesk',sans-serif;font-size:42px;color:var(--heading);font-weight:700;margin-bottom:4px}
+.pricing-period{font-size:14px;color:var(--body);margin-bottom:24px}
+.pricing-features{list-style:none;margin-bottom:32px}
+.pricing-features li{font-size:14px;padding:8px 0;display:flex;align-items:flex-start;gap:10px;border-bottom:1px solid rgba(63,63,70,0.3)}
+.pricing-features li:last-child{border-bottom:none}
+.pricing-features li::before{content:'';width:16px;height:16px;min-width:16px;margin-top:2px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%2310B981' stroke-width='2'%3E%3Cpath d='M3 8.5l3.5 3.5 6.5-7'/%3E%3C/svg%3E") no-repeat center/contain}
+.pricing-card .btn-primary{width:100%}
+.pricing-card .btn-ghost{width:100%}
+
+/* FAQ */
+.faq{padding:100px 0}
+.faq-header{text-align:center;margin-bottom:64px}
+.faq-header h2{font-size:clamp(32px,4vw,48px);margin-bottom:16px}
+.faq-list{max-width:700px;margin:0 auto}
+.faq-item{border-bottom:1px solid var(--border)}
+.faq-item:first-child{border-top:1px solid var(--border)}
+.faq-q{width:100%;display:flex;align-items:center;justify-content:space-between;padding:20px 0;background:none;color:var(--heading);font-size:16px;font-weight:500;text-align:left;font-family:'Inter',sans-serif;cursor:pointer;transition:color 150ms}
+.faq-q:hover{color:var(--accent)}
+.faq-q svg{width:20px;height:20px;stroke:var(--body);transition:transform 300ms ease;flex-shrink:0;margin-left:16px}
+.faq-item.open .faq-q svg{transform:rotate(180deg)}
+.faq-a{max-height:0;overflow:hidden;transition:max-height 300ms ease;padding-left:0}
+.faq-a-inner{padding:0 0 20px;font-size:15px;line-height:1.7;border-left:3px solid var(--accent);padding-left:16px;margin-left:0}
+
+/* Contact form */
+.contact{padding:100px 0}
+.contact-header{text-align:center;margin-bottom:48px}
+.contact-header h2{font-size:clamp(28px,3.5vw,40px);margin-bottom:12px}
+.contact-header p{font-size:16px;color:var(--body)}
+.contact-card{max-width:440px;margin:0 auto;background:rgba(24,24,27,0.6);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(63,63,70,0.5);border-radius:var(--radius);padding:36px}
+.form-group{margin-bottom:20px}
+.form-group label{display:block;font-size:13px;font-weight:500;color:var(--heading);margin-bottom:6px}
+.form-group input{width:100%;padding:12px 16px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--heading);font-size:15px;font-family:'Inter',sans-serif;transition:border-color 200ms}
+.form-group input::placeholder{color:rgba(161,161,170,0.6)}
+.form-group input:focus{outline:none;border-color:var(--accent)}
+.form-submit-btn{width:100%;margin-top:8px}
+.form-msg{text-align:center;margin-top:16px;font-size:14px;padding:10px;border-radius:8px;display:none}
+.form-msg.success{display:block;background:rgba(16,185,129,0.1);color:var(--accent)}
+.form-msg.error{display:block;background:rgba(239,68,68,0.1);color:var(--danger)}
+
+/* Footer */
+.footer{border-top:1px solid var(--border);padding:48px 0;text-align:center}
+.footer-logo{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:18px;color:var(--heading);margin-bottom:12px}
+.footer-links{display:flex;gap:24px;justify-content:center;margin-bottom:20px;flex-wrap:wrap}
+.footer-links a{font-size:14px;color:var(--body)}
+.footer-links a:hover{color:var(--heading)}
+.footer-copy{font-size:13px;color:rgba(161,161,170,0.5)}
+
+/* Animations */
+.reveal{opacity:0;transform:translateY(16px) scale(0.98);transition:opacity 500ms ease-out,transform 500ms ease-out}
+.reveal.visible{opacity:1;transform:none}
+.hero-anim{opacity:0;transform:translateY(20px);transition:opacity 600ms ease-out,transform 600ms cubic-bezier(0.16,1,0.3,1)}
+.hero-anim.visible{opacity:1;transform:none}
+.hero-screenshot-anim{opacity:0;transform:translateY(40px) scale(0.97);transition:opacity 700ms cubic-bezier(0.16,1,0.3,1),transform 700ms cubic-bezier(0.16,1,0.3,1)}
+.hero-screenshot-anim.visible{opacity:1;transform:none}
+
+/* Reduced motion */
+@media(prefers-reduced-motion:reduce){
+  .reveal,.hero-anim,.hero-screenshot-anim{opacity:1;transform:none;transition:none}
+  .hero-orb{animation:none}
+  .pricing-card.popular{animation:none}
+  .btn-primary:hover{transform:none}
+  .feature-card:hover{transform:none}
+  .pricing-card:hover{transform:none}
+}
+
+/* Mobile */
+@media(max-width:768px){
+  .nav-links a:not(.btn-primary){display:none}
+  .hero{padding:60px 0 48px}
+  .hero h1{font-size:36px}
+  .features-grid{grid-template-columns:1fr}
+  .pricing-grid{grid-template-columns:1fr;max-width:360px}
+  .timeline{padding-left:48px}
+  .timeline::before{left:14px}
+  .timeline-num{left:-48px;width:32px;height:32px;font-size:12px}
+  .container{padding:0 16px}
+  .proof-logos{gap:20px}
+}
+@media(max-width:400px){
+  .hero h1{font-size:30px}
+  .hero-cta-wrap{flex-direction:column;align-items:center}
+  .contact-card{padding:24px;margin:0 8px}
+}
+</style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav class="nav" id="nav">
+  <div class="nav-inner">
+    <div class="nav-logo">RetailGuard</div>
+    <div class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+      <a href="#contact" class="btn-primary">Get my free margin scan</a>
+    </div>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="container">
+    <h1 class="hero-anim" style="transition-delay:0ms">Know exactly where your margins leak</h1>
+    <p class="hero-sub hero-anim" style="transition-delay:150ms">Your shop data already holds the answers. RetailGuard surfaces the products costing you money, so you can fix them before they add up.</p>
+    <div class="hero-cta-wrap hero-anim" style="transition-delay:300ms">
+      <a href="#contact" class="btn-primary">Get my free margin scan</a>
+      <a href="#how" class="btn-ghost">See how it works</a>
+    </div>
+    <div class="hero-screenshot hero-screenshot-anim" style="transition-delay:500ms">
+      <div class="hero-orb"></div>
+      <div class="hero-screenshot-frame">
+        <!-- CSS-drawn dashboard vignette -->
+        <svg viewBox="0 0 920 480" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;background:#18181B;border-radius:12px">
+          <!-- Top bar -->
+          <rect x="0" y="0" width="920" height="40" fill="#27272A"/>
+          <circle cx="20" cy="20" r="5" fill="#EF4444"/>
+          <circle cx="38" cy="20" r="5" fill="#F59E0B"/>
+          <circle cx="56" cy="20" r="5" fill="#10B981"/>
+          <!-- Sidebar -->
+          <rect x="0" y="40" width="200" height="440" fill="#1f1f23"/>
+          <rect x="16" y="60" width="120" height="10" rx="3" fill="#3F3F46"/>
+          <rect x="16" y="88" width="168" height="32" rx="6" fill="rgba(16,185,129,0.1)"/>
+          <rect x="28" y="98" width="80" height="8" rx="2" fill="#10B981"/>
+          <rect x="16" y="136" width="100" height="8" rx="2" fill="#3F3F46"/>
+          <rect x="16" y="164" width="130" height="8" rx="2" fill="#3F3F46"/>
+          <rect x="16" y="192" width="110" height="8" rx="2" fill="#3F3F46"/>
+          <!-- Main content area - Table -->
+          <rect x="220" y="56" width="200" height="14" rx="3" fill="#FAFAFA"/>
+          <rect x="220" y="84" width="680" height="1" fill="#3F3F46"/>
+          <!-- Table header -->
+          <rect x="220" y="96" width="80" height="8" rx="2" fill="#A1A1AA"/>
+          <rect x="380" y="96" width="60" height="8" rx="2" fill="#A1A1AA"/>
+          <rect x="520" y="96" width="50" height="8" rx="2" fill="#A1A1AA"/>
+          <rect x="650" y="96" width="70" height="8" rx="2" fill="#A1A1AA"/>
+          <rect x="800" y="96" width="60" height="8" rx="2" fill="#A1A1AA"/>
+          <rect x="220" y="116" width="680" height="1" fill="#27272A"/>
+          <!-- Rows -->
+          <rect x="220" y="130" width="120" height="8" rx="2" fill="#FAFAFA"/>
+          <rect x="380" y="130" width="40" height="8" rx="2" fill="#FAFAFA"/>
+          <rect x="520" y="130" width="30" height="8" rx="2" fill="#FAFAFA"/>
+          <rect x="650" y="126" width="56" height="16" rx="4" fill="rgba(239,68,68,0.15)"/>
+          <rect x="656" y="130" width="44" height="8" rx="2" fill="#EF4444"/>
+          <rect x="800" y="130" width="50" height="8" rx="2" fill="#FAFAFA"/>
+          <rect x="220" y="156" width="680" height="1" fill="#27272A"/>
+          <rect x="220" y="170" width="100" height="8" rx="2" fill="#FAFAFA"/>
+          <rect x="380" y="170" width="36" height="8" rx="2" fill="#FAFAFA"/>
+          <rect x="520" y="170" width="34" height="8" rx="2" fill="#FAFAFA"/>
+          <rect x="650" y="166" width="56" height="16" rx="4" fill="rgba(239,68,68,0.15)"/>
+          <rect x="656" y="170" width="44" height="8" rx="2" fill="#EF4444"/>
+          <rect x="800" y="170" width="45" height="8" rx="2" fill="#FAFAFA"/>
+          <rect x="220" y="196" width="680" height="1" fill="#27272A"/>
+          <rect x="220" y="210" width="90" height="8" rx="2" fill="#FAFAFA"/>
+          <rect x="380" y="210" width="44" height="8" rx="2" fill="#FAFAFA"/>
+          <rect x="520" y="210" width="28" height="8" rx="2" fill="#FAFAFA"/>
+          <rect x="650" y="206" width="56" height="16" rx="4" fill="rgba(16,185,129,0.15)"/>
+          <rect x="656" y="210" width="44" height="8" rx="2" fill="#10B981"/>
+          <rect x="800" y="210" width="52" height="8" rx="2" fill="#FAFAFA"/>
+          <rect x="220" y="236" width="680" height="1" fill="#27272A"/>
+          <rect x="220" y="250" width="110" height="8" rx="2" fill="#FAFAFA"/>
+          <rect x="380" y="250" width="38" height="8" rx="2" fill="#FAFAFA"/>
+          <rect x="520" y="250" width="32" height="8" rx="2" fill="#FAFAFA"/>
+          <rect x="650" y="246" width="56" height="16" rx="4" fill="rgba(245,158,11,0.15)"/>
+          <rect x="656" y="250" width="44" height="8" rx="2" fill="#F59E0B"/>
+          <rect x="800" y="250" width="48" height="8" rx="2" fill="#FAFAFA"/>
+          <!-- Summary cards at bottom -->
+          <rect x="220" y="300" width="210" height="100" rx="10" fill="#27272A"/>
+          <rect x="240" y="320" width="80" height="8" rx="2" fill="#A1A1AA"/>
+          <rect x="240" y="344" width="60" height="20" rx="3" fill="#10B981"/>
+          <rect x="450" y="300" width="210" height="100" rx="10" fill="#27272A"/>
+          <rect x="470" y="320" width="90" height="8" rx="2" fill="#A1A1AA"/>
+          <rect x="470" y="344" width="50" height="20" rx="3" fill="#EF4444"/>
+          <rect x="680" y="300" width="210" height="100" rx="10" fill="#27272A"/>
+          <rect x="700" y="320" width="70" height="8" rx="2" fill="#A1A1AA"/>
+          <rect x="700" y="344" width="55" height="20" rx="3" fill="#F59E0B"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Social Proof -->
+<section class="proof">
+  <div class="container">
+    <p>Trusted by independent retailers across Ireland and the UK</p>
+    <div class="proof-logos">
+      <span>Spar</span>
+      <span>Centra</span>
+      <span>Costcutter</span>
+      <span>Londis</span>
+      <span>Mace</span>
+    </div>
+  </div>
+</section>
+
+<!-- Features -->
+<section class="features" id="features">
+  <div class="container">
+    <div class="features-header">
+      <h2>Five tools. One clear picture.</h2>
+      <p>Everything a shop owner needs to protect margins and understand their numbers, without the spreadsheet headaches.</p>
+    </div>
+    <div class="features-grid">
+      <!-- Invoice Scanner -->
+      <div class="feature-card reveal">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M4 4h16v16H4z" stroke-linejoin="round"/><path d="M9 9h6M9 12h4M4 7h2M4 11h2M4 15h2"/><path d="M7 2v4M17 2v4" stroke-linecap="round"/></svg>
+        </div>
+        <h3>Invoice Scanner</h3>
+        <p>Snap a photo of any supplier invoice. Instantly see which lines match your stock file, which are new, and where costs have moved.</p>
+        <p class="data-pop" style="margin-top:12px">10 lines matched in under 3 seconds</p>
+      </div>
+      <!-- Ask your shop -->
+      <div class="feature-card reveal">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" stroke-linejoin="round"/><path d="M8 9h8M8 13h5" stroke-linecap="round"/></svg>
+        </div>
+        <h3>Ask Your Shop</h3>
+        <p>Type a plain English question and get a table, chart, or number back. "What sold well last Tuesday?" "Which supplier invoices arrived this week?"</p>
+        <p class="data-pop" style="margin-top:12px">125+ questions answered to date</p>
+      </div>
+      <!-- Price Moves History -->
+      <div class="feature-card reveal">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M3 17l6-6 4 4 8-8" stroke-linecap="round" stroke-linejoin="round"/><path d="M17 3h4v4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <h3>Price Moves History</h3>
+        <p>Track every price change across your stock. See which products crept up from suppliers without a matching shelf price adjustment.</p>
+        <p class="data-pop" style="margin-top:12px">Full 12 month price trail</p>
+      </div>
+      <!-- Margin Leak Finder -->
+      <div class="feature-card reveal">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35" stroke-linecap="round"/><path d="M8 11h6M11 8v6" stroke-linecap="round"/></svg>
+        </div>
+        <h3>Margin Leak Finder</h3>
+        <p>Automatically surfaces products selling below cost or below your target margin. Sorted by weekly revenue so you fix the biggest leaks first.</p>
+        <p class="data-pop" style="margin-top:12px">Sorted by impact, biggest first</p>
+      </div>
+      <!-- Morning Report -->
+      <div class="feature-card reveal">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <h3>Morning Report</h3>
+        <p>A short daily summary on your desk before opening. Yesterday's sales, margin health by department, and any new issues flagged overnight.</p>
+        <p class="data-pop" style="margin-top:12px">Ready before you open</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- How it works -->
+<section class="how" id="how">
+  <div class="container">
+    <div class="how-header">
+      <h2>Up and running in three steps</h2>
+      <p>No hardware, no setup fee, no lengthy onboarding. We work with the data your till system already produces.</p>
+    </div>
+    <div class="timeline">
+      <div class="timeline-step reveal">
+        <div class="timeline-num">1</div>
+        <h3>Export your data</h3>
+        <p>Your till system exports product, sales, and supplier data as standard files. We show you exactly which reports to run.</p>
+      </div>
+      <div class="timeline-step reveal">
+        <div class="timeline-num">2</div>
+        <h3>We load and analyse</h3>
+        <p>Your files are securely loaded into your private dashboard. Within minutes, margin leaks, price moves, and department trends are visible.</p>
+      </div>
+      <div class="timeline-step reveal">
+        <div class="timeline-num">3</div>
+        <h3>You act on what matters</h3>
+        <p>Fix the leaks, track the improvements, and ask questions whenever you need clarity. Typical opportunities identified can amount to thousands of euros per year, depending on store size.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Pricing -->
+<section class="pricing" id="pricing">
+  <div class="container">
+    <div class="pricing-header">
+      <h2>Simple pricing, no surprises</h2>
+      <p>Monthly plans, net of VAT, no setup fee. Cancel any time.</p>
+    </div>
+    <div class="pricing-grid">
+      <!-- Insight -->
+      <div class="pricing-card reveal">
+        <span class="popular-badge"></span>
+        <h3>Insight</h3>
+        <div class="pricing-price">&euro;500</div>
+        <div class="pricing-period">per month, net of VAT</div>
+        <ul class="pricing-features">
+          <li>Full margin dashboard</li>
+          <li>Margin leak alerts</li>
+          <li>Department drill-down</li>
+          <li>Barcode product lookup</li>
+          <li>Supplier analytics</li>
+        </ul>
+        <a href="#contact" class="btn-ghost">Get my free margin scan</a>
+      </div>
+      <!-- Complete -->
+      <div class="pricing-card popular reveal">
+        <span class="popular-badge">Most popular</span>
+        <h3>Complete</h3>
+        <div class="pricing-price">&euro;1,000</div>
+        <div class="pricing-period">per month, net of VAT</div>
+        <ul class="pricing-features">
+          <li>Everything in Insight</li>
+          <li>Invoice Scanner</li>
+          <li>Ask Your Shop</li>
+          <li>Trading pattern analysis</li>
+          <li>Product performance reports</li>
+          <li>Priority support</li>
+        </ul>
+        <a href="#contact" class="btn-primary">Get my free margin scan</a>
+      </div>
+      <!-- Multi-site -->
+      <div class="pricing-card reveal">
+        <span class="popular-badge"></span>
+        <h3>Multi-site</h3>
+        <div class="pricing-price">&euro;1,500</div>
+        <div class="pricing-period">per month, net of VAT</div>
+        <ul class="pricing-features">
+          <li>Everything in Complete</li>
+          <li>Write-back (rolling out)</li>
+          <li>Morning report</li>
+          <li>Per-site onboarding</li>
+          <li>Multi-location comparison</li>
+        </ul>
+        <a href="#contact" class="btn-ghost">Get my free margin scan</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="faq" id="faq">
+  <div class="container">
+    <div class="faq-header">
+      <h2>Frequently asked questions</h2>
+    </div>
+    <div class="faq-list">
+      <div class="faq-item">
+        <button class="faq-q" aria-expanded="false">What till systems do you work with?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button>
+        <div class="faq-a"><div class="faq-a-inner">We work with any system that can export product and sales data as CSV or Excel files. This includes CBE, Cashmaster, Henderson, Symbol, and many others used by Irish and UK retailers.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" aria-expanded="false">How long does setup take?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button>
+        <div class="faq-a"><div class="faq-a-inner">Most shops are up and running within a day. We guide you through the export process, load your data, and walk you through the dashboard. No hardware to install.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" aria-expanded="false">Is my data secure?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button>
+        <div class="faq-a"><div class="faq-a-inner">Yes. Your data is stored in a private, encrypted database that only you can access. We never share your data with anyone, and each shop has completely isolated storage.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" aria-expanded="false">Can I cancel any time?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button>
+        <div class="faq-a"><div class="faq-a-inner">Yes, there is no lock-in contract. Monthly billing, cancel at the end of any billing period. We think you will stay because the product saves you money, not because of a contract.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" aria-expanded="false">What if I have multiple shops?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button>
+        <div class="faq-a"><div class="faq-a-inner">The Multi-site plan gives you separate dashboards per location with the ability to compare performance across your estate. Each site gets its own onboarding.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" aria-expanded="false">What does the free margin scan include?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button>
+        <div class="faq-a"><div class="faq-a-inner">We take a sample of your product data and produce a short report showing where the biggest margin opportunities are. No payment details required, no obligation.</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Contact Form -->
+<section class="contact" id="contact">
+  <div class="container">
+    <div class="contact-header">
+      <h2>Get your free margin scan</h2>
+      <p>No card needed. We will send you a sample report within 48 hours.</p>
+    </div>
+    <div class="contact-card">
+      <form id="contactForm" action="https://formsubmit.co/ajax/retailguard.sales@gmail.com" method="POST">
+        <input type="hidden" name="_subject" value="Dark Observatory Lead">
+        <input type="hidden" name="_captcha" value="false">
+        <input type="text" name="_honey" style="display:none">
+        <div class="form-group">
+          <label for="name">Your name</label>
+          <input type="text" id="name" name="name" placeholder="Patrick Murphy" required>
+        </div>
+        <div class="form-group">
+          <label for="email">Email address</label>
+          <input type="email" id="email" name="email" placeholder="patrick@myshop.ie" required>
+        </div>
+        <div class="form-group">
+          <label for="shop">Shop name</label>
+          <input type="text" id="shop" name="shop" placeholder="Murphy's Centra Navan" required>
+        </div>
+        <button type="submit" class="btn-primary form-submit-btn">Get my free margin scan</button>
+      </form>
+      <div class="form-msg" id="formMsg"></div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-logo">RetailGuard</div>
+    <div class="footer-links">
+      <a href="#features">Features</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+      <a href="#contact">Contact</a>
+    </div>
+    <p class="footer-copy">&copy; 2026 RetailGuard. All rights reserved.</p>
+  </div>
+</footer>
+
+<script>
+(function(){
+  // Reduced motion check
+  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Nav scroll
+  const nav = document.getElementById('nav');
+  let ticking = false;
+  window.addEventListener('scroll', function(){
+    if(!ticking){
+      requestAnimationFrame(function(){
+        if(window.scrollY > 20){nav.classList.add('scrolled')}else{nav.classList.remove('scrolled')}
+        ticking = false;
+      });
+      ticking = true;
+    }
+  });
+
+  // Reveal on scroll
+  if(!prefersReduced){
+    const reveals = document.querySelectorAll('.reveal,.hero-anim,.hero-screenshot-anim');
+    const observer = new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        if(entry.isIntersecting){
+          // Stagger siblings
+          const parent = entry.target.parentElement;
+          const siblings = parent.querySelectorAll('.reveal');
+          if(siblings.length > 1){
+            let idx = Array.from(siblings).indexOf(entry.target);
+            entry.target.style.transitionDelay = (idx * 60) + 'ms';
+          }
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    },{threshold:0.15});
+    reveals.forEach(function(el){observer.observe(el)});
+    // Trigger hero immediately
+    setTimeout(function(){
+      document.querySelectorAll('.hero-anim,.hero-screenshot-anim').forEach(function(el){el.classList.add('visible')});
+    },100);
+  } else {
+    document.querySelectorAll('.reveal,.hero-anim,.hero-screenshot-anim').forEach(function(el){el.classList.add('visible')});
+  }
+
+  // FAQ accordion
+  document.querySelectorAll('.faq-q').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      const item = btn.parentElement;
+      const answer = item.querySelector('.faq-a');
+      const isOpen = item.classList.contains('open');
+      // Close all
+      document.querySelectorAll('.faq-item.open').forEach(function(openItem){
+        openItem.classList.remove('open');
+        openItem.querySelector('.faq-q').setAttribute('aria-expanded','false');
+        openItem.querySelector('.faq-a').style.maxHeight = '0';
+      });
+      if(!isOpen){
+        item.classList.add('open');
+        btn.setAttribute('aria-expanded','true');
+        answer.style.maxHeight = answer.scrollHeight + 'px';
+      }
+    });
+  });
+
+  // Contact form AJAX
+  var form = document.getElementById('contactForm');
+  var msgEl = document.getElementById('formMsg');
+  form.addEventListener('submit',function(e){
+    e.preventDefault();
+    var data = new FormData(form);
+    msgEl.className = 'form-msg';
+    msgEl.style.display = 'none';
+    fetch(form.action,{method:'POST',body:data,headers:{'Accept':'application/json'}})
+    .then(function(r){
+      if(r.ok){
+        msgEl.textContent = 'Thank you! We will be in touch within 48 hours with your margin scan.';
+        msgEl.className = 'form-msg success';
+        form.reset();
+      } else {
+        throw new Error('Network response was not ok');
+      }
+    })
+    .catch(function(){
+      msgEl.textContent = 'Something went wrong. Please try again or email us directly at retailguard.sales@gmail.com.';
+      msgEl.className = 'form-msg error';
+    });
+  });
+})();
+</script>
+</body>
+</html>

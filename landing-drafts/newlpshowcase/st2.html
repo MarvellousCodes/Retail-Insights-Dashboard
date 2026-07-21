@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RetailGuard - See what your margins are really doing</title>
+<meta name="description" content="RetailGuard helps shop owners find hidden margin leaks, scan invoices, and get answers from their sales data.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#F8FAFC;
+  --glass:rgba(255,255,255,0.70);
+  --glass-border:rgba(226,232,240,0.50);
+  --deep:#FFFFFF;
+  --primary-text:#0F172A;
+  --body-text:#334155;
+  --muted-text:#64748B;
+  --accent:#4F46E5;
+  --accent-hover:#4338CA;
+  --accent-subtle:#EEF2FF;
+  --success:#0D9488;
+  --decorative:#F59E0B;
+  --shadow:rgba(79,70,229,0.06);
+  --radius:20px;
+  --radius-sm:12px;
+  --radius-pill:9999px;
+}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Inter',system-ui,sans-serif;
+  background:var(--bg);
+  color:var(--body-text);
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4{font-family:'Plus Jakarta Sans',sans-serif;color:var(--primary-text);line-height:1.2}
+a{color:var(--accent);text-decoration:none}
+img{max-width:100%;display:block}
+
+/* === NAV === */
+.nav{
+  position:sticky;top:0;z-index:100;
+  background:var(--deep);
+  border-bottom:1px solid var(--glass-border);
+  padding:0 24px;height:64px;
+  display:flex;align-items:center;justify-content:space-between;
+  transition:box-shadow 200ms ease;
+}
+.nav.scrolled{box-shadow:0 1px 8px rgba(0,0,0,0.04)}
+.nav-logo{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:1.25rem;color:var(--primary-text)}
+.nav-links{display:flex;gap:8px}
+.nav-links a{
+  padding:6px 14px;border-radius:var(--radius-pill);
+  font-size:0.875rem;font-weight:500;color:var(--muted-text);
+  transition:background 200ms,color 200ms;
+}
+.nav-links a:hover,.nav-links a.active{background:var(--accent-subtle);color:var(--accent)}
+.nav-cta{
+  background:var(--accent);color:#fff;
+  padding:8px 20px;border-radius:var(--radius-pill);
+  font-size:0.875rem;font-weight:600;border:none;cursor:pointer;
+  transition:background 150ms,transform 150ms,box-shadow 150ms;
+}
+.nav-cta:hover{background:var(--accent-hover);transform:scale(1.02);box-shadow:0 4px 12px var(--shadow)}
+
+/* === HERO === */
+.hero{
+  padding:80px 24px 60px;
+  max-width:1200px;margin:0 auto;
+  display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center;
+  position:relative;overflow:visible;
+}
+.hero-text h1{font-size:clamp(36px,4.5vw,56px);margin-bottom:16px;font-weight:800}
+.hero-text p{font-size:1.125rem;color:var(--body-text);margin-bottom:32px;max-width:480px}
+.hero-buttons{display:flex;gap:12px;flex-wrap:wrap}
+.btn-primary{
+  background:var(--accent);color:#fff;
+  padding:14px 28px;border-radius:var(--radius-pill);
+  font-size:1rem;font-weight:600;border:none;cursor:pointer;
+  transition:background 150ms,transform 150ms,box-shadow 150ms;
+}
+.btn-primary:hover{background:var(--accent-hover);transform:scale(1.02);box-shadow:0 8px 24px var(--shadow)}
+.btn-secondary{
+  background:transparent;color:var(--accent);
+  padding:14px 28px;border-radius:var(--radius-pill);
+  font-size:1rem;font-weight:600;border:2px solid var(--accent);cursor:pointer;
+  transition:background 150ms,color 150ms;
+}
+.btn-secondary:hover{background:var(--accent-subtle)}
+
+.hero-visual{position:relative;perspective:1000px;min-height:360px}
+.hero-card{
+  position:absolute;
+  background:var(--glass);
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border:1px solid var(--glass-border);
+  border-radius:var(--radius);
+  padding:20px;
+  box-shadow:0 8px 32px var(--shadow);
+  transition:transform 600ms ease;
+}
+.hero-card-1{width:280px;top:0;left:10%;transform:rotate(-2deg) translateZ(40px)}
+.hero-card-2{width:260px;top:60px;right:5%;transform:rotate(1deg) translateZ(20px)}
+.hero-card-3{width:240px;bottom:20px;left:20%;transform:rotate(0deg) translateZ(0)}
+
+.hero-card-title{font-size:0.75rem;font-weight:600;color:var(--muted-text);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px}
+.hero-card-metric{font-size:1.5rem;font-weight:700;color:var(--primary-text)}
+.hero-card-bar{height:6px;border-radius:3px;background:#E2E8F0;margin-top:8px}
+.hero-card-bar-fill{height:100%;border-radius:3px;background:var(--success)}
+.hero-card-row{display:flex;justify-content:space-between;font-size:0.8rem;margin-top:6px;color:var(--muted-text)}
+
+/* Floating shapes */
+.float-shape{position:absolute;pointer-events:none;opacity:0}
+@media(prefers-reduced-motion:no-preference){
+  .float-shape{opacity:1;animation:floatY 5s ease-in-out infinite alternate}
+  .float-shape:nth-child(2){animation-duration:7s;animation-delay:-2s}
+  .float-shape:nth-child(3){animation-duration:3s;animation-delay:-1s}
+}
+@keyframes floatY{from{transform:translateY(0)}to{transform:translateY(-8px)}}
+.shape-amber{top:-20px;right:60px;width:48px;height:48px;border-radius:12px;background:rgba(245,158,11,0.2);transform:rotate(12deg)}
+.shape-indigo{bottom:40px;left:-20px;width:36px;height:36px;border-radius:50%;background:rgba(79,70,229,0.1)}
+.shape-teal{top:50%;right:-10px;width:24px;height:24px;background:rgba(13,148,136,0.15);clip-path:polygon(50% 0%,100% 50%,50% 100%,0% 50%)}
+
+/* Hero card float animation */
+@media(prefers-reduced-motion:no-preference){
+  .hero-card{animation:cardFloat 6s ease-in-out infinite alternate}
+  .hero-card-2{animation-delay:-2s}
+  .hero-card-3{animation-delay:-4s}
+}
+@keyframes cardFloat{from{transform:translateY(0) rotate(var(--rot,0deg))}to{transform:translateY(-4px) rotate(var(--rot,0deg))}}
+.hero-card-1{--rot:-2deg}
+.hero-card-2{--rot:1deg}
+.hero-card-3{--rot:0deg}
+
+/* === PROOF === */
+.proof{
+  background:var(--accent-subtle);
+  padding:32px 24px;
+  display:flex;align-items:center;justify-content:center;gap:40px;flex-wrap:wrap;
+}
+.proof-logo{
+  font-size:0.875rem;font-weight:600;color:var(--muted-text);
+  opacity:0.5;transition:opacity 300ms;
+  white-space:nowrap;
+}
+.proof-logo:hover{opacity:1}
+
+/* === FEATURES BENTO === */
+.features{padding:80px 24px;max-width:1200px;margin:0 auto}
+.features h2{text-align:center;font-size:clamp(28px,3.5vw,40px);margin-bottom:12px}
+.features>p{text-align:center;color:var(--body-text);margin-bottom:48px;max-width:560px;margin-left:auto;margin-right:auto}
+
+.bento-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  grid-template-rows:auto auto;
+  gap:20px;
+}
+.bento-grid .bento-card:first-child{grid-column:span 2;grid-row:span 2}
+
+.bento-card{
+  background:var(--glass);
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border:1px solid var(--glass-border);
+  border-radius:var(--radius);
+  padding:28px;
+  box-shadow:0 8px 32px var(--shadow);
+  transition:transform 400ms cubic-bezier(0.34,1.56,0.64,1),box-shadow 300ms ease-out;
+  transform-style:preserve-3d;
+  will-change:transform;
+  display:flex;flex-direction:column;
+  overflow:hidden;position:relative;
+}
+.bento-card:hover{box-shadow:0 12px 48px rgba(79,70,229,0.10)}
+
+.bento-icon{
+  width:40px;height:40px;margin-bottom:12px;
+  display:flex;align-items:center;justify-content:center;
+  border-radius:10px;background:var(--accent-subtle);
+}
+.bento-icon svg{width:22px;height:22px;stroke:var(--accent);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.bento-card h3{font-size:1.125rem;margin-bottom:8px;font-weight:700}
+.bento-card p{font-size:0.9rem;color:var(--body-text);flex:1}
+
+/* Vignettes */
+.vignette{
+  margin-top:16px;
+  background:var(--bg);border:1px solid var(--glass-border);
+  border-radius:var(--radius-sm);padding:14px;
+  font-size:0.78rem;color:var(--muted-text);
+  min-height:80px;
+}
+.vignette-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid #E2E8F0}
+.vignette-row:last-child{border-bottom:none}
+.vignette-label{font-weight:500;color:var(--primary-text)}
+.vignette-val{font-weight:600;color:var(--success)}
+.vignette-val.warn{color:var(--decorative)}
+.vignette-chat{padding:8px 12px;background:var(--accent-subtle);border-radius:12px 12px 12px 4px;margin-bottom:6px;color:var(--primary-text);font-size:0.8rem}
+.vignette-chat.reply{background:#F0FDFA;border-radius:12px 12px 4px 12px;margin-left:auto;max-width:85%}
+.vignette-spark{display:flex;align-items:flex-end;gap:2px;height:40px}
+.vignette-spark span{display:block;width:8px;background:var(--accent);border-radius:2px;opacity:0.6}
+.vignette-morning{font-size:0.75rem}
+.vignette-morning strong{display:block;color:var(--primary-text);margin-bottom:4px}
+.vignette-morning .time{color:var(--muted-text);font-size:0.7rem}
+
+/* Counter animation */
+@property --counter-val{syntax:'<integer>';inherits:false;initial-value:0}
+.counter-anim{
+  counter-reset:val var(--counter-val);
+  font-size:1.75rem;font-weight:800;color:var(--primary-text);
+  font-family:'Plus Jakarta Sans',sans-serif;
+}
+.counter-anim::after{content:counter(val)}
+@media(prefers-reduced-motion:no-preference){
+  .counter-anim.animate{animation:countUp 2s ease-out forwards}
+}
+@keyframes countUp{from{--counter-val:0}to{--counter-val:847}}
+
+/* === HOW IT WORKS === */
+.how{padding:80px 24px;max-width:900px;margin:0 auto}
+.how h2{text-align:center;font-size:clamp(28px,3.5vw,40px);margin-bottom:48px}
+.how-steps{
+  display:flex;gap:32px;justify-content:center;flex-wrap:wrap;
+}
+.how-step{flex:1;min-width:200px;max-width:280px;text-align:center}
+.how-num{
+  width:48px;height:48px;border-radius:50%;
+  border:2px solid var(--accent);
+  display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:1.125rem;color:var(--accent);
+  margin:0 auto 16px;
+  font-family:'Plus Jakarta Sans',sans-serif;
+}
+.how-step h3{font-size:1rem;margin-bottom:8px}
+.how-step p{font-size:0.875rem;color:var(--body-text)}
+.how-connector{
+  display:flex;align-items:center;padding-top:24px;
+}
+.how-connector span{
+  width:32px;height:0;border-top:2px dashed rgba(79,70,229,0.3);
+}
+
+/* === PRICING === */
+.pricing{padding:80px 24px;background:var(--deep);max-width:1200px;margin:0 auto}
+.pricing h2{text-align:center;font-size:clamp(28px,3.5vw,40px);margin-bottom:12px}
+.pricing>p{text-align:center;color:var(--body-text);margin-bottom:48px}
+.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;max-width:960px;margin:0 auto}
+.pricing-card{
+  background:var(--deep);
+  border:1px solid var(--glass-border);
+  border-radius:var(--radius);
+  padding:32px 24px;
+  display:flex;flex-direction:column;
+  position:relative;
+}
+.pricing-card.popular{border-top:3px solid var(--accent)}
+.pricing-badge{
+  position:absolute;top:-14px;left:50%;transform:translateX(-50%);
+  background:var(--accent);color:#fff;
+  font-size:0.75rem;font-weight:600;
+  padding:4px 14px;border-radius:var(--radius-pill);
+  white-space:nowrap;
+}
+@media(prefers-reduced-motion:no-preference){
+  .pricing-badge{animation:badgePulse 3s ease-in-out infinite}
+}
+@keyframes badgePulse{0%,100%{transform:translateX(-50%) scale(1)}50%{transform:translateX(-50%) scale(1.02)}}
+.pricing-card h3{font-size:1.25rem;margin-bottom:8px}
+.pricing-price{font-family:'Plus Jakarta Sans',sans-serif;font-size:2rem;font-weight:800;color:var(--primary-text);margin-bottom:4px}
+.pricing-price span{font-size:0.875rem;font-weight:400;color:var(--muted-text)}
+.pricing-note{font-size:0.8rem;color:var(--muted-text);margin-bottom:20px}
+.pricing-features{list-style:none;flex:1;margin-bottom:24px}
+.pricing-features li{
+  padding:6px 0;font-size:0.875rem;color:var(--body-text);
+  display:flex;align-items:flex-start;gap:8px;
+}
+.pricing-features li::before{
+  content:'';display:block;width:18px;height:18px;flex-shrink:0;margin-top:2px;
+  background:var(--success);
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3'%3E%3Cpath d='M5 13l4 4L19 7'/%3E%3C/svg%3E") center/contain no-repeat;
+  mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3'%3E%3Cpath d='M5 13l4 4L19 7'/%3E%3C/svg%3E") center/contain no-repeat;
+}
+.pricing-cta{
+  width:100%;padding:12px;border-radius:var(--radius-pill);
+  font-size:0.9rem;font-weight:600;cursor:pointer;border:none;
+  transition:background 150ms,transform 150ms;
+}
+.pricing-cta-primary{background:var(--accent);color:#fff}
+.pricing-cta-primary:hover{background:var(--accent-hover);transform:scale(1.02)}
+.pricing-cta-secondary{background:var(--accent-subtle);color:var(--accent)}
+.pricing-cta-secondary:hover{background:#E0E7FF}
+
+/* === FAQ === */
+.faq{padding:80px 24px;background:var(--accent-subtle)}
+.faq h2{text-align:center;font-size:clamp(28px,3.5vw,40px);margin-bottom:48px;color:var(--primary-text)}
+.faq-list{max-width:680px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
+.faq-item{
+  background:var(--deep);
+  border:1px solid var(--glass-border);
+  border-radius:var(--radius-sm);
+  overflow:hidden;
+}
+.faq-q{
+  padding:18px 24px;cursor:pointer;
+  display:flex;justify-content:space-between;align-items:center;
+  font-weight:600;font-size:0.95rem;color:var(--primary-text);
+  border:none;background:none;width:100%;text-align:left;
+  font-family:'Inter',sans-serif;
+}
+.faq-q svg{
+  width:20px;height:20px;stroke:var(--muted-text);fill:none;
+  stroke-width:2;transition:transform 250ms ease;flex-shrink:0;
+}
+.faq-item.open .faq-q svg{transform:rotate(180deg)}
+.faq-a{
+  max-height:0;overflow:hidden;
+  transition:max-height 250ms ease;
+  padding:0 24px;
+}
+.faq-a-inner{padding:0 0 18px;font-size:0.9rem;color:var(--body-text);line-height:1.7}
+
+/* === CONTACT === */
+.contact{padding:80px 24px}
+.contact-card{
+  max-width:480px;margin:0 auto;
+  background:var(--deep);
+  border:1px solid var(--glass-border);
+  border-radius:var(--radius);
+  padding:40px 32px;
+  box-shadow:0 16px 48px var(--shadow);
+}
+.contact-card h2{font-size:1.5rem;margin-bottom:8px;text-align:center}
+.contact-card>p{text-align:center;color:var(--muted-text);margin-bottom:28px;font-size:0.9rem}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-size:0.8rem;font-weight:500;color:var(--primary-text);margin-bottom:6px}
+.form-group input,.form-group textarea{
+  width:100%;padding:12px 14px;
+  background:#F1F5F9;border:1px solid var(--glass-border);
+  border-radius:10px;font-size:0.9rem;color:var(--primary-text);
+  font-family:'Inter',sans-serif;
+  transition:border-color 200ms,box-shadow 200ms;
+}
+.form-group input:focus,.form-group textarea:focus{
+  outline:none;border-color:var(--accent);
+  box-shadow:0 0 0 3px rgba(79,70,229,0.1);
+}
+.form-group textarea{resize:vertical;min-height:80px}
+.form-submit{
+  width:100%;padding:14px;margin-top:8px;
+  background:var(--accent);color:#fff;
+  border:none;border-radius:var(--radius-pill);
+  font-size:1rem;font-weight:600;cursor:pointer;
+  transition:background 150ms,transform 150ms;
+}
+.form-submit:hover{background:var(--accent-hover);transform:scale(1.02)}
+.form-submit:disabled{opacity:0.6;cursor:not-allowed;transform:none}
+.form-msg{text-align:center;margin-top:12px;font-size:0.875rem;padding:8px;border-radius:8px;display:none}
+.form-msg.success{display:block;background:#ECFDF5;color:#065F46}
+.form-msg.error{display:block;background:#FEF2F2;color:#991B1B}
+
+/* === FOOTER === */
+.footer{
+  padding:48px 24px 32px;
+  border-top:1px solid var(--glass-border);
+  max-width:1200px;margin:0 auto;
+}
+.footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:32px;margin-bottom:32px}
+.footer-brand{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:1.125rem;color:var(--primary-text);margin-bottom:8px}
+.footer-tagline{font-size:0.85rem;color:var(--muted-text);max-width:240px}
+.footer-col h4{font-size:0.8rem;font-weight:600;color:var(--primary-text);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px}
+.footer-col a{display:block;font-size:0.85rem;color:var(--muted-text);margin-bottom:8px;transition:color 200ms}
+.footer-col a:hover{color:var(--accent)}
+.footer-copy{text-align:center;font-size:0.8rem;color:var(--muted-text)}
+
+/* === RESPONSIVE === */
+@media(max-width:900px){
+  .hero{grid-template-columns:1fr;text-align:center;padding-top:60px}
+  .hero-text p{margin-left:auto;margin-right:auto}
+  .hero-buttons{justify-content:center}
+  .hero-visual{min-height:280px;margin-top:24px}
+  .hero-card-1{left:5%;width:200px}
+  .hero-card-2{right:5%;width:180px}
+  .hero-card-3{left:15%;width:170px}
+  .bento-grid{grid-template-columns:1fr 1fr}
+  .bento-grid .bento-card:first-child{grid-column:span 2;grid-row:span 1}
+  .pricing-grid{grid-template-columns:1fr}
+  .pricing-card.popular{order:-1}
+  .footer-grid{grid-template-columns:1fr 1fr}
+  .how-connector{display:none}
+  .nav-links{display:none}
+}
+@media(max-width:600px){
+  .bento-grid{grid-template-columns:1fr}
+  .bento-grid .bento-card:first-child{grid-column:span 1}
+  .hero-visual{min-height:220px}
+  .hero-card-1{left:0;width:180px}
+  .hero-card-2{right:0;width:160px;top:40px}
+  .hero-card-3{left:10%;width:150px;bottom:0}
+  .how-steps{flex-direction:column;align-items:center}
+  .footer-grid{grid-template-columns:1fr}
+  .proof{gap:24px}
+}
+@media(max-width:380px){
+  .hero{padding:40px 16px 40px}
+  .features,.how,.pricing,.faq,.contact{padding:60px 16px}
+}
+
+/* Reduced motion */
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{
+    animation-duration:0.01ms !important;
+    animation-iteration-count:1 !important;
+    transition-duration:0.01ms !important;
+  }
+}
+
+/* Focus states */
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav" id="nav">
+  <div class="nav-logo">RetailGuard</div>
+  <div class="nav-links">
+    <a href="#features">Features</a>
+    <a href="#pricing">Pricing</a>
+    <a href="#faq">FAQ</a>
+    <a href="#contact">Contact</a>
+  </div>
+  <button class="nav-cta" onclick="document.getElementById('contact').scrollIntoView({behavior:'smooth'})">Get my free margin scan</button>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-text">
+    <h1>See what your margins are really doing</h1>
+    <p>Typical opportunities identified can amount to thousands of euros per year, depending on store size. RetailGuard shows you exactly where your money leaks, so you can act.</p>
+    <div class="hero-buttons">
+      <button class="btn-primary" onclick="document.getElementById('contact').scrollIntoView({behavior:'smooth'})">Get my free margin scan</button>
+      <button class="btn-secondary" onclick="document.getElementById('features').scrollIntoView({behavior:'smooth'})">See features</button>
+    </div>
+  </div>
+  <div class="hero-visual">
+    <div class="float-shape shape-amber"></div>
+    <div class="float-shape shape-indigo"></div>
+    <div class="float-shape shape-teal"></div>
+    <div class="hero-card hero-card-1">
+      <div class="hero-card-title">Weekly Margin</div>
+      <div class="hero-card-metric">28.4%</div>
+      <div class="hero-card-bar"><div class="hero-card-bar-fill" style="width:72%"></div></div>
+      <div class="hero-card-row"><span>Target: 30%</span><span>Gap: 1.6%</span></div>
+    </div>
+    <div class="hero-card hero-card-2">
+      <div class="hero-card-title">Invoice Match</div>
+      <div class="hero-card-metric" style="color:var(--success)">12 / 14</div>
+      <div class="hero-card-row"><span>2 new items</span><span>0 errors</span></div>
+    </div>
+    <div class="hero-card hero-card-3">
+      <div class="hero-card-title">Top Query</div>
+      <div style="font-size:0.85rem;color:var(--primary-text);margin-top:6px">"Which dairy lines dropped margin?"</div>
+    </div>
+  </div>
+</section>
+
+<!-- PROOF -->
+<section class="proof">
+  <div class="proof-logo">Convenience Stores</div>
+  <div class="proof-logo">Forecourts</div>
+  <div class="proof-logo">Independent Retailers</div>
+  <div class="proof-logo">Symbol Groups</div>
+  <div class="proof-logo">Multi-site Operators</div>
+  <div class="proof-logo">Newsagents</div>
+</section>
+
+<!-- FEATURES -->
+<section class="features" id="features">
+  <h2>Five tools that protect your profit</h2>
+  <p>Each feature works with your existing sales data. No new hardware, no complex setup.</p>
+  <div class="bento-grid">
+    <!-- Card 1: Invoice Scanner (hero cell) -->
+    <div class="bento-card" data-tilt>
+      <div class="bento-icon">
+        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      </div>
+      <h3>Invoice Scanner</h3>
+      <p>Snap a photo of any supplier invoice. Instantly matched against your stock file to flag new items, price changes, and margin impacts before you put anything on the shelf.</p>
+      <div class="vignette">
+        <div class="vignette-row"><span class="vignette-label">Fresh Milk 2L</span><span class="vignette-val">Matched</span></div>
+        <div class="vignette-row"><span class="vignette-label">Sourdough Loaf</span><span class="vignette-val warn">New item</span></div>
+        <div class="vignette-row"><span class="vignette-label">Cheddar Block 400g</span><span class="vignette-val warn">Price change</span></div>
+        <div class="vignette-row"><span class="vignette-label">Orange Juice 1L</span><span class="vignette-val">Matched</span></div>
+      </div>
+    </div>
+    <!-- Card 2: Ask Your Shop -->
+    <div class="bento-card" data-tilt>
+      <div class="bento-icon">
+        <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      </div>
+      <h3>Ask Your Shop</h3>
+      <p>Type any question about your sales, margins, or suppliers. Get a plain-English answer in seconds.</p>
+      <div class="vignette">
+        <div class="vignette-chat">Which products lost margin this month?</div>
+        <div class="vignette-chat reply">3 lines in Dairy dropped below 20% margin. Fresh Cream, Butter 250g, and Natural Yoghurt.</div>
+      </div>
+    </div>
+    <!-- Card 3: Price Moves History -->
+    <div class="bento-card" data-tilt>
+      <div class="bento-icon">
+        <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      </div>
+      <h3>Price Moves History</h3>
+      <p>Every cost and selling price change is tracked over time. See exactly when and how much each product moved.</p>
+      <div class="vignette">
+        <div class="vignette-spark">
+          <span style="height:20%"></span><span style="height:35%"></span><span style="height:30%"></span><span style="height:45%"></span><span style="height:40%"></span><span style="height:60%"></span><span style="height:55%"></span><span style="height:70%"></span><span style="height:65%"></span><span style="height:80%"></span>
+        </div>
+        <div style="font-size:0.75rem;color:var(--muted-text);margin-top:6px">12 month cost trend, Dairy category</div>
+      </div>
+    </div>
+    <!-- Card 4: Margin Leak Finder -->
+    <div class="bento-card" data-tilt>
+      <div class="bento-icon">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      </div>
+      <h3>Margin Leak Finder</h3>
+      <p>Automatically surfaces products selling below target margin. Prioritised by weekly revenue so you fix what matters first.</p>
+      <div class="vignette">
+        <div class="vignette-row"><span class="vignette-label">Cola 500ml</span><span class="vignette-val warn">12% margin</span></div>
+        <div class="vignette-row"><span class="vignette-label">Sliced Pan</span><span class="vignette-val warn">8% margin</span></div>
+        <div class="vignette-row"><span class="vignette-label">Milk 1L</span><span class="vignette-val">31% margin</span></div>
+      </div>
+    </div>
+    <!-- Card 5: Morning Report -->
+    <div class="bento-card" data-tilt>
+      <div class="bento-icon">
+        <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      </div>
+      <h3>Morning Report</h3>
+      <p>Every morning, a summary of yesterday's anomalies lands on your desk. New margin issues, unusual sales patterns, and supplier cost changes.</p>
+      <div class="vignette vignette-morning">
+        <strong>Tuesday Morning Summary</strong>
+        <div class="time">Generated 06:30</div>
+        <div style="margin-top:6px">3 new margin alerts in Confectionery. 1 supplier price increase detected. Weekly sales up 4% vs last week.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how">
+  <h2>Up and running in three steps</h2>
+  <div class="how-steps">
+    <div class="how-step">
+      <div class="how-num">1</div>
+      <h3>Connect your data</h3>
+      <p>We pull from your existing till system. No new hardware needed, nothing changes for your staff.</p>
+    </div>
+    <div class="how-connector"><span></span></div>
+    <div class="how-step">
+      <div class="how-num">2</div>
+      <h3>See your margins</h3>
+      <p>Within hours, your dashboard shows every product, every margin, every leak. Sorted by impact.</p>
+    </div>
+    <div class="how-connector"><span></span></div>
+    <div class="how-step">
+      <div class="how-num">3</div>
+      <h3>Take action</h3>
+      <p>Adjust prices, challenge suppliers, fix errors. Start recovering money from day one.</p>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="pricing" id="pricing">
+  <h2>Simple, transparent pricing</h2>
+  <p>Net of VAT. No setup fee. Cancel any time.</p>
+  <div class="pricing-grid">
+    <div class="pricing-card">
+      <h3>Insight</h3>
+      <div class="pricing-price">&euro;500<span> /month</span></div>
+      <div class="pricing-note">Your margin command centre</div>
+      <ul class="pricing-features">
+        <li>Full margin dashboard</li>
+        <li>Margin leak alerts</li>
+        <li>Department drill-down</li>
+        <li>Barcode lookup</li>
+        <li>Supplier analytics</li>
+      </ul>
+      <button class="pricing-cta pricing-cta-secondary" onclick="document.getElementById('contact').scrollIntoView({behavior:'smooth'})">Get my free margin scan</button>
+    </div>
+    <div class="pricing-card popular">
+      <div class="pricing-badge">Most popular</div>
+      <h3>Complete</h3>
+      <div class="pricing-price">&euro;1,000<span> /month</span></div>
+      <div class="pricing-note">The full toolkit</div>
+      <ul class="pricing-features">
+        <li>Everything in Insight</li>
+        <li>Invoice Scanner</li>
+        <li>Ask Your Shop</li>
+        <li>Trading patterns</li>
+        <li>Product performance</li>
+        <li>Priority support</li>
+      </ul>
+      <button class="pricing-cta pricing-cta-primary" onclick="document.getElementById('contact').scrollIntoView({behavior:'smooth'})">Get my free margin scan</button>
+    </div>
+    <div class="pricing-card">
+      <h3>Multi-site</h3>
+      <div class="pricing-price">&euro;1,500<span> /month</span></div>
+      <div class="pricing-note">For groups and chains</div>
+      <ul class="pricing-features">
+        <li>Everything in Complete</li>
+        <li>Cross-site comparison</li>
+        <li>Morning report</li>
+        <li>Per-site onboarding</li>
+        <li>Dedicated account manager</li>
+      </ul>
+      <button class="pricing-cta pricing-cta-secondary" onclick="document.getElementById('contact').scrollIntoView({behavior:'smooth'})">Get my free margin scan</button>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="faq" id="faq">
+  <h2>Common questions</h2>
+  <div class="faq-list">
+    <div class="faq-item">
+      <button class="faq-q" aria-expanded="false">What till systems do you work with?<svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></button>
+      <div class="faq-a"><div class="faq-a-inner">RetailGuard connects to most EPOS and back-office systems used in Irish and UK convenience retail. We handle the integration, so there is nothing for your staff to install or change.</div></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" aria-expanded="false">How long does setup take?<svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></button>
+      <div class="faq-a"><div class="faq-a-inner">Most shops are live within 48 hours. We connect to your data remotely, and your dashboard starts populating the same day.</div></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" aria-expanded="false">Is my data secure?<svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></button>
+      <div class="faq-a"><div class="faq-a-inner">Yes. Your data is encrypted in transit and at rest. We never share it with third parties, and you can export or delete it at any time.</div></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" aria-expanded="false">Can I cancel at any time?<svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></button>
+      <div class="faq-a"><div class="faq-a-inner">Yes. Monthly billing with no lock-in. Cancel whenever you like and your data stays available to download for 30 days afterwards.</div></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" aria-expanded="false">Do I need to change anything in my shop?<svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></button>
+      <div class="faq-a"><div class="faq-a-inner">No. RetailGuard reads from your existing system. Your staff workflow stays exactly the same. There is no new hardware, no new training.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section class="contact" id="contact">
+  <div class="contact-card">
+    <h2>Get your free margin scan</h2>
+    <p>We will review your data and show you exactly where your margins leak. No obligation, no cost.</p>
+    <form id="contactForm">
+      <input type="hidden" name="_subject" value="Glass Bento Lead">
+      <div class="form-group">
+        <label for="name">Your name</label>
+        <input type="text" id="name" name="name" required autocomplete="name">
+      </div>
+      <div class="form-group">
+        <label for="email">Email address</label>
+        <input type="email" id="email" name="email" required autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label for="shop">Shop name (optional)</label>
+        <input type="text" id="shop" name="shop" autocomplete="organization">
+      </div>
+      <button type="submit" class="form-submit" id="formBtn">Get my free margin scan</button>
+      <div class="form-msg" id="formMsg"></div>
+    </form>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-grid">
+    <div>
+      <div class="footer-brand">RetailGuard</div>
+      <div class="footer-tagline">Helping shop owners see what their margins are really doing.</div>
+    </div>
+    <div class="footer-col">
+      <h4>Product</h4>
+      <a href="#features">Features</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+    </div>
+    <div class="footer-col">
+      <h4>Company</h4>
+      <a href="#contact">Contact</a>
+    </div>
+    <div class="footer-col">
+      <h4>Legal</h4>
+      <a href="#">Privacy</a>
+      <a href="#">Terms</a>
+    </div>
+  </div>
+  <div class="footer-copy">&copy; 2026 RetailGuard. All rights reserved.</div>
+</footer>
+
+<script>
+/* === Nav scroll shadow === */
+const nav=document.getElementById('nav');
+window.addEventListener('scroll',()=>{nav.classList.toggle('scrolled',window.scrollY>40)},{passive:true});
+
+/* === FAQ accordion === */
+document.querySelectorAll('.faq-q').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    const item=btn.parentElement;
+    const ans=item.querySelector('.faq-a');
+    const isOpen=item.classList.contains('open');
+    document.querySelectorAll('.faq-item.open').forEach(el=>{
+      el.classList.remove('open');
+      el.querySelector('.faq-a').style.maxHeight='0';
+      el.querySelector('.faq-q').setAttribute('aria-expanded','false');
+    });
+    if(!isOpen){
+      item.classList.add('open');
+      ans.style.maxHeight=ans.scrollHeight+'px';
+      btn.setAttribute('aria-expanded','true');
+    }
+  });
+});
+
+/* === Tilt on feature cards (disabled on touch) === */
+const isTouchDevice='ontouchstart' in window||navigator.maxTouchPoints>0;
+const prefersReduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+if(!isTouchDevice&&!prefersReduced){
+  document.querySelectorAll('[data-tilt]').forEach(card=>{
+    card.addEventListener('mousemove',e=>{
+      const rect=card.getBoundingClientRect();
+      const x=(e.clientX-rect.left)/rect.width-0.5;
+      const y=(e.clientY-rect.top)/rect.height-0.5;
+      card.style.transform=`perspective(800px) rotateY(${x*6}deg) rotateX(${-y*6}deg)`;
+    });
+    card.addEventListener('mouseleave',()=>{
+      card.style.transform='perspective(800px) rotateY(0) rotateX(0)';
+    });
+  });
+}
+
+/* === Counter animation on bento hero === */
+const counterEl=document.querySelector('.counter-anim');
+if(counterEl&&!prefersReduced){
+  const obs=new IntersectionObserver(entries=>{
+    entries.forEach(en=>{if(en.isIntersecting){counterEl.classList.add('animate');obs.disconnect()}});
+  },{threshold:0.5});
+  obs.observe(counterEl);
+}
+
+/* === FormSubmit AJAX === */
+document.getElementById('contactForm').addEventListener('submit',async function(e){
+  e.preventDefault();
+  const btn=document.getElementById('formBtn');
+  const msg=document.getElementById('formMsg');
+  btn.disabled=true;btn.textContent='Sending...';
+  msg.className='form-msg';msg.style.display='none';
+  const data=new FormData(this);
+  try{
+    const res=await fetch('https://formsubmit.co/ajax/retailguard.sales@gmail.com',{method:'POST',body:data,headers:{'Accept':'application/json'}});
+    if(res.ok){
+      msg.textContent='Thanks! We will be in touch within 24 hours.';
+      msg.className='form-msg success';msg.style.display='block';
+      this.reset();
+    }else{throw new Error('fail')}
+  }catch(err){
+    msg.textContent='Something went wrong. Please email retailguard.sales@gmail.com directly.';
+    msg.className='form-msg error';msg.style.display='block';
+  }finally{btn.disabled=false;btn.textContent='Get my free margin scan'}
+});
+</script>
+</body>
+</html>

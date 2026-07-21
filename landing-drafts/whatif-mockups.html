@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RetailGuard Price What-If, 20 Mockups</title>
+<style>
+  :root{
+    --violet:#7c3aed; --violet-d:#6d28d9; --violet-50:#f5f3ff; --violet-100:#ede9fe; --violet-200:#ddd6fe; --violet-300:#c4b5fd;
+    --g50:#f9fafb; --g100:#f3f4f6; --g200:#e5e7eb; --g300:#d1d5db; --g400:#9ca3af; --g500:#6b7280; --g600:#4b5563; --g700:#374151; --g800:#1f2937; --g900:#111827;
+    --green:#16a34a; --green-50:#f0fdf4; --red:#dc2626; --red-50:#fef2f2; --amber:#d97706; --amber-50:#fffbeb;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif;background:#eef0f4;color:var(--g900)}
+  .top{position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid var(--g200);padding:14px 20px;display:flex;align-items:center;gap:12px}
+  .top .logo{width:26px;height:26px;border-radius:8px;background:var(--violet);display:inline-flex;align-items:center;justify-content:center}
+  .top .logo svg{width:15px;height:15px;stroke:#fff}
+  .top h1{font-size:15px;font-weight:700}
+  .top .sub{font-size:12px;color:var(--g500)}
+  .wrap{display:grid;grid-template-columns:260px 1fr;min-height:calc(100vh - 55px)}
+  .rail{background:#fff;border-right:1px solid var(--g200);padding:12px;overflow-y:auto;position:sticky;top:55px;height:calc(100vh - 55px)}
+  .rail .grp{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--g400);margin:14px 6px 6px}
+  .rail button{display:block;width:100%;text-align:left;padding:8px 10px;border:0;background:none;border-radius:10px;font-size:12.5px;color:var(--g600);cursor:pointer;font-family:inherit}
+  .rail button:hover{background:var(--violet-50)}
+  .rail button.on{background:var(--violet-100);color:var(--violet-d);font-weight:600}
+  .rail button .n{display:inline-block;width:20px;color:var(--g400);font-variant-numeric:tabular-nums}
+  .stage{padding:26px;display:flex;flex-direction:column;align-items:center;gap:14px}
+  .stagehead{width:100%;max-width:900px;display:flex;align-items:baseline;justify-content:space-between;gap:20px}
+  .stagehead h2{font-size:17px;font-weight:800;white-space:nowrap}
+  .stagehead p{font-size:12.5px;color:var(--g500);text-align:right}
+  .frame{width:100%;max-width:900px;background:#fff;border:1px solid var(--g200);border-radius:16px;box-shadow:0 12px 34px rgba(17,24,39,.09);overflow:hidden}
+  .bar{display:flex;align-items:center;gap:6px;background:var(--g50);border-bottom:1px solid var(--g200);padding:9px 14px}
+  .dot{width:9px;height:9px;border-radius:50%}
+  .bar .url{margin-left:10px;flex:1;background:#fff;border:1px solid var(--g200);border-radius:7px;font-size:11px;color:var(--g400);padding:3px 10px}
+  .mock{display:none}
+  .mock.on{display:block}
+  .navbtns{display:flex;gap:8px}
+  .navbtns button{border:1px solid var(--g200);background:#fff;border-radius:9px;padding:6px 13px;font-size:12px;cursor:pointer;color:var(--g600);font-family:inherit}
+  .navbtns button:hover{border-color:var(--violet-300);color:var(--violet-d)}
+
+  .app{min-height:540px;background:#fff;padding:22px 26px}
+  .h-title{display:flex;align-items:center;gap:9px;margin-bottom:4px}
+  .h-title b{font-size:18px;font-weight:800}
+  .desc{font-size:11.5px;color:var(--g500);margin-bottom:14px}
+  .card{border:1px solid var(--g200);border-radius:14px;padding:14px 16px;background:#fff}
+  .kpi .l{font-size:10px;color:var(--g400);text-transform:uppercase;letter-spacing:.04em}
+  .kpi .v{font-size:17px;font-weight:800;margin-top:2px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+  .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  .prodrow{display:flex;align-items:center;gap:12px;border:1px solid var(--g200);border-radius:12px;padding:10px 14px;margin-bottom:14px;background:var(--g50)}
+  .prodrow .nm{font-size:13px;font-weight:700}
+  .prodrow .meta{font-size:11px;color:var(--g500)}
+  .prodrow input{margin-left:auto;width:210px;height:36px;border:1px solid var(--g200);border-radius:10px;padding:0 12px;font-size:12.5px;font-family:inherit;outline:none}
+  .btn{display:inline-flex;align-items:center;gap:6px;padding:0 16px;height:40px;border-radius:11px;background:var(--violet);color:#fff;font-size:13px;font-weight:600;border:0;cursor:pointer;font-family:inherit;white-space:nowrap}
+  .btn.sm{height:30px;padding:0 12px;font-size:11.5px;border-radius:9px}
+  .btn.ghost{background:#fff;color:var(--g600);border:1px solid var(--g200)}
+  .good{color:var(--green)} .bad{color:var(--red)} .warn{color:var(--amber)}
+  .pillgood{background:var(--green-50);color:var(--green);border:1px solid #bbf7d0;font-size:11px;font-weight:700;border-radius:99px;padding:4px 12px;display:inline-block}
+  .pillbad{background:var(--red-50);color:var(--red);border:1px solid #fecaca;font-size:11px;font-weight:700;border-radius:99px;padding:4px 12px;display:inline-block}
+  .pillwarn{background:var(--amber-50);color:var(--amber);border:1px solid #fde68a;font-size:11px;font-weight:700;border-radius:99px;padding:4px 12px;display:inline-block}
+  input[type=range]{width:100%;accent-color:var(--violet)}
+  .sliderbox{border:1px solid var(--violet-200);background:var(--violet-50);border-radius:14px;padding:16px}
+  .tbl{width:100%;border-collapse:collapse;font-size:12px}
+  .tbl th{text-align:left;color:var(--g400);font-weight:600;padding:7px 10px;border-bottom:1px solid var(--g200);font-size:10.5px;text-transform:uppercase;letter-spacing:.03em}
+  .tbl td{padding:8px 10px;border-bottom:1px solid var(--g100);color:var(--g700)}
+  .tbl tr.hl{background:var(--violet-50)}
+  .charty{display:flex;align-items:flex-end;gap:4px;height:80px;margin-top:8px}
+  .charty i{flex:1;background:var(--violet-200);border-radius:3px 3px 0 0}
+  .charty i.hot{background:var(--violet)}
+  .charty i.g{background:#86efac} .charty i.r{background:#fca5a5}
+  .axis{display:flex;justify-content:space-between;font-size:9px;color:var(--g400);margin-top:4px}
+  .note{font-size:10.5px;color:var(--g400);margin-top:10px}
+  .steps{display:flex;gap:6px;margin-bottom:16px}
+  .steps span{flex:1;height:4px;border-radius:99px;background:var(--g200)}
+  .steps span.done{background:var(--violet)}
+  .bub-q{max-width:70%;margin-left:auto;background:var(--violet);color:#fff;border-radius:14px 14px 4px 14px;padding:9px 13px;font-size:12.5px;margin-bottom:9px}
+  .bub-a{max-width:82%;background:var(--g100);border-radius:14px 14px 14px 4px;padding:10px 13px;font-size:12.5px;line-height:1.5;margin-bottom:9px}
+  .chip{padding:5px 11px;border-radius:99px;font-size:11px;background:var(--violet-50);color:var(--violet-d);cursor:pointer;display:inline-block;margin:0 5px 5px 0}
+  .arrow{font-size:16px;color:var(--g300);align-self:center}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <span class="logo"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7l8-4z"/></svg></span>
+  <div>
+    <h1>Price What-If, 20 mockup directions</h1>
+    <div class="sub">"What would have happened if I raised this price?" All numbers illustrative. Sliders in 1, 2 and 16 are live.</div>
+  </div>
+</div>
+
+<div class="wrap">
+  <nav class="rail" id="rail"></nav>
+  <main class="stage">
+    <div class="stagehead"><h2 id="mname"></h2><p id="mdesc"></p></div>
+    <div class="frame">
+      <div class="bar">
+        <span class="dot" style="background:#f87171"></span><span class="dot" style="background:#fbbf24"></span><span class="dot" style="background:#34d399"></span>
+        <span class="url">myretailguard.com/app.html · Price check</span>
+      </div>
+      <div id="mocks"></div>
+    </div>
+    <div class="navbtns">
+      <button onclick="nav(-1)">&larr; Previous</button>
+      <button onclick="nav(1)">Next &rarr;</button>
+    </div>
+  </main>
+</div>
+
+<script>
+// Worked example, illustrative: Cola Multipack 6x330ml
+// cost 4.10, now 4.99 (17.8% margin), 60 units/week. Try 5.49 -> 1.39/unit,
+// breakeven: can lose up to 36% of sales before worse off.
+const P = { name:"Cola Multipack 6x330ml", cost:4.10, price:4.99, units:60 };
+const eur = v => "\u20AC" + v.toFixed(2);
+const prodRow = (ph) => `<div class="prodrow"><div><div class="nm">${P.name}</div><div class="meta">Cost ${eur(P.cost)} \u00B7 selling at ${eur(P.price)} \u00B7 margin 17.8% \u00B7 ~${P.units} units/week</div></div><input placeholder="${ph||'Search any product...'}"></div>`;
+const header = (t,d) => `<div class="h-title"><b>${t||"Price check"}</b></div><div class="desc">${d||"See what a price change would do before you make it, using your own sales history."}</div>`;
+const MOCKS = [];
+</script>
+<script id="part1">
+MOCKS.push(
+{ g:"Core ideas", name:"1 · Live Price Slider", desc:"One slider, everything updates as you drag. The fastest possible answer.",
+  html:`<div class="app">${header()}${prodRow()}
+    <div class="sliderbox">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
+        <span style="font-size:12px;font-weight:700">Try a new price</span>
+        <span style="font-size:22px;font-weight:800;color:var(--violet-d)" id="s1p">\u20AC5.49</span>
+      </div>
+      <input type="range" min="449" max="649" value="549" id="s1" oninput="upd1(this.value)">
+      <div class="axis"><span>\u20AC4.49</span><span>current \u20AC4.99</span><span>\u20AC6.49</span></div>
+    </div>
+    <div class="grid4" style="margin-top:14px">
+      <div class="card kpi"><div class="l">Margin</div><div class="v" id="s1m">25.3%</div></div>
+      <div class="card kpi"><div class="l">Profit per unit</div><div class="v" id="s1u">\u20AC1.39</div></div>
+      <div class="card kpi"><div class="l">Extra profit / week</div><div class="v good" id="s1w">+\u20AC30.00</div></div>
+      <div class="card kpi"><div class="l">Sales you can lose</div><div class="v" id="s1b">36%</div></div>
+    </div>
+    <p class="note" id="s1n">At \u20AC5.49 you make \u20AC1.39 a unit instead of \u20AC0.89. Even if a third of buyers walked away, you would still be better off.</p></div>` },
+
+{ g:"Core ideas", name:"2 · Before / After Cards", desc:"Two cards side by side, the change in the middle. Familiar and calm.",
+  html:`<div class="app">${header()}${prodRow()}
+    <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:14px">
+      <div class="card"><div style="font-size:10px;font-weight:700;color:var(--g400);text-transform:uppercase;margin-bottom:8px">Today</div>
+        <div class="kpi"><div class="l">Price</div><div class="v">\u20AC4.99</div></div>
+        <div class="kpi" style="margin-top:10px"><div class="l">Margin</div><div class="v">17.8%</div></div>
+        <div class="kpi" style="margin-top:10px"><div class="l">Weekly profit</div><div class="v">\u20AC53.40</div></div></div>
+      <div class="arrow">\u2192</div>
+      <div class="card" style="border-color:var(--violet-300);background:var(--violet-50)"><div style="font-size:10px;font-weight:700;color:var(--violet-d);text-transform:uppercase;margin-bottom:8px">At \u20AC<span id="s2p">5.49</span></div>
+        <div class="kpi"><div class="l">Price</div><div class="v"><input type="range" min="449" max="649" value="549" style="width:110px" oninput="upd2(this.value)"></div></div>
+        <div class="kpi" style="margin-top:10px"><div class="l">Margin</div><div class="v" id="s2m">25.3%</div></div>
+        <div class="kpi" style="margin-top:10px"><div class="l">Weekly profit if sales held</div><div class="v good" id="s2w">\u20AC83.40</div></div></div>
+    </div>
+    <div style="margin-top:14px"><span class="pillgood" id="s2v">Worth trying: you can lose up to 36% of sales and still come out ahead</span></div></div>` },
+
+{ g:"Core ideas", name:"3 · Replay The Past", desc:"The literal answer to the question: rerun the last 12 weeks at the higher price.",
+  html:`<div class="app">${header("What if you had charged \u20AC5.49 since April?","Your actual sales, replayed at the higher price.")}${prodRow()}
+    <div class="grid3" style="margin-bottom:14px">
+      <div class="card kpi"><div class="l">You actually made (12 wks)</div><div class="v">\u20AC641</div></div>
+      <div class="card kpi"><div class="l">At \u20AC5.49, same sales</div><div class="v good">\u20AC1,001</div></div>
+      <div class="card kpi"><div class="l">Even if sales fell 20%</div><div class="v good">\u20AC801</div></div>
+    </div>
+    <div class="card"><div style="font-size:11px;font-weight:700;color:var(--g500);margin-bottom:4px">WEEKLY PROFIT, ACTUAL VS REPLAYED</div>
+      <div class="charty"><i style="height:45%"></i><i class="hot" style="height:70%"></i><i style="height:52%"></i><i class="hot" style="height:81%"></i><i style="height:48%"></i><i class="hot" style="height:75%"></i><i style="height:55%"></i><i class="hot" style="height:86%"></i><i style="height:42%"></i><i class="hot" style="height:66%"></i><i style="height:50%"></i><i class="hot" style="height:78%"></i></div>
+      <div class="axis"><span>light = actual</span><span>dark = at \u20AC5.49</span></div></div>
+    <p class="note">Assumes buyers behave the same. The "sales fell 20%" figure shows the cushion.</p></div>` },
+
+{ g:"Core ideas", name:"4 · Three Futures", desc:"Honest about uncertainty: best case, expected, worst case in one row.",
+  html:`<div class="app">${header()}${prodRow()}
+    <p style="font-size:12.5px;margin-bottom:12px">Raising to <b>\u20AC5.49</b> (+50c). Nobody knows exactly how customers react, so here are three futures:</p>
+    <div class="grid3">
+      <div class="card" style="border-top:3px solid var(--green)"><div style="font-size:11px;font-weight:700;margin-bottom:6px">Sales hold steady</div><div class="kpi"><div class="l">Extra per week</div><div class="v good">+\u20AC30</div></div><p class="note">Everyday item, small rise, most shops see this.</p></div>
+      <div class="card" style="border-top:3px solid var(--violet)"><div style="font-size:11px;font-weight:700;margin-bottom:6px">Sales dip 15%</div><div class="kpi"><div class="l">Extra per week</div><div class="v good">+\u20AC17</div></div><p class="note">A few switch or skip. Still ahead.</p></div>
+      <div class="card" style="border-top:3px solid var(--red)"><div style="font-size:11px;font-weight:700;margin-bottom:6px">Sales drop 40%</div><div class="kpi"><div class="l">Extra per week</div><div class="v bad">\u2212\u20AC3</div></div><p class="note">Only past this point do you lose. That is a big drop for 50c.</p></div>
+    </div>
+    <div style="margin-top:14px"><span class="pillgood">Verdict: low risk, likely +\u20AC1,100 a year on this one product</span></div></div>` },
+
+{ g:"Core ideas", name:"5 · Price Ladder", desc:"Several candidate prices as rows. Compare, then pick a rung.",
+  html:`<div class="app">${header()}${prodRow()}
+    <table class="tbl"><tr><th>Price</th><th>Margin</th><th>Profit/unit</th><th>Weekly (sales hold)</th><th>Sales you can lose</th><th></th></tr>
+      <tr><td>\u20AC4.99 (now)</td><td>17.8%</td><td>\u20AC0.89</td><td>\u20AC53</td><td>\u2014</td><td></td></tr>
+      <tr><td>\u20AC5.29</td><td>22.5%</td><td>\u20AC1.19</td><td>\u20AC71</td><td>25%</td><td><button class="btn sm ghost">Pick</button></td></tr>
+      <tr class="hl"><td><b>\u20AC5.49</b> <span style="font-size:9px;color:var(--violet-d)">suggested</span></td><td>25.3%</td><td>\u20AC1.39</td><td>\u20AC83</td><td>36%</td><td><button class="btn sm">Pick</button></td></tr>
+      <tr><td>\u20AC5.99</td><td>31.6%</td><td>\u20AC1.89</td><td>\u20AC113</td><td>53%</td><td><button class="btn sm ghost">Pick</button></td></tr>
+    </table>
+    <p class="note">Suggested rung balances margin gain against how sensitive an everyday drink line is.</p></div>` },
+
+{ g:"Core ideas", name:"6 · Breakeven Dial", desc:"One number that matters: how many customers can you afford to lose.",
+  html:`<div class="app">${header()}${prodRow()}
+    <div style="display:grid;grid-template-columns:auto 1fr;gap:22px;align-items:center">
+      <div style="width:170px;height:170px;border-radius:50%;background:conic-gradient(var(--green) 0 64%, #fca5a5 64% 100%);display:flex;align-items:center;justify-content:center">
+        <div style="width:120px;height:120px;border-radius:50%;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center">
+          <span style="font-size:26px;font-weight:800">36%</span><span style="font-size:9px;color:var(--g400);text-align:center">of sales can<br>walk away</span></div></div>
+      <div><p style="font-size:13.5px;line-height:1.6;margin-bottom:10px">At <b>\u20AC5.49</b> you earn \u20AC1.39 a unit instead of \u20AC0.89. You would need to lose <b>more than 1 in 3 buyers</b> before this price rise costs you money.</p>
+        <p style="font-size:12px;color:var(--g500)">For a 50c rise on an everyday item, losing a third of buyers would be extreme. The green zone is your safety cushion.</p>
+        <div style="margin-top:12px"><span class="pillgood">Safe bet</span></div></div>
+    </div></div>` },
+
+{ g:"Conversational", name:"7 · Ask Style What-If", desc:"No new page at all. The what-if lives inside Ask as a natural question.",
+  html:`<div class="app">${header("Ask your shop")}
+    <div class="bub-q">What if I raised the cola multipack to \u20AC5.49?</div>
+    <div class="bub-a">Right now you make \u20AC0.89 a pack at \u20AC4.99. At \u20AC5.49 you would make \u20AC1.39, and with your usual 60 packs a week that is about \u20AC30 more profit weekly, \u20AC1,560 a year. You could lose up to 36% of those sales before you were worse off. For a 50c rise on a everyday drink that is a lot of cushion.<div style="margin-top:8px"><span class="chip">Try \u20AC5.29 instead</span><span class="chip">Replay last 3 months</span><span class="chip">Show similar products</span></div></div>
+    <div class="bub-q">And if sales dropped 20%?</div>
+    <div class="bub-a">Still ahead: 48 packs at \u20AC1.39 is \u20AC66.72 a week versus \u20AC53.40 today, about \u20AC13 a week better even after losing a fifth of buyers.</div></div>` },
+
+{ g:"Conversational", name:"8 · Shelf Price Picker", desc:"Charm prices only. Real shelves end in .49 and .99, so offer those.",
+  html:`<div class="app">${header()}${prodRow()}
+    <p style="font-size:12px;color:var(--g500);margin-bottom:10px">Clean shelf prices near your target margin:</p>
+    <div class="grid3">
+      <div class="card" style="text-align:center"><div style="font-size:24px;font-weight:800">\u20AC5.29</div><div style="font-size:11px;color:var(--g500);margin:4px 0 8px">22.5% margin \u00B7 +\u20AC18/wk</div><span class="pillwarn">Below 25% target</span></div>
+      <div class="card" style="text-align:center;border-color:var(--violet);box-shadow:0 4px 14px rgba(124,58,237,.15)"><div style="font-size:24px;font-weight:800;color:var(--violet-d)">\u20AC5.49</div><div style="font-size:11px;color:var(--g500);margin:4px 0 8px">25.3% margin \u00B7 +\u20AC30/wk</div><span class="pillgood">Hits target</span></div>
+      <div class="card" style="text-align:center"><div style="font-size:24px;font-weight:800">\u20AC5.99</div><div style="font-size:11px;color:var(--g500);margin:4px 0 8px">31.6% margin \u00B7 +\u20AC60/wk</div><span class="pillwarn">Bold jump, watch sales</span></div>
+    </div>
+    <div style="margin-top:14px;text-align:center"><button class="btn">Set \u20AC5.49 as planned price</button></div></div>` },
+
+{ g:"Bulk", name:"9 · Category Sweep", desc:"What-if across a whole department at once, product by product.",
+  html:`<div class="app">${header("What if Soft Drinks moved to a 25% target?")}
+    <div class="grid3" style="margin-bottom:12px">
+      <div class="card kpi"><div class="l">Products repriced</div><div class="v">34</div></div>
+      <div class="card kpi"><div class="l">Avg rise</div><div class="v">+\u20AC0.31</div></div>
+      <div class="card kpi"><div class="l">Extra profit / week</div><div class="v good">+\u20AC212</div></div>
+    </div>
+    <table class="tbl"><tr><th>Product</th><th>Now</th><th>Proposed</th><th>Margin</th><th>Weekly gain</th></tr>
+      <tr><td>Cola Multipack 6x330ml</td><td>\u20AC4.99</td><td><b>\u20AC5.49</b></td><td>17.8% \u2192 25.3%</td><td class="good">+\u20AC30</td></tr>
+      <tr><td>Energy Drink 500ml</td><td>\u20AC1.85</td><td><b>\u20AC2.09</b></td><td>15.1% \u2192 24.9%</td><td class="good">+\u20AC26</td></tr>
+      <tr><td>Sparkling Water 2L</td><td>\u20AC1.19</td><td><b>\u20AC1.29</b></td><td>21.8% \u2192 27.9%</td><td class="good">+\u20AC9</td></tr>
+      <tr><td>Orange Juice 1L</td><td>\u20AC2.49</td><td><b>\u20AC2.69</b></td><td>19.7% \u2192 25.7%</td><td class="good">+\u20AC12</td></tr>
+    </table>
+    <p class="note">Footfall lines like fuel and lottery are held automatically and never suggested for a rise.</p></div>` },
+
+{ g:"Bulk", name:"10 · Target Margin Reverse", desc:"Start from the margin you want, get the price that delivers it.",
+  html:`<div class="app">${header()}${prodRow()}
+    <div class="sliderbox" style="margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="font-size:12px;font-weight:700">I want a margin of</span><span style="font-size:20px;font-weight:800;color:var(--violet-d)">28%</span></div>
+      <input type="range" min="15" max="40" value="28">
+      <div class="axis"><span>15%</span><span>store avg 27.8%</span><span>40%</span></div>
+    </div>
+    <div class="card" style="display:flex;justify-content:space-between;align-items:center">
+      <div><div style="font-size:11px;color:var(--g500)">To earn 28% on this product, charge at least</div><div style="font-size:26px;font-weight:800;margin-top:2px">\u20AC5.69</div><div style="font-size:11px;color:var(--g500);margin-top:2px">rounded to the shelf price \u20AC5.69 \u2192 <b>\u20AC5.99</b> gives 31.6%</div></div>
+      <button class="btn">Plan this price</button>
+    </div></div>` }
+);
+</script>
+<script id="part2">
+MOCKS.push(
+{ g:"Visual", name:"11 · Projection Timeline", desc:"The next 12 weeks drawn out: current path vs new price path.",
+  html:`<div class="app">${header()}${prodRow()}
+    <div class="card"><div style="font-size:11px;font-weight:700;color:var(--g500);margin-bottom:4px">CUMULATIVE EXTRA PROFIT AT \u20AC5.49</div>
+      <div class="charty"><i class="g" style="height:8%"></i><i class="g" style="height:16%"></i><i class="g" style="height:24%"></i><i class="g" style="height:33%"></i><i class="g" style="height:41%"></i><i class="g" style="height:50%"></i><i class="g" style="height:58%"></i><i class="g" style="height:66%"></i><i class="g" style="height:75%"></i><i class="g" style="height:83%"></i><i class="g" style="height:91%"></i><i class="g" style="height:100%"></i></div>
+      <div class="axis"><span>week 1</span><span>+\u20AC360 by week 12</span></div></div>
+    <div class="grid3" style="margin-top:12px">
+      <div class="card kpi"><div class="l">1 month</div><div class="v good">+\u20AC120</div></div>
+      <div class="card kpi"><div class="l">3 months</div><div class="v good">+\u20AC360</div></div>
+      <div class="card kpi"><div class="l">A year</div><div class="v good">+\u20AC1,560</div></div>
+    </div></div>` },
+
+{ g:"Visual", name:"12 · Verdict Card", desc:"Plain-English recommendation up top, evidence below. For owners who want the answer, not the workings.",
+  html:`<div class="app">${header()}${prodRow()}
+    <div class="card" style="border-color:#bbf7d0;background:var(--green-50);margin-bottom:12px">
+      <div style="display:flex;align-items:center;gap:10px"><span style="font-size:26px">\u2713</span>
+        <div><div style="font-size:15px;font-weight:800">Raise it to \u20AC5.49</div>
+        <div style="font-size:12px;color:var(--g600);margin-top:2px">About \u20AC30 more a week. You would need to lose over a third of buyers to regret it, which almost never happens on a 50c rise.</div></div></div></div>
+    <div class="grid4">
+      <div class="card kpi"><div class="l">Now</div><div class="v">\u20AC4.99</div></div>
+      <div class="card kpi"><div class="l">Suggested</div><div class="v">\u20AC5.49</div></div>
+      <div class="card kpi"><div class="l">Margin</div><div class="v">17.8 \u2192 25.3%</div></div>
+      <div class="card kpi"><div class="l">Yearly</div><div class="v good">+\u20AC1,560</div></div>
+    </div>
+    <div style="margin-top:12px;display:flex;gap:8px"><button class="btn">Add to reprice list</button><button class="btn ghost">Show me the workings</button></div></div>` },
+
+{ g:"Visual", name:"13 · Receipt Replay", desc:"A till receipt from last Friday, reprinted at the new price. Very tangible.",
+  html:`<div class="app">${header("Friday 17:42, receipt #4187, reprinted")}
+    <div class="grid2">
+      <div class="card" style="font-family:ui-monospace,Menlo,monospace;font-size:11.5px;line-height:1.9">
+        <div style="text-align:center;font-weight:700;margin-bottom:6px">AS IT HAPPENED</div>
+        COLA MULTIPACK ....... 4.99<br>CRISPS SHARING ....... 2.49<br>BREAD 800G ........... 1.89<br>MILK 2L .............. 2.15<br><span style="color:var(--g400)">--------------------------</span><br>TOTAL ............... 11.52<br><span style="color:var(--g400)">your profit: \u20AC2.31</span></div>
+      <div class="card" style="font-family:ui-monospace,Menlo,monospace;font-size:11.5px;line-height:1.9;border-color:var(--violet-300);background:var(--violet-50)">
+        <div style="text-align:center;font-weight:700;margin-bottom:6px;color:var(--violet-d)">AT THE NEW PRICE</div>
+        COLA MULTIPACK ....... <b>5.49</b><br>CRISPS SHARING ....... 2.49<br>BREAD 800G ........... 1.89<br>MILK 2L .............. 2.15<br><span style="color:var(--g400)">--------------------------</span><br>TOTAL ............... 12.02<br><span style="color:var(--green);font-weight:700">your profit: \u20AC2.81 (+50c)</span></div>
+    </div>
+    <p class="note">That 50c happened 60 times last week. Same baskets, \u20AC30 more profit.</p></div>` },
+
+{ g:"Visual", name:"14 · Risk Sensitivity Bars", desc:"How the outcome shifts as sales react. Shows exactly where profit flips negative.",
+  html:`<div class="app">${header()}${prodRow()}
+    <div class="card">
+      <div style="font-size:11px;font-weight:700;color:var(--g500);margin-bottom:10px">WEEKLY PROFIT CHANGE AT \u20AC5.49, BY SALES REACTION</div>
+      ${[["Sales up 5%","+\u20AC37",95,"g"],["No change","+\u20AC30",80,"g"],["Down 10%","+\u20AC22",62,"g"],["Down 20%","+\u20AC13",42,"g"],["Down 30%","+\u20AC5",22,"g"],["Down 36%","\u20AC0",4,"g"],["Down 45%","\u2212\u20AC7",18,"r"]].map(([l,v,w,c])=>`<div style="display:flex;align-items:center;gap:10px;margin-bottom:7px"><span style="width:90px;font-size:11px;color:var(--g500)">${l}</span><div style="flex:1;height:14px;background:var(--g100);border-radius:99px;overflow:hidden"><div style="width:${w}%;height:100%;background:${c==="g"?"#4ade80":"#f87171"}"></div></div><span style="width:52px;font-size:11.5px;font-weight:700;text-align:right" class="${c==="g"?"good":"bad"}">${v}</span></div>`).join("")}
+      <p class="note">The flip point is a 36% drop. Everything above that line is profit.</p></div></div>` },
+
+{ g:"Interactive", name:"15 · Two-Slider Sandbox", desc:"Control both levers: price AND how you think customers react.",
+  html:`<div class="app">${header()}${prodRow()}
+    <div class="grid2">
+      <div class="sliderbox"><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:11.5px;font-weight:700">New price</span><b style="color:var(--violet-d)">\u20AC5.49</b></div><input type="range" min="449" max="649" value="549"><div class="axis"><span>\u20AC4.49</span><span>\u20AC6.49</span></div></div>
+      <div class="sliderbox"><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:11.5px;font-weight:700">If sales change by</span><b style="color:var(--violet-d)">\u221210%</b></div><input type="range" min="-50" max="20" value="-10"><div class="axis"><span>\u221250%</span><span>+20%</span></div></div>
+    </div>
+    <div class="card" style="margin-top:12px;display:flex;justify-content:space-around;text-align:center">
+      <div class="kpi"><div class="l">Units/week</div><div class="v">54</div></div>
+      <div class="kpi"><div class="l">Weekly profit</div><div class="v good">\u20AC75.06</div></div>
+      <div class="kpi"><div class="l">vs today</div><div class="v good">+\u20AC21.66</div></div>
+      <div class="kpi"><div class="l">Yearly</div><div class="v good">+\u20AC1,126</div></div>
+    </div></div>` },
+
+{ g:"Interactive", name:"16 · Guided Wizard", desc:"Three small steps: pick product, pick price, see the verdict. Nothing to learn.",
+  html:`<div class="app">${header("Price check, step 2 of 3")}
+    <div class="steps"><span class="done"></span><span class="done"></span><span></span></div>
+    <p style="font-size:13px;margin-bottom:12px">You picked <b>${P.name}</b>. What price do you want to test?</p>
+    <div class="sliderbox">
+      <div style="text-align:center;margin-bottom:6px"><span style="font-size:28px;font-weight:800;color:var(--violet-d)" id="s16p">\u20AC5.49</span><span style="font-size:11px;color:var(--g500)" id="s16d"> (+\u20AC0.50)</span></div>
+      <input type="range" min="449" max="649" value="549" id="s16" oninput="upd16(this.value)">
+      <div class="axis"><span>\u20AC4.49</span><span>now \u20AC4.99</span><span>\u20AC6.49</span></div>
+    </div>
+    <p class="note" id="s16n">Margin would go from 17.8% to 25.3%.</p>
+    <div style="margin-top:14px;display:flex;justify-content:space-between"><button class="btn ghost">Back</button><button class="btn">See what happens \u2192</button></div></div>` },
+
+{ g:"Integrated", name:"17 · Product Page Panel", desc:"Not a separate tool: a what-if strip on every product's own page.",
+  html:`<div class="app">${header(P.name,"Product record with the price check built in.")}
+    <div class="grid4" style="margin-bottom:12px">
+      <div class="card kpi"><div class="l">Cost</div><div class="v">\u20AC4.10</div></div>
+      <div class="card kpi"><div class="l">Price</div><div class="v">\u20AC4.99</div></div>
+      <div class="card kpi"><div class="l">Margin</div><div class="v warn">17.8%</div></div>
+      <div class="card kpi"><div class="l">Units/week</div><div class="v">60</div></div>
+    </div>
+    <div class="sliderbox" style="display:flex;align-items:center;gap:16px">
+      <span style="font-size:12px;font-weight:700;white-space:nowrap">What if I charged</span>
+      <input type="range" min="449" max="649" value="549" style="flex:1">
+      <b style="color:var(--violet-d);white-space:nowrap">\u20AC5.49</b>
+      <span class="pillgood" style="white-space:nowrap">+\u20AC30/wk</span>
+    </div>
+    <p class="note">Below target margin, so the panel is pre-set to the price that fixes it.</p></div>` },
+
+{ g:"Integrated", name:"18 · Opportunities Feed", desc:"Flip the flow: RetailGuard finds underpriced products and shows the what-if ready-made.",
+  html:`<div class="app">${header("Pricing opportunities this week","Products where a small rise looks safe, biggest first.")}
+    ${[["Cola Multipack 6x330ml","\u20AC4.99 \u2192 \u20AC5.49","+\u20AC30/wk","can lose 36% of sales"],["Energy Drink 500ml","\u20AC1.85 \u2192 \u20AC2.09","+\u20AC26/wk","can lose 31% of sales"],["Sharing Crisps 150g","\u20AC2.49 \u2192 \u20AC2.69","+\u20AC14/wk","can lose 27% of sales"]].map(([n,p,g,b])=>`<div class="card" style="display:flex;align-items:center;gap:14px;margin-bottom:10px"><div style="flex:1"><div style="font-size:13px;font-weight:700">${n}</div><div style="font-size:11px;color:var(--g500)">${p} \u00B7 ${b}</div></div><span class="pillgood">${g}</span><button class="btn sm">Check it</button></div>`).join("")}
+    <p class="note">Fuel, lottery, tobacco and other footfall lines never appear here.</p></div>` },
+
+{ g:"Integrated", name:"19 · Whole-Shop Impact", desc:"Zoom out: what one change does to the shop's overall numbers.",
+  html:`<div class="app">${header()}${prodRow()}
+    <p style="font-size:12.5px;margin-bottom:12px">Raising this one product to <b>\u20AC5.49</b>:</p>
+    <div class="grid3" style="margin-bottom:12px">
+      <div class="card kpi"><div class="l">Shop margin</div><div class="v">27.8% \u2192 <span class="good">27.9%</span></div></div>
+      <div class="card kpi"><div class="l">Weekly shop profit</div><div class="v good">+\u20AC30</div></div>
+      <div class="card kpi"><div class="l">Yearly</div><div class="v good">+\u20AC1,560</div></div>
+    </div>
+    <div class="card"><div style="font-size:11px;font-weight:700;color:var(--g500);margin-bottom:6px">STACK A FEW TOGETHER</div>
+      <div style="font-size:12.5px;line-height:1.8">This product alone: <b class="good">+\u20AC1,560/yr</b><br>+ the 3 other flagged drinks: <b class="good">+\u20AC4,730/yr</b><br>+ full Soft Drinks sweep (34 items): <b class="good">+\u20AC11,020/yr</b></div></div>
+    <p class="note">Small rises on everyday items compound into real money across the year.</p></div>` },
+
+{ g:"Integrated", name:"20 · Plan and Track", desc:"Close the loop: test, save the plan, then watch what actually happened after the change.",
+  html:`<div class="app">${header("Price plans","What-ifs you saved, and how the ones you applied are doing.")}
+    <table class="tbl"><tr><th>Product</th><th>Change</th><th>Status</th><th>Predicted</th><th>Actual so far</th></tr>
+      <tr><td>Sharing Crisps 150g</td><td>\u20AC2.49 \u2192 \u20AC2.69</td><td><span class="pillgood">Applied 3 wks ago</span></td><td>+\u20AC14/wk</td><td class="good">+\u20AC16/wk, sales held</td></tr>
+      <tr><td>Orange Juice 1L</td><td>\u20AC2.49 \u2192 \u20AC2.69</td><td><span class="pillgood">Applied 1 wk ago</span></td><td>+\u20AC12/wk</td><td class="good">+\u20AC11/wk so far</td></tr>
+      <tr class="hl"><td>Cola Multipack 6x330ml</td><td>\u20AC4.99 \u2192 \u20AC5.49</td><td><span class="pillwarn">Planned</span></td><td>+\u20AC30/wk</td><td>\u2014</td></tr>
+    </table>
+    <p class="note">The killer feature: predictions get checked against reality, so trust builds over time.</p>
+    <div style="margin-top:12px"><button class="btn">New price check</button></div></div>` }
+);
+
+// ---- boot ----
+const rail = document.getElementById("rail"), mocks = document.getElementById("mocks");
+let cur = 0, lastG = "";
+MOCKS.forEach((m,i)=>{
+  if(m.g!==lastG){ lastG=m.g; const g=document.createElement("div"); g.className="grp"; g.textContent=m.g; rail.appendChild(g); }
+  const b=document.createElement("button"); b.innerHTML=`<span class="n">${i+1}</span>${m.name.split("\u00B7 ")[1]}`; b.onclick=()=>go(i); rail.appendChild(b);
+  const d=document.createElement("div"); d.className="mock"; d.innerHTML=m.html; mocks.appendChild(d);
+});
+function go(i){
+  cur=(i+MOCKS.length)%MOCKS.length;
+  document.querySelectorAll(".rail button").forEach((b,j)=>b.classList.toggle("on",j===cur));
+  document.querySelectorAll(".mock").forEach((m,j)=>m.classList.toggle("on",j===cur));
+  document.getElementById("mname").textContent=MOCKS[cur].name;
+  document.getElementById("mdesc").textContent=MOCKS[cur].desc;
+}
+function nav(d){ go(cur+d); }
+document.addEventListener("keydown",e=>{ if(e.key==="ArrowRight")nav(1); if(e.key==="ArrowLeft")nav(-1); });
+
+// ---- live sliders (mockups 1, 2, 16) ----
+function calc(cents){
+  const price=cents/100, pu=price-P.cost, margin=pu/price*100;
+  const curPu=P.price-P.cost, wk=(pu-curPu)*P.units;
+  const be=pu>0?Math.max(0,Math.round((1-curPu/pu)*100)):0;
+  return {price,pu,margin,wk,be};
+}
+function upd1(v){const c=calc(v);
+  document.getElementById("s1p").textContent=eur(c.price);
+  document.getElementById("s1m").textContent=c.margin.toFixed(1)+"%";
+  document.getElementById("s1u").textContent=eur(c.pu);
+  const w=document.getElementById("s1w"); w.textContent=(c.wk>=0?"+":"\u2212")+eur(Math.abs(c.wk)).slice(0); w.className="v "+(c.wk>=0?"good":"bad");
+  document.getElementById("s1b").textContent=c.wk>0?c.be+"%":"\u2014";
+  document.getElementById("s1n").textContent=c.wk>0
+    ?`At ${eur(c.price)} you make ${eur(c.pu)} a unit instead of ${eur(P.price-P.cost)}. Even if ${c.be}% of buyers walked away, you would still be better off.`
+    :c.wk===0?"Same price, nothing changes.":`At ${eur(c.price)} you earn less per unit than today. A price cut only pays if it brings in clearly more customers.`;
+}
+function upd2(v){const c=calc(v);
+  document.getElementById("s2p").textContent=c.price.toFixed(2);
+  document.getElementById("s2m").textContent=c.margin.toFixed(1)+"%";
+  document.getElementById("s2w").textContent=eur((c.pu)*P.units);
+  const p=document.getElementById("s2v");
+  if(c.wk>0){p.className="pillgood";p.textContent=`Worth trying: you can lose up to ${c.be}% of sales and still come out ahead`;}
+  else if(c.wk===0){p.className="pillwarn";p.textContent="Same as today";}
+  else{p.className="pillbad";p.textContent="Lower than today: only worth it if it clearly brings more customers in";}
+}
+function upd16(v){const c=calc(v);const d=c.price-P.price;
+  document.getElementById("s16p").textContent=eur(c.price);
+  document.getElementById("s16d").textContent=` (${d>=0?"+":"\u2212"}\u20AC${Math.abs(d).toFixed(2)})`;
+  document.getElementById("s16n").textContent=`Margin would go from 17.8% to ${c.margin.toFixed(1)}%.`;
+}
+go(0);
+</script>
+</body>
+</html>

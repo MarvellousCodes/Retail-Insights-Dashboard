@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RetailGuard Landing Gallery: Showcase Batch</title>
+<meta name="description" content="Nine landing page directions for RetailGuard, built from the top sites on Awwwards, Framer, and 21st.dev.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root { --bg:#0b0b12; --card:#15151f; --border:#262636; --text:#f2f2f7; --muted:#9a9ab0; --accent:#8b5cf6; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:'Inter',sans-serif; min-height:100vh; padding:56px 24px; }
+  .wrap { max-width:1080px; margin:0 auto; }
+  h1 { font-family:'Space Grotesk',sans-serif; font-size:clamp(28px,5vw,44px); letter-spacing:-0.02em; }
+  .sub { color:var(--muted); margin:12px 0 36px; max-width:680px; line-height:1.6; }
+  h2 { font-family:'Space Grotesk',sans-serif; font-size:15px; color:var(--accent); letter-spacing:0.14em; text-transform:uppercase; margin:36px 0 14px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(270px,1fr)); gap:16px; }
+  a.card { display:block; background:var(--card); border:1px solid var(--border); border-radius:14px; padding:24px 22px; text-decoration:none; color:var(--text); transition:transform .18s ease, border-color .18s ease; }
+  a.card:hover { transform:translateY(-4px); border-color:var(--accent); }
+  .num { font-family:'Space Grotesk',sans-serif; color:var(--accent); font-size:12px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; }
+  .name { font-family:'Space Grotesk',sans-serif; font-size:20px; margin:7px 0 7px; }
+  .desc { color:var(--muted); font-size:13.5px; line-height:1.55; }
+  footer { color:var(--muted); font-size:12px; margin-top:44px; line-height:1.6; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>RetailGuard Landing Gallery</h1>
+  <p class="sub">Showcase batch: nine directions distilled from the current top sites on three platforms. Three schools, three pages each. All copy rules enforced, forms live and tagged per page, illustrative numbers only.</p>
+
+  <h2>Awwwards school</h2>
+  <div class="grid">
+    <a class="card" href="/aw1"><span class="num">AW1</span><div class="name">Scroll Conductor</div><div class="desc">Warm editorial with forest green, word by word hero reveal, parallax dashboard, orchestrated scroll.</div></a>
+    <a class="card" href="/aw2"><span class="num">AW2</span><div class="name">Monochrome Theatre</div><div class="desc">Cream and ink two colour theatre, 120px serif headline, one red accent word, horizontal scroll act.</div></a>
+    <a class="card" href="/aw3"><span class="num">AW3</span><div class="name">Living Canvas</div><div class="desc">Cursor reactive dot grid canvas on near black, glass cards, electric blue glow.</div></a>
+  </div>
+
+  <h2>Framer school</h2>
+  <div class="grid">
+    <a class="card" href="/fr1"><span class="num">FR1</span><div class="name">Confident Grid</div><div class="desc">Light modular system, teal accent, silky stagger reveals and magnetic buttons.</div></a>
+    <a class="card" href="/fr2"><span class="num">FR2</span><div class="name">Dark Observatory</div><div class="desc">Premium dark zinc with emerald glow, gradient orbs, glass feature cards.</div></a>
+    <a class="card" href="/fr3"><span class="num">FR3</span><div class="name">Open Shelf</div><div class="desc">Warm retail friendly, burnt orange, peach and mint section rhythm, pill buttons.</div></a>
+  </div>
+
+  <h2>21st.dev school</h2>
+  <div class="grid">
+    <a class="card" href="/st1"><span class="num">ST1</span><div class="name">Spotlight Depth</div><div class="desc">Mouse reactive spotlight cards, orbiting border beam on pricing, dark component craft.</div></a>
+    <a class="card" href="/st2"><span class="num">ST2</span><div class="name">Glass Bento</div><div class="desc">Light frosted glass bento grid, 3D tilt cards, floating geometry, Apple clean.</div></a>
+    <a class="card" href="/st3"><span class="num">ST3</span><div class="name">Radiant Grid</div><div class="desc">Navy with teal to violet spectrum, animated beams, gradient shimmer hero.</div></a>
+  </div>
+
+  <footer>Sister galleries: rg-landing-lab.pages.dev (conversion clean), rg-landing-3d.pages.dev (cinematic 3D), rg-landing-dribbble.pages.dev (designer polish).</footer>
+</div>
+</body>
+</html>
