@@ -1,0 +1,1344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RetailGuard | Find the money your shop is already losing</title>
+<meta name="description" content="RetailGuard reads your till export and shows you exactly where margin is leaking. Free margin scan for convenience stores and forecourts.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --primary: #4F46E5;
+  --primary-dark: #4338CA;
+  --primary-light: #EEF2FF;
+  --text: #1F2937;
+  --text-muted: #6B7280;
+  --bg: #F9FAFB;
+  --white: #FFFFFF;
+  --border: #E5E7EB;
+  --success: #059669;
+  --warning: #D97706;
+  --danger: #DC2626;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-lg: 0 10px 25px rgba(0,0,0,0.08), 0 4px 10px rgba(0,0,0,0.04);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  color: var(--text);
+  background: var(--white);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4 {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  line-height: 1.2;
+  font-weight: 700;
+}
+
+.container {
+  max-width: 1140px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* ===== NAVBAR ===== */
+.navbar {
+  position: sticky;
+  top: 0;
+  background: rgba(255,255,255,0.95);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border);
+  z-index: 100;
+  padding: 16px 0;
+}
+
+.navbar .container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.navbar-brand {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--primary);
+  text-decoration: none;
+}
+
+.navbar-links {
+  display: flex;
+  gap: 32px;
+  list-style: none;
+}
+
+.navbar-links a {
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.navbar-links a:hover { color: var(--primary); }
+
+.navbar-cta {
+  background: var(--primary);
+  color: var(--white);
+  padding: 10px 20px;
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+
+.navbar-cta:hover { background: var(--primary-dark); }
+
+.mobile-toggle {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+}
+
+.mobile-toggle span {
+  display: block;
+  width: 24px;
+  height: 2px;
+  background: var(--text);
+  margin: 5px 0;
+  transition: 0.3s;
+}
+
+/* ===== HERO ===== */
+.hero {
+  padding: 80px 0 60px;
+  background: var(--bg);
+}
+
+.hero .container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  align-items: center;
+}
+
+.hero-badge {
+  display: inline-block;
+  background: var(--primary-light);
+  color: var(--primary);
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+
+.hero h1 {
+  font-size: clamp(2rem, 4vw, 2.75rem);
+  margin-bottom: 20px;
+  color: var(--text);
+}
+
+.hero-sub {
+  font-size: 1.1rem;
+  color: var(--text-muted);
+  margin-bottom: 32px;
+  max-width: 480px;
+}
+
+.hero-cta-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.btn-primary {
+  display: inline-block;
+  background: var(--primary);
+  color: var(--white);
+  padding: 14px 28px;
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); }
+
+.btn-secondary {
+  display: inline-block;
+  color: var(--primary);
+  padding: 14px 28px;
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  font-size: 1rem;
+  font-weight: 600;
+  border: 2px solid var(--primary);
+  transition: background 0.2s;
+}
+
+.btn-secondary:hover { background: var(--primary-light); }
+
+.hero-friction {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+/* Dashboard mockup */
+.hero-visual {
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  padding: 24px;
+  border: 1px solid var(--border);
+}
+
+.mockup-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.mockup-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.mockup-dot-red { background: #EF4444; }
+.mockup-dot-yellow { background: #F59E0B; }
+.mockup-dot-green { background: #10B981; }
+
+.mockup-title {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-left: 8px;
+}
+
+.margin-ladder {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ladder-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ladder-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  min-width: 80px;
+  text-align: right;
+}
+
+.ladder-bar {
+  height: 28px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  font-size: 0.7rem;
+  color: var(--white);
+  font-weight: 600;
+}
+
+.ladder-bar-strong { background: var(--success); width: 70%; }
+.ladder-bar-healthy { background: #34D399; width: 55%; }
+.ladder-bar-thin { background: var(--warning); width: 35%; }
+.ladder-bar-loss { background: var(--danger); width: 20%; }
+
+.mockup-footer {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.mockup-stat {
+  text-align: center;
+}
+
+.mockup-stat-value {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.mockup-stat-label {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ===== VALUE PROPOSITION ===== */
+.value-section {
+  padding: 80px 0;
+}
+
+.section-header {
+  text-align: center;
+  margin-bottom: 56px;
+}
+
+.section-header h2 {
+  font-size: clamp(1.5rem, 3vw, 2.25rem);
+  margin-bottom: 12px;
+}
+
+.section-header p {
+  color: var(--text-muted);
+  font-size: 1.05rem;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.value-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 32px;
+}
+
+.value-card {
+  background: var(--bg);
+  border-radius: var(--radius);
+  padding: 32px 28px;
+  border: 1px solid var(--border);
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+
+.value-card:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+
+.value-icon {
+  width: 48px;
+  height: 48px;
+  background: var(--primary-light);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.value-icon svg {
+  width: 24px;
+  height: 24px;
+  stroke: var(--primary);
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.value-card h3 {
+  font-size: 1.1rem;
+  margin-bottom: 10px;
+}
+
+.value-card p {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+/* ===== FEATURES ===== */
+.features-section {
+  padding: 80px 0;
+  background: var(--bg);
+}
+
+.feature-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  align-items: center;
+  margin-bottom: 80px;
+}
+
+.feature-row:last-child { margin-bottom: 0; }
+.feature-row.reverse { direction: rtl; }
+.feature-row.reverse > * { direction: ltr; }
+
+.feature-content h3 {
+  font-size: 1.5rem;
+  margin-bottom: 12px;
+}
+
+.feature-content p {
+  color: var(--text-muted);
+  font-size: 1rem;
+  margin-bottom: 20px;
+}
+
+.feature-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.feature-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 0.9rem;
+  color: var(--text);
+}
+
+.feature-list li::before {
+  content: "";
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  background: var(--primary-light);
+  border-radius: 50%;
+  margin-top: 2px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%234F46E5' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.feature-visual {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 24px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+
+.feature-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--primary);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  margin-top: 16px;
+}
+
+.feature-link:hover { text-decoration: underline; }
+
+/* ===== HOW IT WORKS ===== */
+.how-section {
+  padding: 80px 0;
+}
+
+.steps-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 40px;
+  margin-top: 56px;
+}
+
+.step-card {
+  text-align: center;
+  position: relative;
+}
+
+.step-number {
+  width: 48px;
+  height: 48px;
+  background: var(--primary);
+  color: var(--white);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin: 0 auto 20px;
+}
+
+.step-card h3 {
+  font-size: 1.1rem;
+  margin-bottom: 8px;
+}
+
+.step-card p {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.step-time {
+  display: inline-block;
+  margin-top: 12px;
+  background: var(--primary-light);
+  color: var(--primary);
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+/* ===== PRICING ===== */
+.pricing-section {
+  padding: 80px 0;
+  background: var(--bg);
+}
+
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  margin-top: 56px;
+}
+
+.price-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 36px 28px;
+  border: 1px solid var(--border);
+  position: relative;
+  transition: box-shadow 0.2s;
+}
+
+.price-card:hover { box-shadow: var(--shadow-lg); }
+
+.price-card.popular {
+  border: 2px solid var(--primary);
+  transform: scale(1.03);
+}
+
+.price-badge {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--primary);
+  color: var(--white);
+  padding: 4px 16px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.price-name {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.price-amount {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.price-amount span {
+  font-size: 1rem;
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+.price-note {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-bottom: 24px;
+}
+
+.price-features {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.price-features li {
+  font-size: 0.88rem;
+  color: var(--text);
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.price-features li::before {
+  content: "✓";
+  color: var(--success);
+  font-weight: 700;
+  min-width: 16px;
+}
+
+.price-cta {
+  display: block;
+  text-align: center;
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+
+.price-cta-primary {
+  background: var(--primary);
+  color: var(--white);
+}
+
+.price-cta-primary:hover { background: var(--primary-dark); }
+
+.price-cta-outline {
+  border: 2px solid var(--border);
+  color: var(--text);
+}
+
+.price-cta-outline:hover { border-color: var(--primary); color: var(--primary); }
+
+/* ===== PROOF ===== */
+.proof-section {
+  padding: 80px 0;
+}
+
+.proof-card {
+  max-width: 700px;
+  margin: 0 auto;
+  background: var(--bg);
+  border-radius: var(--radius);
+  padding: 40px;
+  border: 1px solid var(--border);
+  text-align: center;
+}
+
+.proof-card blockquote {
+  font-size: 1.1rem;
+  font-style: italic;
+  color: var(--text);
+  margin-bottom: 20px;
+  line-height: 1.7;
+}
+
+.proof-card cite {
+  font-style: normal;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.proof-note {
+  margin-top: 8px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* ===== FAQ ===== */
+.faq-section {
+  padding: 80px 0;
+  background: var(--bg);
+}
+
+.faq-grid {
+  max-width: 720px;
+  margin: 56px auto 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.faq-item {
+  background: var(--white);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.faq-question {
+  width: 100%;
+  padding: 20px 24px;
+  background: none;
+  border: none;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.faq-question::after {
+  content: "+";
+  font-size: 1.3rem;
+  color: var(--primary);
+  font-weight: 400;
+  transition: transform 0.2s;
+}
+
+.faq-item.open .faq-question::after {
+  transform: rotate(45deg);
+}
+
+.faq-answer {
+  padding: 0 24px 20px;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  line-height: 1.7;
+  display: none;
+}
+
+.faq-item.open .faq-answer { display: block; }
+
+/* ===== FINAL CTA ===== */
+.final-cta {
+  padding: 80px 0;
+  text-align: center;
+}
+
+.final-cta h2 {
+  font-size: clamp(1.5rem, 3vw, 2.25rem);
+  margin-bottom: 16px;
+}
+
+.final-cta p {
+  color: var(--text-muted);
+  font-size: 1.05rem;
+  margin-bottom: 32px;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.final-cta .hero-friction {
+  margin-top: 12px;
+}
+
+/* ===== CONTACT FORM ===== */
+.contact-section {
+  padding: 60px 0 80px;
+  background: var(--bg);
+}
+
+.contact-form {
+  max-width: 520px;
+  margin: 0 auto;
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 40px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+
+.contact-form h3 {
+  font-size: 1.3rem;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.contact-form .form-sub {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin-bottom: 28px;
+}
+
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 500;
+  margin-bottom: 6px;
+  color: var(--text);
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  font-family: inherit;
+  transition: border-color 0.2s;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.form-group textarea { resize: vertical; min-height: 80px; }
+
+.form-submit {
+  width: 100%;
+  padding: 14px;
+  background: var(--primary);
+  color: var(--white);
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-top: 8px;
+}
+
+.form-submit:hover { background: var(--primary-dark); }
+
+.form-friction {
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 12px;
+}
+
+.form-success {
+  display: none;
+  text-align: center;
+  padding: 24px;
+  color: var(--success);
+  font-weight: 600;
+}
+
+/* ===== FOOTER ===== */
+.footer {
+  padding: 40px 0;
+  border-top: 1px solid var(--border);
+  text-align: center;
+}
+
+.footer p {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .navbar-links { display: none; }
+  .navbar-cta { display: none; }
+  .mobile-toggle { display: block; }
+
+  .hero .container {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+
+  .hero { padding: 48px 0 40px; }
+
+  .value-grid { grid-template-columns: 1fr; }
+
+  .feature-row,
+  .feature-row.reverse {
+    grid-template-columns: 1fr;
+    direction: ltr;
+  }
+
+  .steps-grid { grid-template-columns: 1fr; gap: 32px; }
+
+  .pricing-grid { grid-template-columns: 1fr; }
+
+  .price-card.popular { transform: none; }
+
+  .contact-form { padding: 28px 20px; }
+}
+
+@media (max-width: 480px) {
+  .container { padding: 0 16px; }
+  .hero-cta-group { flex-direction: column; align-items: flex-start; }
+}
+
+/* Skip link for accessibility */
+.skip-link {
+  position: absolute;
+  top: -100px;
+  left: 16px;
+  background: var(--primary);
+  color: var(--white);
+  padding: 8px 16px;
+  border-radius: 4px;
+  z-index: 200;
+  font-size: 0.9rem;
+}
+
+.skip-link:focus { top: 8px; }
+</style>
+</head>
+<body>
+
+<!-- Skip navigation for WCAG AA -->
+<a href="#main" class="skip-link">Skip to main content</a>
+
+<!-- NAVBAR -->
+<nav class="navbar" aria-label="Main navigation">
+  <div class="container">
+    <a href="#" class="navbar-brand">RetailGuard</a>
+    <ul class="navbar-links">
+      <li><a href="#features">Features</a></li>
+      <li><a href="#how-it-works">How It Works</a></li>
+      <li><a href="#pricing">Pricing</a></li>
+      <li><a href="#faq">FAQ</a></li>
+    </ul>
+    <a href="#contact" class="navbar-cta">Get my free margin scan</a>
+    <button class="mobile-toggle" aria-label="Open menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<!-- Patterns: Clear Value Proposition + Product Visual + Risk Reducer + Target Audience Clarity + Outcome Timeframe -->
+<main id="main">
+<section class="hero">
+  <div class="container">
+    <div class="hero-content">
+      <span class="hero-badge">For convenience stores and forecourts</span>
+      <h1>Find the money your shop is already losing</h1>
+      <p class="hero-sub">Your till export holds the answers. RetailGuard reads it and shows you exactly where margin is leaking, so you can fix it today.</p>
+      <div class="hero-cta-group">
+        <a href="#contact" class="btn-primary">Get my free margin scan</a>
+        <a href="#features" class="btn-secondary">See how it works</a>
+      </div>
+      <p class="hero-friction">Free. No card. Takes 2 minutes.</p>
+    </div>
+    <div class="hero-visual" aria-label="RetailGuard margin ladder dashboard preview">
+      <div class="mockup-header">
+        <div class="mockup-dot mockup-dot-red"></div>
+        <div class="mockup-dot mockup-dot-yellow"></div>
+        <div class="mockup-dot mockup-dot-green"></div>
+        <span class="mockup-title">RetailGuard Dashboard</span>
+      </div>
+      <div class="margin-ladder">
+        <div class="ladder-row">
+          <span class="ladder-label">Strong (30%+)</span>
+          <div class="ladder-bar ladder-bar-strong">412 products</div>
+        </div>
+        <div class="ladder-row">
+          <span class="ladder-label">Healthy (20-30%)</span>
+          <div class="ladder-bar ladder-bar-healthy">287 products</div>
+        </div>
+        <div class="ladder-row">
+          <span class="ladder-label">Thin (10-20%)</span>
+          <div class="ladder-bar ladder-bar-thin">94 products</div>
+        </div>
+        <div class="ladder-row">
+          <span class="ladder-label">Loss (&lt;10%)</span>
+          <div class="ladder-bar ladder-bar-loss">37 products</div>
+        </div>
+      </div>
+      <div class="mockup-footer">
+        <div class="mockup-stat">
+          <div class="mockup-stat-value">830</div>
+          <div class="mockup-stat-label">Products tracked</div>
+        </div>
+        <div class="mockup-stat">
+          <div class="mockup-stat-value">37</div>
+          <div class="mockup-stat-label">Below target</div>
+        </div>
+        <div class="mockup-stat">
+          <div class="mockup-stat-value">4.5%</div>
+          <div class="mockup-stat-label">Need attention</div>
+        </div>
+      </div>
+      <p style="font-size:0.65rem;color:var(--text-muted);text-align:center;margin-top:10px;">Illustrative example. Not a real shop's data.</p>
+    </div>
+  </div>
+</section>
+
+<!-- VALUE PROPOSITION -->
+<!-- Patterns: Multiple Propositions + Outcome Quantification + Benefit Specificity + Unique Mechanism -->
+<section class="value-section">
+  <div class="container">
+    <div class="section-header">
+      <h2>Your till data is a goldmine you have not dug into yet</h2>
+      <p>Three ways RetailGuard turns your existing sales data into found money.</p>
+    </div>
+    <div class="value-grid">
+      <div class="value-card">
+        <div class="value-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        </div>
+        <h3>See every margin gap at a glance</h3>
+        <p>The margin ladder sorts every product from strong to loss. You spot the problems in seconds, not hours.</p>
+      </div>
+      <div class="value-card">
+        <div class="value-icon">
+          <svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+        </div>
+        <h3>Catch supplier cost changes the day they hit</h3>
+        <p>Price Moves flags every real cost increase and shows you the profit impact before your next order.</p>
+      </div>
+      <div class="value-card">
+        <div class="value-icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M16 12l-4-4-4 4M12 16V8"/></svg>
+        </div>
+        <h3>Ask any question in plain English</h3>
+        <p>Type "which dairy products lost money last month?" and get an answer with a chart and Excel export, in seconds.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<!-- Patterns: Benefit-Led Copy + Pain-to-Outcome Mapping + Outcome Visualization + Internal Linking -->
+<section class="features-section" id="features">
+  <div class="container">
+    <div class="section-header">
+      <h2>Everything you need to protect your margin</h2>
+      <p>Built for the way convenience store owners actually work.</p>
+    </div>
+
+    <!-- Feature 1: Overview Dashboard -->
+    <div class="feature-row">
+      <div class="feature-content">
+        <h3>Know your numbers without digging</h3>
+        <p>The Overview Dashboard gives you sales trends, margin health, top products, and department performance in one clean view. No spreadsheets. No guesswork.</p>
+        <ul class="feature-list">
+          <li>Monthly and weekly sales trends with comparisons</li>
+          <li>Margin health donut showing your mix at a glance</li>
+          <li>Top movers by department with same period last year</li>
+        </ul>
+      </div>
+      <div class="feature-visual" aria-label="Overview dashboard illustration">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div style="background:var(--primary-light);border-radius:8px;padding:16px;text-align:center;">
+            <div style="font-size:1.3rem;font-weight:700;color:var(--primary);">24.6%</div>
+            <div style="font-size:0.7rem;color:var(--text-muted);">Average margin</div>
+          </div>
+          <div style="background:#ECFDF5;border-radius:8px;padding:16px;text-align:center;">
+            <div style="font-size:1.3rem;font-weight:700;color:var(--success);">+3.2%</div>
+            <div style="font-size:0.7rem;color:var(--text-muted);">vs last month</div>
+          </div>
+          <div style="background:#FEF3C7;border-radius:8px;padding:16px;text-align:center;">
+            <div style="font-size:1.3rem;font-weight:700;color:var(--warning);">12</div>
+            <div style="font-size:0.7rem;color:var(--text-muted);">Needs attention</div>
+          </div>
+          <div style="background:var(--bg);border-radius:8px;padding:16px;text-align:center;">
+            <div style="font-size:1.3rem;font-weight:700;color:var(--text);">830</div>
+            <div style="font-size:0.7rem;color:var(--text-muted);">Products tracked</div>
+          </div>
+        </div>
+        <p style="font-size:0.6rem;color:var(--text-muted);text-align:center;margin-top:8px;">Illustrative example</p>
+      </div>
+    </div>
+
+    <!-- Feature 2: Invoice Scanner -->
+    <div class="feature-row reverse">
+      <div class="feature-content">
+        <h3>Scan a supplier invoice, know your margin instantly</h3>
+        <p>Photograph or upload any supplier invoice. RetailGuard matches each line to your product list and flags cost changes, new items, and margin mismatches before you shelve a single unit.</p>
+        <ul class="feature-list">
+          <li>Matches invoice lines to your existing stock</li>
+          <li>Flags cost increases and new products immediately</li>
+          <li>Shows margin impact so you can reprice before selling at a loss</li>
+        </ul>
+      </div>
+      <div class="feature-visual" aria-label="Invoice scanner result illustration">
+        <div style="border:1px solid var(--border);border-radius:6px;overflow:hidden;">
+          <div style="background:var(--bg);padding:10px 14px;font-size:0.75rem;font-weight:600;border-bottom:1px solid var(--border);">Invoice scan result</div>
+          <div style="padding:10px 14px;font-size:0.8rem;display:flex;justify-content:space-between;border-bottom:1px solid var(--border);">
+            <span>Whole Milk 2L</span><span style="color:var(--success);">Matched</span>
+          </div>
+          <div style="padding:10px 14px;font-size:0.8rem;display:flex;justify-content:space-between;border-bottom:1px solid var(--border);">
+            <span>Cheddar Block 200g</span><span style="color:var(--warning);">Cost +8%</span>
+          </div>
+          <div style="padding:10px 14px;font-size:0.8rem;display:flex;justify-content:space-between;">
+            <span>Oat Bars (new)</span><span style="color:var(--primary);">New item</span>
+          </div>
+        </div>
+        <p style="font-size:0.6rem;color:var(--text-muted);text-align:center;margin-top:8px;">Illustrative example</p>
+      </div>
+    </div>
+
+    <!-- Feature 3: Ask Your Shop -->
+    <div class="feature-row">
+      <div class="feature-content">
+        <h3>Ask your shop anything, get an answer in seconds</h3>
+        <p>Type a plain English question and get a chart plus an Excel download. No training needed. Your staff can use it on day one.</p>
+        <ul class="feature-list">
+          <li>"Which products had the worst margin this week?"</li>
+          <li>"Show me dairy sales vs same month last year"</li>
+          <li>"What did I sell most of on Saturday?"</li>
+        </ul>
+        <a href="#contact" class="feature-link">Try it with your own data →</a>
+      </div>
+      <div class="feature-visual" aria-label="Ask your shop illustration">
+        <div style="background:var(--bg);border-radius:8px;padding:14px;margin-bottom:10px;">
+          <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:6px;">You asked:</div>
+          <div style="font-size:0.9rem;font-weight:500;">"Which dairy products lost money last month?"</div>
+        </div>
+        <div style="border-radius:8px;padding:14px;border:1px solid var(--border);">
+          <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:8px;">Answer:</div>
+          <div style="font-size:0.85rem;margin-bottom:8px;">3 dairy lines were below cost in June:</div>
+          <div style="font-size:0.8rem;color:var(--danger);display:flex;justify-content:space-between;">
+            <span>Fresh Cream 500ml</span><span>-4.2%</span>
+          </div>
+          <div style="font-size:0.8rem;color:var(--danger);display:flex;justify-content:space-between;">
+            <span>Butter 454g</span><span>-2.8%</span>
+          </div>
+          <div style="font-size:0.8rem;color:var(--danger);display:flex;justify-content:space-between;">
+            <span>Greek Yoghurt 500g</span><span>-1.1%</span>
+          </div>
+        </div>
+        <p style="font-size:0.6rem;color:var(--text-muted);text-align:center;margin-top:8px;">Illustrative example</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<!-- Patterns: Step Clarity + Effort Perception + Timeline Specificity + Visual Progression + Outcome Preview -->
+<section class="how-section" id="how-it-works">
+  <div class="container">
+    <div class="section-header">
+      <h2>Up and running in three steps</h2>
+      <p>No hardware. No integration project. Just your existing till export.</p>
+    </div>
+    <div class="steps-grid">
+      <div class="step-card">
+        <div class="step-number">1</div>
+        <h3>Export your till data</h3>
+        <p>Use the normal export from your back office system. CSV or Excel, it all works.</p>
+        <span class="step-time">Takes 1 minute</span>
+      </div>
+      <div class="step-card">
+        <div class="step-number">2</div>
+        <h3>We load and analyse it</h3>
+        <p>RetailGuard reads your product list, costs, and prices. Every margin gap is identified instantly.</p>
+        <span class="step-time">Takes under 60 seconds</span>
+      </div>
+      <div class="step-card">
+        <div class="step-number">3</div>
+        <h3>See your opportunities</h3>
+        <p>The dashboard shows you exactly where money is leaking and what fixing it would be worth.</p>
+        <span class="step-time">Results in 2 minutes</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<!-- Patterns: Plan Clarity + Easy Comparison + Anchoring Tags + Risk Reducer + Value-Based Naming -->
+<section class="pricing-section" id="pricing">
+  <div class="container">
+    <div class="section-header">
+      <h2>Simple, transparent pricing</h2>
+      <p>No setup fee. No long-term commitment. Cancel anytime.</p>
+    </div>
+    <div class="pricing-grid">
+      <!-- Insight -->
+      <div class="price-card">
+        <div class="price-name">Insight</div>
+        <div class="price-amount">&euro;500 <span>/mo</span></div>
+        <p class="price-note">Net of VAT. No setup fee.</p>
+        <ul class="price-features">
+          <li>Full dashboard and sales overview</li>
+          <li>Margin ladder and alerts</li>
+          <li>Drill-down by department and product</li>
+          <li>Barcode lookup</li>
+          <li>Supplier analytics</li>
+        </ul>
+        <a href="#contact" class="price-cta price-cta-outline">Get my free margin scan</a>
+      </div>
+      <!-- Complete -->
+      <div class="price-card popular">
+        <span class="price-badge">Most popular</span>
+        <div class="price-name">Complete</div>
+        <div class="price-amount">&euro;1,000 <span>/mo</span></div>
+        <p class="price-note">Net of VAT. No setup fee.</p>
+        <ul class="price-features">
+          <li>Everything in Insight</li>
+          <li>Invoice Scanner</li>
+          <li>Ask Your Shop</li>
+          <li>Trading patterns and product performance</li>
+          <li>Priority support</li>
+        </ul>
+        <a href="#contact" class="price-cta price-cta-primary">Get my free margin scan</a>
+      </div>
+      <!-- Multi-site -->
+      <div class="price-card">
+        <div class="price-name">Multi-site</div>
+        <div class="price-amount">&euro;1,500 <span>/mo</span></div>
+        <p class="price-note">Net of VAT. No setup fee.</p>
+        <ul class="price-features">
+          <li>Everything in Complete</li>
+          <li>Write-back to back office (rolling out)</li>
+          <li>Morning report by department</li>
+          <li>Per-site onboarding</li>
+        </ul>
+        <a href="#contact" class="price-cta price-cta-outline">Get my free margin scan</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROOF -->
+<section class="proof-section">
+  <div class="container">
+    <div class="proof-card">
+      <blockquote>"Typical opportunities identified can amount to thousands of euros per year, depending on store size."</blockquote>
+      <cite>RetailGuard team, based on pilot findings</cite>
+      <p class="proof-note">Illustrative estimate. Your results depend on your product mix and pricing.</p>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<!-- Patterns: addresses last-doubt objections -->
+<section class="faq-section" id="faq">
+  <div class="container">
+    <div class="section-header">
+      <h2>Common questions</h2>
+    </div>
+    <div class="faq-grid">
+      <div class="faq-item">
+        <button class="faq-question" aria-expanded="false">What till systems does it work with?</button>
+        <div class="faq-answer" role="region">RetailGuard works with any system that can export product and sales data as CSV or Excel. This includes most EPOS systems used in convenience stores and forecourts across Ireland and the UK.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question" aria-expanded="false">Is my data safe?</button>
+        <div class="faq-answer" role="region">Yes. Your data is encrypted in transit and at rest. RetailGuard is read-only by default, so it can never change anything in your till system. Only you can see your data.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question" aria-expanded="false">How long does setup take?</button>
+        <div class="faq-answer" role="region">Most shops are up and running within a single day. You export your data, we load it, and you start seeing results immediately. No hardware installation needed.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question" aria-expanded="false">Can I cancel anytime?</button>
+        <div class="faq-answer" role="region">Yes. Monthly billing with no lock-in. If RetailGuard does not pay for itself, you can cancel with no questions asked.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question" aria-expanded="false">What is the free margin scan?</button>
+        <div class="faq-answer" role="region">Send us your till export and we run a quick analysis to show you where your biggest margin gaps are. Completely free, no commitment. If you like what you see, we will set up your full dashboard.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<!-- Patterns: Friction Reduction + Microcopy Quality + Consolidation + Secondary Path -->
+<section class="final-cta">
+  <div class="container">
+    <h2>Ready to find your hidden margin?</h2>
+    <p>Send us your till export and we will show you exactly where money is leaking. Free, no commitment.</p>
+    <a href="#contact" class="btn-primary">Get my free margin scan</a>
+    <p class="hero-friction">Free. No card. Takes 2 minutes.</p>
+  </div>
+</section>
+
+<!-- CONTACT FORM -->
+<section class="contact-section" id="contact">
+  <div class="container">
+    <form class="contact-form" id="leadForm" aria-label="Free margin scan request form">
+      <h3>Get my free margin scan</h3>
+      <p class="form-sub">Free. No card. Takes 2 minutes.</p>
+      <input type="hidden" name="_subject" value="WebAnatomy Clarity Lead">
+      <input type="hidden" name="_captcha" value="false">
+      <div class="form-group">
+        <label for="name">Your name</label>
+        <input type="text" id="name" name="name" required autocomplete="name">
+      </div>
+      <div class="form-group">
+        <label for="email">Email address</label>
+        <input type="email" id="email" name="email" required autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label for="phone">Phone (optional)</label>
+        <input type="tel" id="phone" name="phone" autocomplete="tel">
+      </div>
+      <div class="form-group">
+        <label for="shopname">Shop or business name</label>
+        <input type="text" id="shopname" name="shopname" required>
+      </div>
+      <div class="form-group">
+        <label for="message">Anything else we should know? (optional)</label>
+        <textarea id="message" name="message" rows="3"></textarea>
+      </div>
+      <button type="submit" class="form-submit">Send my request</button>
+      <p class="form-friction">We will get back to you within one working day.</p>
+      <div class="form-success" id="formSuccess" role="alert">
+        <p>Thank you! We will be in touch shortly to arrange your free margin scan.</p>
+      </div>
+    </form>
+  </div>
+</section>
+</main>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="container">
+    <p>&copy; 2026 RetailGuard. All rights reserved.</p>
+  </div>
+</footer>
+
+<script>
+// FAQ toggle
+document.querySelectorAll('.faq-question').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    var item = this.parentElement;
+    var isOpen = item.classList.contains('open');
+    document.querySelectorAll('.faq-item').forEach(function(i) { i.classList.remove('open'); });
+    if (!isOpen) item.classList.add('open');
+    this.setAttribute('aria-expanded', !isOpen);
+  });
+});
+
+// FormSubmit AJAX
+(function() {
+  var form = document.getElementById('leadForm');
+  if (!form) return;
+  form.addEventListener('submit', function(e) {
+    e.preventDefault();
+    var data = new FormData(form);
+    var btn = form.querySelector('.form-submit');
+    btn.disabled = true;
+    btn.textContent = 'Sending...';
+    fetch('https://formsubmit.co/ajax/retailguard.sales@gmail.com', {
+      method: 'POST',
+      body: data,
+      headers: { 'Accept': 'application/json' }
+    }).then(function(res) {
+      if (res.ok) {
+        form.style.display = 'none';
+        document.getElementById('formSuccess').style.display = 'block';
+      } else {
+        btn.disabled = false;
+        btn.textContent = 'Send my request';
+        alert('Something went wrong. Please try again.');
+      }
+    }).catch(function() {
+      btn.disabled = false;
+      btn.textContent = 'Send my request';
+      alert('Network error. Please check your connection and try again.');
+    });
+  });
+})();
+</script>
+</body>
+</html>

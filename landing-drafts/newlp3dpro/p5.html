@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RetailGuard - See Your Margins Clearly</title>
+<meta name="description" content="RetailGuard helps independent retailers find hidden margin leaks and recover lost profit. Get your free margin scan today.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #FDFCFA;
+  --card: #FFFFFF;
+  --border: #E5E7EB;
+  --accent: #4F46E5;
+  --accent-hover: #4338CA;
+  --text: #111827;
+  --muted: #6B7280;
+  --shape1: #C4B5FD;
+  --shape2: #A7F3D0;
+  --shape3: #FDE68A;
+  --section-alt: #F9FAFB;
+  --dark-bg: #111827;
+  --radius: 12px;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  color: var(--text);
+  background: var(--bg);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3 { font-family: 'Sora', sans-serif; line-height: 1.2; }
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+.container { max-width: 1140px; margin: 0 auto; padding: 0 24px; }
+
+/* NAV */
+.nav {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(253,252,250,0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.3s;
+}
+.nav.scrolled { border-bottom-color: var(--border); }
+.nav-inner {
+  display: flex; align-items: center; justify-content: space-between;
+  height: 64px;
+}
+.nav-logo { font-family: 'Sora', sans-serif; font-weight: 800; font-size: 1.25rem; color: var(--text); }
+.nav-links { display: flex; gap: 32px; list-style: none; }
+.nav-links a { color: var(--muted); font-size: 0.9rem; font-weight: 500; transition: color 0.2s; }
+.nav-links a:hover { color: var(--text); text-decoration: none; }
+.nav-cta {
+  background: var(--accent); color: #fff; border: none; border-radius: 8px;
+  padding: 10px 20px; font-size: 0.9rem; font-weight: 600; cursor: pointer;
+  transition: background 0.2s;
+}
+.nav-cta:hover { background: var(--accent-hover); }
+
+@media (max-width: 768px) {
+  .nav-links { display: none; }
+}
+
+/* HERO */
+.hero {
+  position: relative; overflow: hidden;
+  padding: 120px 0 100px; text-align: center;
+  min-height: 600px; display: flex; align-items: center; justify-content: center;
+}
+.hero-canvas {
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  z-index: 0; pointer-events: none;
+  mask-image: linear-gradient(to bottom, black 70%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, black 70%, transparent 100%);
+}
+.hero-fallback {
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 600px 600px at 20% 30%, rgba(196,181,253,0.12) 0%, transparent 70%),
+    radial-gradient(ellipse 500px 500px at 75% 60%, rgba(167,243,208,0.10) 0%, transparent 70%),
+    radial-gradient(ellipse 400px 400px at 50% 80%, rgba(253,230,138,0.08) 0%, transparent 70%);
+  mask-image: linear-gradient(to bottom, black 70%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, black 70%, transparent 100%);
+}
+.hero-content { position: relative; z-index: 1; max-width: 700px; margin: 0 auto; }
+.hero h1 { font-size: clamp(2.2rem, 5vw, 3.5rem); font-weight: 800; margin-bottom: 20px; color: var(--text); }
+.hero p { font-size: 1.15rem; color: var(--muted); max-width: 540px; margin: 0 auto 32px; }
+.btn-primary {
+  display: inline-block; background: var(--accent); color: #fff;
+  padding: 16px 32px; border-radius: 10px; font-size: 1rem; font-weight: 600;
+  border: none; cursor: pointer; transition: background 0.2s, transform 0.1s;
+}
+.btn-primary:hover { background: var(--accent-hover); text-decoration: none; transform: translateY(-1px); }
+
+/* PROOF STRIP */
+.proof {
+  padding: 48px 0; text-align: center; border-bottom: 1px solid var(--border);
+}
+.proof p { font-size: 0.9rem; color: var(--muted); margin-bottom: 16px; }
+.proof-logos {
+  display: flex; gap: 40px; align-items: center; justify-content: center; flex-wrap: wrap;
+  opacity: 0.45;
+}
+.proof-logos span {
+  font-family: 'Sora', sans-serif; font-weight: 700; font-size: 1rem; color: var(--text);
+}
+
+/* FEATURES */
+.features { padding: 80px 0; }
+.features .section-title { text-align: center; margin-bottom: 60px; }
+.features .section-title h2 { font-size: 2rem; font-weight: 700; margin-bottom: 12px; }
+.features .section-title p { color: var(--muted); font-size: 1.05rem; }
+
+.feature-row {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center;
+  margin-bottom: 64px;
+}
+.feature-row:nth-child(even) .feature-visual { order: -1; }
+.feature-text h3 { font-size: 1.4rem; font-weight: 700; margin-bottom: 12px; }
+.feature-text p { color: var(--muted); font-size: 1rem; }
+
+.feature-visual {
+  background: var(--section-alt); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 24px; min-height: 200px;
+  display: flex; align-items: center; justify-content: center;
+}
+.feature-vignette {
+  width: 100%; border-radius: 8px; overflow: hidden;
+  font-size: 0.8rem; color: var(--text);
+}
+
+/* Mini UI vignettes */
+.vig-table { width: 100%; border-collapse: collapse; }
+.vig-table th, .vig-table td { padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--border); }
+.vig-table th { background: #F3F4F6; font-weight: 600; font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+.vig-table .leak { color: #DC2626; font-weight: 600; }
+.vig-table .ok { color: #059669; font-weight: 600; }
+
+.vig-chat { padding: 16px; background: #fff; border-radius: 8px; }
+.vig-chat-msg { padding: 8px 12px; border-radius: 8px; margin-bottom: 8px; max-width: 80%; font-size: 0.8rem; }
+.vig-chat-user { background: var(--accent); color: #fff; margin-left: auto; }
+.vig-chat-bot { background: #F3F4F6; color: var(--text); }
+
+.vig-invoice { background: #fff; padding: 16px; border-radius: 8px; }
+.vig-invoice-header { font-weight: 600; margin-bottom: 8px; font-size: 0.85rem; }
+.vig-invoice-line { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #F3F4F6; font-size: 0.78rem; }
+.vig-invoice-flag { background: #FEF3C7; color: #92400E; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: 500; }
+
+.vig-chart { padding: 16px; background: #fff; border-radius: 8px; }
+.vig-bars { display: flex; align-items: flex-end; gap: 6px; height: 80px; }
+.vig-bar { width: 24px; border-radius: 4px 4px 0 0; background: var(--accent); opacity: 0.7; }
+.vig-chart-label { font-size: 0.7rem; color: var(--muted); margin-top: 8px; text-align: center; }
+
+.vig-report { background: #fff; padding: 16px; border-radius: 8px; }
+.vig-report-title { font-weight: 600; font-size: 0.85rem; margin-bottom: 8px; }
+.vig-report-item { display: flex; align-items: center; gap: 8px; padding: 6px 0; font-size: 0.78rem; }
+.vig-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.vig-dot-red { background: #DC2626; }
+.vig-dot-amber { background: #F59E0B; }
+.vig-dot-green { background: #059669; }
+
+@media (max-width: 768px) {
+  .feature-row { grid-template-columns: 1fr; gap: 24px; }
+  .feature-row:nth-child(even) .feature-visual { order: 0; }
+}
+
+/* HOW IT WORKS */
+.how-it-works { padding: 80px 0; background: var(--section-alt); }
+.how-it-works h2 { text-align: center; font-size: 2rem; font-weight: 700; margin-bottom: 48px; }
+.steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; }
+.step { text-align: center; }
+.step-num {
+  width: 48px; height: 48px; border-radius: 50%;
+  background: var(--accent); color: #fff; font-family: 'Sora', sans-serif;
+  font-weight: 700; font-size: 1.2rem;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 16px;
+}
+.step h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 8px; }
+.step p { font-size: 0.9rem; color: var(--muted); }
+
+@media (max-width: 768px) {
+  .steps { grid-template-columns: 1fr; gap: 40px; }
+}
+
+/* PRICING */
+.pricing { padding: 80px 0; }
+.pricing h2 { text-align: center; font-size: 2rem; font-weight: 700; margin-bottom: 12px; }
+.pricing .subtitle { text-align: center; color: var(--muted); margin-bottom: 48px; font-size: 1rem; }
+.pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+.price-card {
+  background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 32px 24px; position: relative; text-align: center;
+}
+.price-card.popular { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.price-badge {
+  position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+  background: var(--accent); color: #fff; font-size: 0.75rem; font-weight: 600;
+  padding: 4px 12px; border-radius: 20px;
+}
+.price-card h3 { font-size: 1.2rem; font-weight: 700; margin-bottom: 8px; }
+.price-amount { font-size: 2.5rem; font-weight: 800; font-family: 'Sora', sans-serif; color: var(--text); }
+.price-amount span { font-size: 1rem; font-weight: 400; color: var(--muted); }
+.price-card ul { list-style: none; margin: 24px 0; text-align: left; }
+.price-card li { padding: 8px 0; font-size: 0.9rem; color: var(--muted); display: flex; align-items: flex-start; gap: 8px; }
+.price-card li::before { content: ""; display: inline-block; width: 18px; height: 18px; background: #D1FAE5; border-radius: 50%; flex-shrink: 0; margin-top: 2px; position: relative; }
+.price-card li::after { content: ""; position: absolute; /* tick mark via CSS would need more complex approach */ }
+.price-check { color: #059669; font-weight: 700; margin-right: 4px; }
+.price-card .btn-primary { width: 100%; text-align: center; }
+.price-note { text-align: center; color: var(--muted); font-size: 0.85rem; margin-top: 24px; }
+
+@media (max-width: 768px) {
+  .pricing-grid { grid-template-columns: 1fr; max-width: 400px; margin: 0 auto; }
+}
+
+/* FAQ */
+.faq { padding: 80px 0; background: var(--section-alt); }
+.faq h2 { text-align: center; font-size: 2rem; font-weight: 700; margin-bottom: 48px; }
+.faq-list { max-width: 700px; margin: 0 auto; }
+.faq-item { border-bottom: 1px solid var(--border); }
+.faq-q {
+  width: 100%; background: none; border: none; padding: 20px 0;
+  font-size: 1rem; font-weight: 600; color: var(--text); text-align: left;
+  cursor: pointer; display: flex; justify-content: space-between; align-items: center;
+  font-family: 'Inter', sans-serif;
+}
+.faq-q::after { content: "+"; font-size: 1.4rem; color: var(--muted); transition: transform 0.2s; }
+.faq-item.open .faq-q::after { transform: rotate(45deg); }
+.faq-a { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
+.faq-item.open .faq-a { max-height: 200px; }
+.faq-a p { padding: 0 0 20px; color: var(--muted); font-size: 0.95rem; line-height: 1.6; }
+
+/* CONTACT */
+.contact { padding: 80px 0; }
+.contact-card {
+  max-width: 560px; margin: 0 auto; background: var(--card);
+  border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 40px; text-align: center;
+}
+.contact-card h2 { font-size: 1.8rem; font-weight: 700; margin-bottom: 8px; }
+.contact-card > p { color: var(--muted); margin-bottom: 32px; font-size: 0.95rem; }
+.form-group { margin-bottom: 16px; text-align: left; }
+.form-group label { display: block; font-size: 0.85rem; font-weight: 500; margin-bottom: 6px; color: var(--text); }
+.form-group input, .form-group textarea {
+  width: 100%; padding: 12px 14px; border: 1px solid var(--border); border-radius: 8px;
+  font-size: 0.95rem; font-family: 'Inter', sans-serif; transition: border-color 0.2s;
+  background: #fff; color: var(--text);
+}
+.form-group input:focus, .form-group textarea:focus { outline: none; border-color: var(--accent); }
+.form-group textarea { resize: vertical; min-height: 100px; }
+.form-status { margin-top: 12px; font-size: 0.9rem; display: none; }
+.form-status.success { color: #059669; display: block; }
+.form-status.error { color: #DC2626; display: block; }
+
+/* FOOTER */
+.footer { padding: 48px 0; border-top: 1px solid var(--border); }
+.footer-inner { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
+.footer-logo { font-family: 'Sora', sans-serif; font-weight: 800; font-size: 1.1rem; color: var(--text); }
+.footer-copy { font-size: 0.85rem; color: var(--muted); }
+.footer-links { display: flex; gap: 24px; }
+.footer-links a { font-size: 0.85rem; color: var(--muted); }
+.footer-links a:hover { color: var(--text); }
+
+/* UTILITY */
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav" id="nav">
+  <div class="container nav-inner">
+    <div class="nav-logo">RetailGuard</div>
+    <ul class="nav-links">
+      <li><a href="#features">Features</a></li>
+      <li><a href="#pricing">Pricing</a></li>
+      <li><a href="#faq">FAQ</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+    <a href="#contact" class="nav-cta">Get my free margin scan</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="hero">
+  <div class="hero-fallback" id="heroFallback"></div>
+  <canvas class="hero-canvas" id="heroCanvas" aria-hidden="true"></canvas>
+  <div class="hero-content container">
+    <h1>See your margins clearly</h1>
+    <p>Typical opportunities identified can amount to thousands of euros per year, depending on store size. Find what your current tools miss.</p>
+    <a href="#contact" class="btn-primary">Get my free margin scan</a>
+  </div>
+</section>
+
+<!-- PROOF STRIP -->
+<section class="proof">
+  <div class="container">
+    <p>Trusted by independent retailers across Ireland</p>
+    <div class="proof-logos">
+      <span>Spar</span>
+      <span>Centra</span>
+      <span>SuperValu</span>
+      <span>Daybreak</span>
+      <span>Mace</span>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features" id="features">
+  <div class="container">
+    <div class="section-title">
+      <h2>Tools that work for your shop</h2>
+      <p>Five features built around what shop owners actually need every day.</p>
+    </div>
+
+    <!-- Feature 1: Margin Leak Finder -->
+    <div class="feature-row">
+      <div class="feature-text">
+        <h3>Margin leak finder</h3>
+        <p>Spots products selling below your target margin so you can fix prices before profit drains away. See exactly which items need attention, grouped by department.</p>
+      </div>
+      <div class="feature-visual">
+        <div class="feature-vignette">
+          <table class="vig-table">
+            <thead><tr><th>Product</th><th>Margin</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td>Fresh Milk 2L</td><td class="leak">8.2%</td><td class="leak">Below target</td></tr>
+              <tr><td>Sliced Pan White</td><td class="ok">24.5%</td><td class="ok">Healthy</td></tr>
+              <tr><td>Orange Juice 1L</td><td class="leak">11.1%</td><td class="leak">Below target</td></tr>
+              <tr><td>Cheddar Cheese 200g</td><td class="ok">31.0%</td><td class="ok">Healthy</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Feature 2: Ask Your Shop -->
+    <div class="feature-row">
+      <div class="feature-text">
+        <h3>Ask your shop</h3>
+        <p>Type a question in plain English and get instant answers about your stock, suppliers, and sales. No spreadsheets, no searching through folders.</p>
+      </div>
+      <div class="feature-visual">
+        <div class="feature-vignette vig-chat">
+          <div class="vig-chat-msg vig-chat-user">What were my top 5 sellers last week?</div>
+          <div class="vig-chat-msg vig-chat-bot">Your top 5 by units sold last week: 1. Fresh Milk 2L (142 units) 2. Sliced Pan (98) 3. Bottled Water 500ml (87)...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Feature 3: Invoice Scanner -->
+    <div class="feature-row">
+      <div class="feature-text">
+        <h3>Invoice scanner</h3>
+        <p>Snap a photo of any supplier invoice. It reads the line items, checks them against your stock file, and flags anything that looks off before you file it away.</p>
+      </div>
+      <div class="feature-visual">
+        <div class="feature-vignette vig-invoice">
+          <div class="vig-invoice-header">Murphy's Farm Fresh</div>
+          <div class="vig-invoice-line"><span>Fresh Eggs x30</span><span>€4.80</span></div>
+          <div class="vig-invoice-line"><span>Brown Bread x12</span><span class="vig-invoice-flag">New item</span></div>
+          <div class="vig-invoice-line"><span>Butter 227g x24</span><span>€38.40</span></div>
+          <div class="vig-invoice-line"><span>Local Honey 340g</span><span class="vig-invoice-flag">New item</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Feature 4: Price Moves History -->
+    <div class="feature-row">
+      <div class="feature-text">
+        <h3>Price moves history</h3>
+        <p>Track every price change across your stock over time. See which adjustments improved your margin and which ones need revisiting.</p>
+      </div>
+      <div class="feature-visual">
+        <div class="feature-vignette vig-chart">
+          <div class="vig-bars">
+            <div class="vig-bar" style="height:40%"></div>
+            <div class="vig-bar" style="height:55%"></div>
+            <div class="vig-bar" style="height:45%"></div>
+            <div class="vig-bar" style="height:70%"></div>
+            <div class="vig-bar" style="height:65%"></div>
+            <div class="vig-bar" style="height:80%"></div>
+            <div class="vig-bar" style="height:75%"></div>
+            <div class="vig-bar" style="height:90%"></div>
+          </div>
+          <div class="vig-chart-label">Price changes by month (illustrative)</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Feature 5: Morning Report -->
+    <div class="feature-row">
+      <div class="feature-text">
+        <h3>Morning report</h3>
+        <p>Every morning, a summary of what happened yesterday lands on your desk. Margin issues, top sellers, supplier alerts. Open the shop knowing exactly what needs attention.</p>
+      </div>
+      <div class="feature-visual">
+        <div class="feature-vignette vig-report">
+          <div class="vig-report-title">Tuesday Morning Report</div>
+          <div class="vig-report-item"><span class="vig-dot vig-dot-red"></span>3 items below target margin in Dairy</div>
+          <div class="vig-report-item"><span class="vig-dot vig-dot-amber"></span>Supplier price increase on 2 lines</div>
+          <div class="vig-report-item"><span class="vig-dot vig-dot-green"></span>Weekend sales up 12% vs last week</div>
+          <div class="vig-report-item"><span class="vig-dot vig-dot-green"></span>No invoice mismatches flagged</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how-it-works">
+  <div class="container">
+    <h2>How it works</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <h3>We scan your data</h3>
+        <p>Share a stock export from your existing system. Takes five minutes, nothing to install.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <h3>See what you are missing</h3>
+        <p>Within a day, your dashboard shows margin leaks, supplier patterns, and pricing opportunities.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <h3>Fix and track</h3>
+        <p>Adjust prices with confidence. Track every change over time and watch your margin recover.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="pricing" id="pricing">
+  <div class="container">
+    <h2>Simple, transparent pricing</h2>
+    <p class="subtitle">No setup fee. No long contracts. Net of VAT.</p>
+    <div class="pricing-grid">
+      <div class="price-card">
+        <h3>Insight</h3>
+        <div class="price-amount">€500<span>/mo</span></div>
+        <ul>
+          <li><span class="price-check">&#10003;</span> Full margin dashboard</li>
+          <li><span class="price-check">&#10003;</span> Margin leak alerts</li>
+          <li><span class="price-check">&#10003;</span> Drill down by department</li>
+          <li><span class="price-check">&#10003;</span> Barcode lookup</li>
+          <li><span class="price-check">&#10003;</span> Supplier analytics</li>
+        </ul>
+        <a href="#contact" class="btn-primary">Get my free margin scan</a>
+      </div>
+      <div class="price-card popular">
+        <div class="price-badge">Most popular</div>
+        <h3>Complete</h3>
+        <div class="price-amount">€1,000<span>/mo</span></div>
+        <ul>
+          <li><span class="price-check">&#10003;</span> Everything in Insight</li>
+          <li><span class="price-check">&#10003;</span> Invoice scanner</li>
+          <li><span class="price-check">&#10003;</span> Ask your shop</li>
+          <li><span class="price-check">&#10003;</span> Trading patterns</li>
+          <li><span class="price-check">&#10003;</span> Product performance</li>
+          <li><span class="price-check">&#10003;</span> Priority support</li>
+        </ul>
+        <a href="#contact" class="btn-primary">Get my free margin scan</a>
+      </div>
+      <div class="price-card">
+        <h3>Multi-site</h3>
+        <div class="price-amount">€1,500<span>/mo</span></div>
+        <ul>
+          <li><span class="price-check">&#10003;</span> Everything in Complete</li>
+          <li><span class="price-check">&#10003;</span> Write-back (rolling out)</li>
+          <li><span class="price-check">&#10003;</span> Morning report</li>
+          <li><span class="price-check">&#10003;</span> Per-site onboarding</li>
+          <li><span class="price-check">&#10003;</span> Multi-location views</li>
+        </ul>
+        <a href="#contact" class="btn-primary">Get my free margin scan</a>
+      </div>
+    </div>
+    <p class="price-note">All prices net of VAT. Cancel any time. No setup fee.</p>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="faq" id="faq">
+  <div class="container">
+    <h2>Frequently asked questions</h2>
+    <div class="faq-list">
+      <div class="faq-item">
+        <button class="faq-q">What systems does RetailGuard work with?</button>
+        <div class="faq-a"><p>RetailGuard works with any POS or stock system that can export a CSV or spreadsheet. No plugins or integrations to install. If your system has a stock report, we can read it.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">How long before I see results?</button>
+        <div class="faq-a"><p>Most shop owners see their first margin opportunities within 24 hours of sharing their stock data. The free scan gives you a preview before committing to anything.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">Is my data safe?</button>
+        <div class="faq-a"><p>Your data is encrypted in transit and at rest. We never share it with third parties. You own your data completely and can request deletion at any time.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">Can I cancel at any time?</button>
+        <div class="faq-a"><p>Yes. There are no long-term contracts and no cancellation fees. You can stop your subscription at the end of any billing month.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">Do I need to install any software?</button>
+        <div class="faq-a"><p>No. RetailGuard runs entirely in your web browser. Works on your phone, tablet, or desktop. Nothing to download or update.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">What does the free margin scan include?</button>
+        <div class="faq-a"><p>We analyse your stock export and show you where your margins sit versus your targets. You will see which products and departments have room for improvement, with no obligation.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT FORM -->
+<section class="contact" id="contact">
+  <div class="container">
+    <div class="contact-card">
+      <h2>Get your free margin scan</h2>
+      <p>Share your details and we will be in touch within one working day.</p>
+      <form id="contactForm">
+        <input type="hidden" name="_subject" value="Prod3D Ambient Depth Lead">
+        <input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off">
+        <div class="form-group">
+          <label for="name">Your name</label>
+          <input type="text" id="name" name="name" required autocomplete="name">
+        </div>
+        <div class="form-group">
+          <label for="email">Email address</label>
+          <input type="email" id="email" name="email" required autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label for="shop">Shop name</label>
+          <input type="text" id="shop" name="shop" autocomplete="organization">
+        </div>
+        <div class="form-group">
+          <label for="message">Anything else? (optional)</label>
+          <textarea id="message" name="message" rows="3"></textarea>
+        </div>
+        <button type="submit" class="btn-primary" style="width:100%">Get my free margin scan</button>
+        <div class="form-status" id="formStatus"></div>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="container footer-inner">
+    <div class="footer-logo">RetailGuard</div>
+    <div class="footer-links">
+      <a href="#features">Features</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#contact">Contact</a>
+    </div>
+    <div class="footer-copy">&copy; 2026 RetailGuard. All rights reserved.</div>
+  </div>
+</footer>
+
+<!-- SCRIPTS -->
+<script>
+// Nav scroll effect
+const nav = document.getElementById('nav');
+window.addEventListener('scroll', () => {
+  nav.classList.toggle('scrolled', window.scrollY > 10);
+}, { passive: true });
+
+// FAQ accordion
+document.querySelectorAll('.faq-q').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const item = btn.parentElement;
+    const wasOpen = item.classList.contains('open');
+    document.querySelectorAll('.faq-item.open').forEach(i => i.classList.remove('open'));
+    if (!wasOpen) item.classList.add('open');
+  });
+});
+
+// FormSubmit AJAX
+document.getElementById('contactForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const status = document.getElementById('formStatus');
+  const data = new FormData(this);
+  try {
+    const res = await fetch('https://formsubmit.co/ajax/retailguard.sales@gmail.com', {
+      method: 'POST',
+      body: data,
+      headers: { 'Accept': 'application/json' }
+    });
+    if (res.ok) {
+      status.textContent = 'Thank you. We will be in touch shortly.';
+      status.className = 'form-status success';
+      this.reset();
+    } else {
+      throw new Error('Submit failed');
+    }
+  } catch (err) {
+    status.textContent = 'Something went wrong. Please try again or email us directly.';
+    status.className = 'form-status error';
+  }
+});
+</script>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js"
+  }
+}
+</script>
+<script type="module">
+// Ambient Depth Field - Recipe 5
+// Only initialise on desktop (>768px) and when no prefers-reduced-motion
+const canvas = document.getElementById('heroCanvas');
+const fallback = document.getElementById('heroFallback');
+const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+const mobile = window.matchMedia('(max-width: 768px)');
+
+function shouldAnimate() {
+  return !mq.matches && !mobile.matches;
+}
+
+if (!shouldAnimate()) {
+  canvas.style.display = 'none';
+  fallback.style.display = 'block';
+} else {
+  fallback.style.display = 'none';
+
+  import('three').then(THREE => {
+    const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: false });
+    renderer.setPixelRatio(1); // Shapes are blurry by design
+    renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+    renderer.setClearColor(0x000000, 0);
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(50, canvas.clientWidth / canvas.clientHeight, 0.1, 100);
+    camera.position.z = 12;
+
+    // Ambient + directional light
+    const ambient = new THREE.AmbientLight(0xffffff, 0.6);
+    scene.add(ambient);
+    const dir = new THREE.DirectionalLight(0xffffff, 0.4);
+    dir.position.set(5, 5, 5);
+    scene.add(dir);
+
+    // Frosted shapes
+    const shapes = [];
+    const configs = [
+      { geo: new THREE.SphereGeometry(1.2, 16, 16), color: 0xC4B5FD, x: -3, y: 1.5, z: -2, freq: 0.0003 },
+      { geo: new THREE.TorusGeometry(0.9, 0.35, 12, 24), color: 0xA7F3D0, x: 2.5, y: -1, z: -1, freq: 0.0005 },
+      { geo: new THREE.SphereGeometry(0.8, 12, 12), color: 0xFDE68A, x: -1, y: -2, z: -3, freq: 0.0007 },
+      { geo: new THREE.TorusGeometry(1.1, 0.3, 12, 24), color: 0xC4B5FD, x: 3, y: 2, z: -2.5, freq: 0.00035 },
+      { geo: new THREE.SphereGeometry(1.0, 14, 14), color: 0xA7F3D0, x: -2.5, y: -0.5, z: -1.5, freq: 0.00045 },
+      { geo: new THREE.TorusGeometry(0.7, 0.25, 10, 20), color: 0xFDE68A, x: 1, y: 2.5, z: -3, freq: 0.0006 },
+      { geo: new THREE.SphereGeometry(0.6, 10, 10), color: 0xC4B5FD, x: 0, y: -2.5, z: -2, freq: 0.00055 },
+    ];
+
+    configs.forEach(cfg => {
+      const mat = new THREE.MeshPhysicalMaterial({
+        color: cfg.color,
+        transparent: true,
+        opacity: 0.12,
+        roughness: 0.85,
+        metalness: 0.0,
+        transmission: 0.5,
+      });
+      const mesh = new THREE.Mesh(cfg.geo, mat);
+      mesh.position.set(cfg.x, cfg.y, cfg.z);
+      mesh.userData = { baseX: cfg.x, baseY: cfg.y, freq: cfg.freq, phase: Math.random() * Math.PI * 2 };
+      scene.add(mesh);
+      shapes.push(mesh);
+    });
+
+    // 30fps cap
+    let lastFrame = 0;
+    const interval = 1000 / 30;
+    let running = true;
+    let hidden = false;
+
+    function animate(time) {
+      if (!running) return;
+      requestAnimationFrame(animate);
+      if (time - lastFrame < interval) return;
+      lastFrame = time;
+
+      shapes.forEach(mesh => {
+        const d = mesh.userData;
+        const t = time;
+        mesh.position.x = d.baseX + Math.sin(t * d.freq + d.phase) * 1.5;
+        mesh.position.y = d.baseY + Math.cos(t * d.freq * 0.8 + d.phase) * 1.0;
+        mesh.rotation.x += 0.001;
+        mesh.rotation.y += 0.0008;
+      });
+
+      // Slow hue shift on ambient light
+      const hue = (time * 0.00001) % 1;
+      ambient.color.setHSL(0.7 + hue * 0.03, 0.3, 0.7);
+
+      renderer.render(scene, camera);
+    }
+
+    // IntersectionObserver: pause when offscreen
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting && !hidden) {
+          if (!running) { running = true; requestAnimationFrame(animate); }
+        } else {
+          running = false;
+        }
+      });
+    }, { threshold: 0.05 });
+    observer.observe(canvas);
+
+    // Pause on tab hidden
+    document.addEventListener('visibilitychange', () => {
+      hidden = document.hidden;
+      if (hidden) {
+        running = false;
+      } else if (canvas.getBoundingClientRect().top < window.innerHeight) {
+        running = true;
+        requestAnimationFrame(animate);
+      }
+    });
+
+    // Resize handler
+    function onResize() {
+      if (mobile.matches) {
+        running = false;
+        canvas.style.display = 'none';
+        fallback.style.display = 'block';
+        return;
+      }
+      const w = canvas.clientWidth;
+      const h = canvas.clientHeight;
+      renderer.setSize(w, h);
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+    }
+    window.addEventListener('resize', onResize);
+
+    // Start
+    requestAnimationFrame(animate);
+  }).catch(() => {
+    // three.js failed to load, show fallback
+    canvas.style.display = 'none';
+    fallback.style.display = 'block';
+  });
+}
+
+// React to preference changes
+mq.addEventListener('change', () => { location.reload(); });
+mobile.addEventListener('change', () => { location.reload(); });
+</script>
+</body>
+</html>

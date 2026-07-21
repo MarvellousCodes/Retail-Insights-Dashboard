@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RetailGuard | What Margin Are You Really Making?</title>
+<meta name="description" content="Calculate your real product margins instantly. Then get a free full-shop margin scan to find hidden profit gaps.">
+<style>
+/* ===== RESET + BASE ===== */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#1E293B;line-height:1.6;background:#fff}
+img{max-width:100%;display:block}
+a{color:inherit;text-decoration:none}
+button{cursor:pointer;border:none;font:inherit}
+ul{list-style:none}
+
+/* ===== TYPOGRAPHY (Outfit headings, Inter body) ===== */
+h1,h2,h3,h4{font-family:'Outfit','Inter',sans-serif;font-weight:700;line-height:1.2}
+h1{font-size:clamp(1.75rem,4vw,2.75rem)}
+h2{font-size:clamp(1.5rem,3vw,2.25rem);margin-bottom:1rem}
+h3{font-size:1.25rem;margin-bottom:0.5rem}
+p{margin-bottom:1rem}
+
+/* ===== LAYOUT ===== */
+.container{max-width:1120px;margin:0 auto;padding:0 1.5rem}
+section{padding:4rem 0}
+
+/* ===== COLOURS ===== */
+:root{
+  --violet:#7C3AED;
+  --violet-light:#EDE9FE;
+  --green:#16A34A;
+  --green-light:#DCFCE7;
+  --red:#DC2626;
+  --red-light:#FEE2E2;
+  --amber:#D97706;
+  --grey-50:#F9FAFB;
+  --grey-100:#F3F4F6;
+  --grey-200:#E5E7EB;
+  --grey-600:#4B5563;
+  --grey-900:#111827;
+}
+
+/* ===== NAVBAR ===== */
+.navbar{position:sticky;top:0;z-index:100;background:#fff;border-bottom:1px solid var(--grey-200);padding:1rem 0}
+.navbar .container{display:flex;align-items:center;justify-content:space-between;gap:1rem}
+.navbar-brand{font-family:'Outfit',sans-serif;font-weight:700;font-size:1.25rem;color:var(--violet)}
+.navbar-cta{background:var(--violet);color:#fff;padding:0.5rem 1.25rem;border-radius:6px;font-size:0.875rem;font-weight:600;transition:background 0.2s}
+.navbar-cta:hover,.navbar-cta:focus{background:#6D28D9;outline:2px solid var(--violet);outline-offset:2px}
+
+/* ===== HERO ===== */
+.hero{padding:3rem 0 4rem;background:var(--grey-50)}
+.hero .container{text-align:center}
+.hero-badge{display:inline-block;background:var(--violet-light);color:var(--violet);font-size:0.8125rem;font-weight:600;padding:0.25rem 0.75rem;border-radius:99px;margin-bottom:1rem}
+.hero h1{margin-bottom:0.75rem}
+.hero-sub{font-size:1.125rem;color:var(--grey-600);max-width:540px;margin:0 auto 2rem}
+
+/* ===== CALCULATOR CARD ===== */
+.calc-card{background:#fff;border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,0.08);padding:2rem;max-width:480px;margin:0 auto;text-align:left}
+.calc-card h3{text-align:center;margin-bottom:1.5rem;font-size:1.125rem}
+.calc-inputs{display:grid;gap:1rem;margin-bottom:1.5rem}
+.calc-field label{display:block;font-size:0.8125rem;font-weight:600;color:var(--grey-600);margin-bottom:0.25rem}
+.calc-field input{width:100%;padding:0.625rem 0.75rem;border:2px solid var(--grey-200);border-radius:8px;font-size:1rem;transition:border-color 0.2s}
+.calc-field input:focus{outline:none;border-color:var(--violet)}
+.calc-field .input-hint{font-size:0.75rem;color:var(--grey-600);margin-top:0.25rem}
+
+.calc-results{background:var(--grey-50);border-radius:8px;padding:1.25rem;margin-bottom:1.5rem;min-height:80px}
+.calc-results.hidden{display:none}
+.result-row{display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0;border-bottom:1px solid var(--grey-200)}
+.result-row:last-child{border-bottom:none}
+.result-label{font-size:0.875rem;color:var(--grey-600)}
+.result-value{font-size:1.125rem;font-weight:700}
+.result-value.positive{color:var(--green)}
+.result-value.negative{color:var(--red)}
+.result-value.neutral{color:var(--grey-900)}
+
+.margin-bar{height:8px;background:var(--grey-200);border-radius:4px;margin-top:0.75rem;overflow:hidden}
+.margin-bar-fill{height:100%;border-radius:4px;transition:width 0.3s,background 0.3s}
+
+.calc-hook{text-align:center;font-size:0.9375rem;color:var(--grey-600);margin-bottom:1.25rem;font-style:italic}
+.calc-note{text-align:center;font-size:0.75rem;color:var(--grey-600);margin-top:0.75rem}
+
+/* ===== CTA BUTTON ===== */
+.btn-primary{display:inline-block;background:var(--violet);color:#fff;padding:0.875rem 2rem;border-radius:8px;font-size:1rem;font-weight:600;transition:background 0.2s,transform 0.1s;text-align:center}
+.btn-primary:hover,.btn-primary:focus{background:#6D28D9;transform:translateY(-1px);outline:2px solid var(--violet);outline-offset:2px}
+.btn-secondary{display:inline-block;color:var(--violet);font-size:0.875rem;font-weight:600;padding:0.5rem 1rem;border:2px solid var(--violet);border-radius:8px;transition:background 0.2s}
+.btn-secondary:hover,.btn-secondary:focus{background:var(--violet-light);outline:2px solid var(--violet);outline-offset:2px}
+.friction-reducer{display:block;font-size:0.8125rem;color:var(--grey-600);margin-top:0.5rem;text-align:center}
+.cta-group{text-align:center}
+
+/* ===== VALUE PROPOSITION ===== */
+.value-prop{background:#fff}
+.value-prop h2{text-align:center}
+.value-prop-sub{text-align:center;color:var(--grey-600);max-width:600px;margin:0 auto 2.5rem}
+.value-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.5rem}
+.value-card{background:var(--grey-50);border-radius:10px;padding:1.5rem;border:1px solid var(--grey-200)}
+.value-card-icon{width:40px;height:40px;background:var(--violet-light);border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:1rem}
+.value-card-icon svg{width:20px;height:20px;stroke:var(--violet);fill:none;stroke-width:2}
+.value-card h3{font-size:1rem;margin-bottom:0.5rem}
+.value-card p{font-size:0.875rem;color:var(--grey-600);margin-bottom:0.5rem}
+.value-card .metric{font-size:0.8125rem;color:var(--green);font-weight:600}
+
+/* ===== FEATURES ===== */
+.features{background:var(--grey-50)}
+.features h2{text-align:center;margin-bottom:0.5rem}
+.features-sub{text-align:center;color:var(--grey-600);max-width:560px;margin:0 auto 2.5rem}
+.feature-list{display:grid;gap:2rem}
+.feature-item{display:grid;grid-template-columns:1fr 1fr;gap:2rem;align-items:center;background:#fff;border-radius:12px;padding:2rem;border:1px solid var(--grey-200)}
+.feature-item:nth-child(even) .feature-text{order:2}
+.feature-item:nth-child(even) .feature-visual{order:1}
+.feature-text h3{font-size:1.125rem;margin-bottom:0.5rem}
+.feature-text p{font-size:0.9375rem;color:var(--grey-600)}
+.feature-text .before-after{font-size:0.8125rem;margin-top:0.75rem}
+.feature-text .before{color:var(--red);text-decoration:line-through}
+.feature-text .after{color:var(--green);font-weight:600}
+.feature-visual{background:var(--grey-50);border-radius:8px;padding:1.5rem;text-align:center;font-size:0.8125rem;color:var(--grey-600);min-height:120px;display:flex;align-items:center;justify-content:center}
+
+@media(max-width:768px){
+  .feature-item{grid-template-columns:1fr}
+  .feature-item:nth-child(even) .feature-text{order:1}
+  .feature-item:nth-child(even) .feature-visual{order:2}
+}
+
+/* ===== HOW IT WORKS ===== */
+.how-it-works{background:#fff}
+.how-it-works h2{text-align:center;margin-bottom:0.5rem}
+.how-sub{text-align:center;color:var(--grey-600);margin-bottom:2.5rem}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1.5rem;margin-bottom:2rem}
+.step{text-align:center;padding:1.5rem}
+.step-number{width:40px;height:40px;background:var(--violet);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;margin:0 auto 1rem}
+.step h3{font-size:1rem;margin-bottom:0.5rem}
+.step p{font-size:0.875rem;color:var(--grey-600)}
+.step-time{font-size:0.75rem;color:var(--violet);font-weight:600;margin-top:0.5rem}
+
+/* ===== PRICING ===== */
+.pricing{background:var(--grey-50)}
+.pricing h2{text-align:center;margin-bottom:0.5rem}
+.pricing-sub{text-align:center;color:var(--grey-600);margin-bottom:2.5rem}
+.pricing-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.5rem;max-width:960px;margin:0 auto}
+.pricing-card{background:#fff;border-radius:12px;padding:2rem;border:2px solid var(--grey-200);position:relative;display:flex;flex-direction:column}
+.pricing-card.popular{border-color:var(--violet);transform:scale(1.02)}
+.pricing-badge{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--violet);color:#fff;font-size:0.75rem;font-weight:700;padding:0.25rem 0.75rem;border-radius:99px;white-space:nowrap}
+.pricing-card h3{font-size:1.125rem;margin-bottom:0.5rem}
+.pricing-price{font-size:2rem;font-weight:700;color:var(--grey-900);margin-bottom:0.25rem}
+.pricing-price span{font-size:0.875rem;font-weight:400;color:var(--grey-600)}
+.pricing-note{font-size:0.75rem;color:var(--grey-600);margin-bottom:1.25rem}
+.pricing-features{flex:1;margin-bottom:1.5rem}
+.pricing-features li{font-size:0.875rem;color:var(--grey-600);padding:0.375rem 0;padding-left:1.25rem;position:relative}
+.pricing-features li::before{content:"";position:absolute;left:0;top:0.625rem;width:8px;height:8px;background:var(--green);border-radius:50%}
+.pricing-cta{margin-top:auto}
+.pricing-cta .btn-primary{width:100%;display:block}
+
+/* ===== FAQ ===== */
+.faq{background:#fff}
+.faq h2{text-align:center;margin-bottom:2rem}
+.faq-list{max-width:700px;margin:0 auto}
+.faq-item{border-bottom:1px solid var(--grey-200);padding:1.25rem 0}
+.faq-question{font-weight:600;font-size:1rem;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:1rem}
+.faq-question::after{content:"+";font-size:1.25rem;color:var(--violet);flex-shrink:0;transition:transform 0.2s}
+.faq-item.open .faq-question::after{transform:rotate(45deg)}
+.faq-answer{max-height:0;overflow:hidden;transition:max-height 0.3s ease}
+.faq-item.open .faq-answer{max-height:300px}
+.faq-answer p{padding-top:0.75rem;font-size:0.9375rem;color:var(--grey-600)}
+
+/* ===== FINAL CTA ===== */
+.final-cta{background:var(--violet);color:#fff;text-align:center;padding:4rem 0}
+.final-cta h2{color:#fff;margin-bottom:0.75rem}
+.final-cta p{color:rgba(255,255,255,0.85);max-width:480px;margin:0 auto 1.5rem}
+.final-cta .btn-primary{background:#fff;color:var(--violet)}
+.final-cta .btn-primary:hover,.final-cta .btn-primary:focus{background:var(--grey-100)}
+.final-cta .friction-reducer{color:rgba(255,255,255,0.7)}
+.final-cta .secondary-link{display:block;margin-top:0.75rem;color:rgba(255,255,255,0.8);font-size:0.875rem;text-decoration:underline}
+.final-cta .secondary-link:hover{color:#fff}
+
+/* ===== FOOTER ===== */
+.footer{background:var(--grey-900);color:var(--grey-200);padding:2rem 0;text-align:center;font-size:0.8125rem}
+
+/* ===== FORM MODAL ===== */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;padding:1rem}
+.modal-overlay.active{display:flex}
+.modal{background:#fff;border-radius:12px;padding:2rem;max-width:440px;width:100%;position:relative}
+.modal h3{text-align:center;margin-bottom:0.5rem}
+.modal-sub{text-align:center;font-size:0.875rem;color:var(--grey-600);margin-bottom:1.5rem}
+.modal-close{position:absolute;top:1rem;right:1rem;background:none;font-size:1.5rem;color:var(--grey-600);line-height:1}
+.modal-close:hover{color:var(--grey-900)}
+.form-group{margin-bottom:1rem}
+.form-group label{display:block;font-size:0.8125rem;font-weight:600;color:var(--grey-600);margin-bottom:0.25rem}
+.form-group input,.form-group textarea{width:100%;padding:0.625rem 0.75rem;border:2px solid var(--grey-200);border-radius:8px;font-size:1rem;font-family:inherit}
+.form-group input:focus,.form-group textarea:focus{outline:none;border-color:var(--violet)}
+.form-group textarea{resize:vertical;min-height:80px}
+.form-submit{width:100%;background:var(--violet);color:#fff;padding:0.875rem;border-radius:8px;font-size:1rem;font-weight:600}
+.form-submit:hover{background:#6D28D9}
+.form-success{display:none;text-align:center;padding:2rem 0}
+.form-success h3{color:var(--green);margin-bottom:0.5rem}
+.form-success p{color:var(--grey-600)}
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:640px){
+  section{padding:3rem 0}
+  .calc-card{padding:1.5rem}
+  .pricing-card.popular{transform:none}
+  .steps{grid-template-columns:1fr}
+}
+</style>
+<!-- Google Fonts: Outfit + Inter -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<!-- ===== NAVBAR ===== -->
+<nav class="navbar" aria-label="Main navigation">
+  <div class="container">
+    <a href="#" class="navbar-brand" aria-label="RetailGuard home">RetailGuard</a>
+    <a href="#cta-form" class="navbar-cta" role="button">Get my free margin scan</a>
+  </div>
+</nav>
+
+<!-- ===== HERO: Calculator/Estimator + Outcome Timeframe + Risk Reducer + Clear Value Proposition + Target Audience Clarity ===== -->
+<section class="hero" aria-labelledby="hero-heading">
+  <div class="container">
+    <span class="hero-badge">For convenience store and forecourt owners</span>
+    <h1 id="hero-heading">What margin are you really making?</h1>
+    <p class="hero-sub">Try one product. Then imagine your whole shelf.</p>
+
+    <div class="calc-card" role="region" aria-label="Margin estimator calculator">
+      <h3>Quick margin check</h3>
+      <div class="calc-inputs">
+        <div class="calc-field">
+          <label for="calc-cost">Unit cost (what you pay)</label>
+          <input type="number" id="calc-cost" placeholder="e.g. 4.10" value="4.10" step="0.01" min="0" aria-describedby="cost-hint">
+          <span class="input-hint" id="cost-hint">The price you pay your supplier per unit</span>
+        </div>
+        <div class="calc-field">
+          <label for="calc-price">Shelf price (what the customer pays)</label>
+          <input type="number" id="calc-price" placeholder="e.g. 4.99" value="4.99" step="0.01" min="0" aria-describedby="price-hint">
+          <span class="input-hint" id="price-hint">Your current selling price including VAT</span>
+        </div>
+        <div class="calc-field">
+          <label for="calc-units">Weekly units sold</label>
+          <input type="number" id="calc-units" placeholder="e.g. 60" value="60" step="1" min="0" aria-describedby="units-hint">
+          <span class="input-hint" id="units-hint">Roughly how many you sell each week</span>
+        </div>
+      </div>
+
+      <div class="calc-results hidden" id="calc-results" aria-live="polite" aria-atomic="true">
+        <div class="result-row">
+          <span class="result-label">Margin per unit</span>
+          <span class="result-value neutral" id="res-margin-unit">...</span>
+        </div>
+        <div class="result-row">
+          <span class="result-label">Margin %</span>
+          <span class="result-value neutral" id="res-margin-pct">...</span>
+        </div>
+        <div class="result-row">
+          <span class="result-label">Weekly profit on this product</span>
+          <span class="result-value neutral" id="res-weekly">...</span>
+        </div>
+        <div class="margin-bar" aria-hidden="true">
+          <div class="margin-bar-fill" id="margin-bar-fill"></div>
+        </div>
+      </div>
+
+      <p class="calc-hook" id="calc-hook" style="display:none;">Your whole shop could have hundreds of these. Find every gap in one scan.</p>
+
+      <div class="cta-group">
+        <a href="#cta-form" class="btn-primary" role="button">Get my free margin scan</a>
+        <span class="friction-reducer">Free. No card. Takes 2 minutes.</span>
+      </div>
+      <p class="calc-note">All figures are illustrative examples for demonstration purposes.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===== VALUE PROPOSITION: Multiple Propositions + Outcome Quantification + Benefit Specificity ===== -->
+<section class="value-prop" aria-labelledby="vp-heading">
+  <div class="container">
+    <h2 id="vp-heading">Three ways your till export pays you back</h2>
+    <p class="value-prop-sub">You already have the data. We just read it differently.</p>
+    <div class="value-grid">
+      <div class="value-card">
+        <div class="value-card-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+        </div>
+        <h3>Spot margin gaps instantly</h3>
+        <p>See every product where cost crept above your target, sorted by the money involved.</p>
+        <span class="metric">Illustrative: 37 gaps found in a typical scan</span>
+      </div>
+      <div class="value-card">
+        <div class="value-card-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+        </div>
+        <h3>Track price changes as they happen</h3>
+        <p>When a supplier moves a cost, you see the impact on margin before it quietly drains profit.</p>
+        <span class="metric">Illustrative: caught within 24 hours of the change</span>
+      </div>
+      <div class="value-card">
+        <div class="value-card-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+        </div>
+        <h3>Morning report on your desk at open</h3>
+        <p>Yesterday's margin anomalies by department, waiting for you before the first customer walks in.</p>
+        <span class="metric">Illustrative: 2 minutes to review, daily</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FEATURES: Benefit-Led Copy + Pain-to-Outcome Mapping + Before/After Contrast + Outcome Visualization ===== -->
+<section class="features" aria-labelledby="features-heading">
+  <div class="container">
+    <h2 id="features-heading">Built for how you actually run your shop</h2>
+    <p class="features-sub">Every feature answers one question: where is my money going?</p>
+    <div class="feature-list">
+      <div class="feature-item">
+        <div class="feature-text">
+          <h3>Ask your shop in plain English</h3>
+          <p>Type a question, get an answer with a chart and an Excel download. No training, no dashboards to learn.</p>
+          <p class="before-after">
+            <span class="before">Before: hours in spreadsheets</span> &rarr;
+            <span class="after">After: answer in seconds</span>
+          </p>
+        </div>
+        <div class="feature-visual" aria-label="Illustrative: question and chart result">
+          "Which department had the best week?"<br>
+          <strong style="color:var(--violet);margin-top:0.5rem;display:block;">&#9608;&#9608;&#9608; Dairy +12%</strong>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-text">
+          <h3>Invoice scanner catches cost changes</h3>
+          <p>Snap a supplier invoice. Lines are matched to your products and any cost change or mismatch is flagged immediately.</p>
+          <p class="before-after">
+            <span class="before">Before: manual line checking</span> &rarr;
+            <span class="after">After: flagged in under a minute</span>
+          </p>
+        </div>
+        <div class="feature-visual" aria-label="Illustrative: invoice scan result">
+          Invoice: 10 lines scanned<br>
+          <strong style="color:var(--amber);display:block;margin-top:0.5rem;">2 new products flagged</strong>
+          <strong style="color:var(--red);display:block;">1 cost increase detected</strong>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-text">
+          <h3>Margin ladder shows your whole picture</h3>
+          <p>Every product colour-coded by margin health. Loss, thin, healthy, strong. Sort, filter, drill down to the cent.</p>
+          <p class="before-after">
+            <span class="before">Before: guessing which products lose money</span> &rarr;
+            <span class="after">After: the full list, ranked</span>
+          </p>
+        </div>
+        <div class="feature-visual" aria-label="Illustrative: colour-coded margin ladder">
+          <span style="color:var(--red);">&#9608; Loss (3)</span>&nbsp;
+          <span style="color:var(--amber);">&#9608;&#9608; Thin (12)</span>&nbsp;
+          <span style="color:var(--green);">&#9608;&#9608;&#9608;&#9608;&#9608; Healthy (68)</span>&nbsp;
+          <span style="color:#166534;">&#9608;&#9608; Strong (22)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== HOW IT WORKS: Step Clarity + Effort Perception + Timeline Specificity + Visual Progression + Outcome Preview ===== -->
+<section class="how-it-works" aria-labelledby="hiw-heading">
+  <div class="container">
+    <h2 id="hiw-heading">Get started in three simple steps</h2>
+    <p class="how-sub">Totally free. Takes about two minutes.</p>
+    <div class="steps">
+      <div class="step">
+        <div class="step-number" aria-hidden="true">1</div>
+        <h3>Request your free scan</h3>
+        <p>Fill in the short form below. We will get back to you within one business day.</p>
+        <span class="step-time">30 seconds</span>
+      </div>
+      <div class="step">
+        <div class="step-number" aria-hidden="true">2</div>
+        <h3>Send your till export</h3>
+        <p>A simple CSV or spreadsheet from your POS. We walk you through it if needed.</p>
+        <span class="step-time">2 minutes</span>
+      </div>
+      <div class="step">
+        <div class="step-number" aria-hidden="true">3</div>
+        <h3>See your margin gaps</h3>
+        <p>Receive a clear breakdown of where money is slipping through, with suggested actions.</p>
+        <span class="step-time">Results within 48 hours</span>
+      </div>
+    </div>
+    <div class="cta-group">
+      <a href="#cta-form" class="btn-primary" role="button">Get my free margin scan</a>
+      <span class="friction-reducer">Free. No card. Takes 2 minutes.</span>
+    </div>
+  </div>
+</section>
+
+<!-- ===== PRICING: Plan Clarity + Calculator/Estimator echo + Anchoring Tags + Risk Reducer + Easy Comparison ===== -->
+<section class="pricing" aria-labelledby="pricing-heading">
+  <div class="container">
+    <h2 id="pricing-heading">Simple pricing, cancel anytime</h2>
+    <p class="pricing-sub">Start with the free scan. Upgrade only when you see the value.</p>
+    <div class="pricing-grid">
+      <!-- Insight -->
+      <div class="pricing-card">
+        <h3>Insight</h3>
+        <div class="pricing-price">&euro;500<span>/month</span></div>
+        <p class="pricing-note">Net of VAT. No setup fee.</p>
+        <ul class="pricing-features">
+          <li>Full margin dashboard</li>
+          <li>Alerts on cost changes</li>
+          <li>Drill-down by product and department</li>
+          <li>Barcode lookup</li>
+          <li>Supplier analytics</li>
+        </ul>
+        <div class="pricing-cta">
+          <a href="#cta-form" class="btn-primary" role="button">Get my free margin scan</a>
+        </div>
+      </div>
+      <!-- Complete -->
+      <div class="pricing-card popular">
+        <span class="pricing-badge">Most popular</span>
+        <h3>Complete</h3>
+        <div class="pricing-price">&euro;1,000<span>/month</span></div>
+        <p class="pricing-note">Net of VAT. No setup fee.</p>
+        <ul class="pricing-features">
+          <li>Everything in Insight</li>
+          <li>Invoice scanner</li>
+          <li>Ask your shop (plain English questions)</li>
+          <li>Trading patterns and product performance</li>
+          <li>Priority support</li>
+        </ul>
+        <div class="pricing-cta">
+          <a href="#cta-form" class="btn-primary" role="button">Get my free margin scan</a>
+        </div>
+      </div>
+      <!-- Multi-site -->
+      <div class="pricing-card">
+        <h3>Multi-site</h3>
+        <div class="pricing-price">&euro;1,500<span>/month</span></div>
+        <p class="pricing-note">Net of VAT. No setup fee.</p>
+        <ul class="pricing-features">
+          <li>Everything in Complete</li>
+          <li>Write-back to your back office (rolling out)</li>
+          <li>Morning report</li>
+          <li>Per-site onboarding</li>
+        </ul>
+        <div class="pricing-cta">
+          <a href="#cta-form" class="btn-primary" role="button">Get my free margin scan</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FAQ ===== -->
+<section class="faq" aria-labelledby="faq-heading">
+  <div class="container">
+    <h2 id="faq-heading">Common questions</h2>
+    <div class="faq-list">
+      <div class="faq-item">
+        <button class="faq-question" aria-expanded="false">What data do you need from me?<span aria-hidden="true"></span></button>
+        <div class="faq-answer"><p>A standard till export (CSV or spreadsheet) from your existing POS system. We support all major Irish and UK symbol group systems. If you are not sure how to export, we will walk you through it.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question" aria-expanded="false">Is my data safe?<span aria-hidden="true"></span></button>
+        <div class="faq-answer"><p>Your data is stored on encrypted servers in the EU. We never share it with third parties. You can request deletion at any time.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question" aria-expanded="false">How long until I see results?<span aria-hidden="true"></span></button>
+        <div class="faq-answer"><p>The free scan takes under 48 hours. Once you are set up on a plan, your dashboard updates daily with fresh insights.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question" aria-expanded="false">Can I cancel anytime?<span aria-hidden="true"></span></button>
+        <div class="faq-answer"><p>Yes. Monthly billing, no contracts, no setup fees. Cancel with one email and you will not be charged again.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question" aria-expanded="false">What if I have multiple shops?<span aria-hidden="true"></span></button>
+        <div class="faq-answer"><p>The Multi-site plan covers all your locations with per-site onboarding. Each site gets its own view and the group roll-up shows you the full picture.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FINAL CTA: Friction Reduction + Consolidation + Microcopy Quality + Secondary Path ===== -->
+<section class="final-cta" id="cta-form" aria-labelledby="final-cta-heading">
+  <div class="container">
+    <h2 id="final-cta-heading">Ready to find what your shop is missing?</h2>
+    <p>Typical opportunities identified can amount to thousands of euros per year, depending on store size.</p>
+    <a href="#contact-modal" class="btn-primary" role="button" id="open-form-btn">Get my free margin scan</a>
+    <span class="friction-reducer">Free. No card. Takes 2 minutes.</span>
+    <a href="#pricing-heading" class="secondary-link">See pricing first</a>
+  </div>
+</section>
+
+<!-- ===== CONTACT FORM MODAL ===== -->
+<div class="modal-overlay" id="contact-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+  <div class="modal">
+    <button class="modal-close" aria-label="Close form" id="close-modal">&times;</button>
+    <div id="form-content">
+      <h3 id="modal-title">Get my free margin scan</h3>
+      <p class="modal-sub">Free. No card. Takes 2 minutes.</p>
+      <form id="contact-form" aria-label="Free margin scan request form">
+        <input type="hidden" name="_subject" value="WebAnatomy Estimator Lead">
+        <input type="hidden" name="_captcha" value="false">
+        <input type="hidden" name="_template" value="table">
+        <div class="form-group">
+          <label for="form-name">Your name</label>
+          <input type="text" id="form-name" name="name" required autocomplete="name">
+        </div>
+        <div class="form-group">
+          <label for="form-email">Email address</label>
+          <input type="email" id="form-email" name="email" required autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label for="form-shop">Shop name (optional)</label>
+          <input type="text" id="form-shop" name="shop" autocomplete="organization">
+        </div>
+        <div class="form-group">
+          <label for="form-message">Anything else? (optional)</label>
+          <textarea id="form-message" name="message" rows="3"></textarea>
+        </div>
+        <button type="submit" class="form-submit">Send my scan request</button>
+      </form>
+    </div>
+    <div class="form-success" id="form-success">
+      <h3>Request sent!</h3>
+      <p>We will be in touch within one business day to arrange your free margin scan.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ===== FOOTER ===== -->
+<footer class="footer">
+  <div class="container">
+    <p>&copy; 2026 RetailGuard. All rights reserved.</p>
+  </div>
+</footer>
+
+<!-- ===== JAVASCRIPT ===== -->
+<script>
+(function() {
+  'use strict';
+
+  // === CALCULATOR ===
+  var costInput = document.getElementById('calc-cost');
+  var priceInput = document.getElementById('calc-price');
+  var unitsInput = document.getElementById('calc-units');
+  var resultsDiv = document.getElementById('calc-results');
+  var resMarginUnit = document.getElementById('res-margin-unit');
+  var resMarginPct = document.getElementById('res-margin-pct');
+  var resWeekly = document.getElementById('res-weekly');
+  var marginBarFill = document.getElementById('margin-bar-fill');
+  var calcHook = document.getElementById('calc-hook');
+
+  function updateCalc() {
+    var cost = parseFloat(costInput.value);
+    var price = parseFloat(priceInput.value);
+    var units = parseInt(unitsInput.value, 10);
+
+    if (isNaN(cost) || isNaN(price) || isNaN(units) || price <= 0 || cost < 0 || units < 0) {
+      resultsDiv.classList.add('hidden');
+      calcHook.style.display = 'none';
+      return;
+    }
+
+    var marginPerUnit = price - cost;
+    var marginPct = ((price - cost) / price) * 100;
+    var weeklyProfit = marginPerUnit * units;
+
+    resultsDiv.classList.remove('hidden');
+    calcHook.style.display = 'block';
+
+    // Format values
+    resMarginUnit.textContent = '\u20AC' + marginPerUnit.toFixed(2);
+    resMarginPct.textContent = marginPct.toFixed(1) + '%';
+    resWeekly.textContent = '\u20AC' + weeklyProfit.toFixed(2);
+
+    // Colour coding
+    var colourClass = 'neutral';
+    var barColour = 'var(--grey-600)';
+    if (marginPct >= 25) {
+      colourClass = 'positive';
+      barColour = 'var(--green)';
+    } else if (marginPct >= 10) {
+      colourClass = 'neutral';
+      barColour = 'var(--amber)';
+    } else {
+      colourClass = 'negative';
+      barColour = 'var(--red)';
+    }
+
+    resMarginUnit.className = 'result-value ' + (marginPerUnit >= 0 ? 'positive' : 'negative');
+    resMarginPct.className = 'result-value ' + colourClass;
+    resWeekly.className = 'result-value ' + (weeklyProfit >= 0 ? 'positive' : 'negative');
+
+    // Bar
+    var barWidth = Math.max(0, Math.min(100, marginPct));
+    marginBarFill.style.width = barWidth + '%';
+    marginBarFill.style.background = barColour;
+  }
+
+  costInput.addEventListener('input', updateCalc);
+  priceInput.addEventListener('input', updateCalc);
+  unitsInput.addEventListener('input', updateCalc);
+  updateCalc(); // show the worked example on load so the value is visible immediately
+
+  // === FAQ ACCORDION ===
+  var faqItems = document.querySelectorAll('.faq-item');
+  faqItems.forEach(function(item) {
+    var btn = item.querySelector('.faq-question');
+    btn.addEventListener('click', function() {
+      var isOpen = item.classList.contains('open');
+      // Close all
+      faqItems.forEach(function(i) {
+        i.classList.remove('open');
+        i.querySelector('.faq-question').setAttribute('aria-expanded', 'false');
+      });
+      // Toggle current
+      if (!isOpen) {
+        item.classList.add('open');
+        btn.setAttribute('aria-expanded', 'true');
+      }
+    });
+  });
+
+  // === MODAL ===
+  var modal = document.getElementById('contact-modal');
+  var openBtn = document.getElementById('open-form-btn');
+  var closeBtn = document.getElementById('close-modal');
+
+  // All CTA links that point to #cta-form
+  document.querySelectorAll('a[href="#cta-form"]').forEach(function(link) {
+    link.addEventListener('click', function(e) {
+      e.preventDefault();
+      modal.classList.add('active');
+      document.getElementById('form-name').focus();
+    });
+  });
+
+  openBtn.addEventListener('click', function(e) {
+    e.preventDefault();
+    modal.classList.add('active');
+    document.getElementById('form-name').focus();
+  });
+
+  closeBtn.addEventListener('click', function() {
+    modal.classList.remove('active');
+  });
+
+  modal.addEventListener('click', function(e) {
+    if (e.target === modal) {
+      modal.classList.remove('active');
+    }
+  });
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && modal.classList.contains('active')) {
+      modal.classList.remove('active');
+    }
+  });
+
+  // === FORMSUBMIT AJAX ===
+  var form = document.getElementById('contact-form');
+  form.addEventListener('submit', function(e) {
+    e.preventDefault();
+    var formData = new FormData(form);
+    var submitBtn = form.querySelector('.form-submit');
+    submitBtn.textContent = 'Sending...';
+    submitBtn.disabled = true;
+
+    fetch('https://formsubmit.co/ajax/retailguard.sales@gmail.com', {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'Accept': 'application/json'
+      }
+    })
+    .then(function(response) {
+      if (response.ok) {
+        document.getElementById('form-content').style.display = 'none';
+        document.getElementById('form-success').style.display = 'block';
+      } else {
+        submitBtn.textContent = 'Something went wrong. Try again.';
+        submitBtn.disabled = false;
+      }
+    })
+    .catch(function() {
+      submitBtn.textContent = 'Something went wrong. Try again.';
+      submitBtn.disabled = false;
+    });
+  });
+})();
+</script>
+</body>
+</html>

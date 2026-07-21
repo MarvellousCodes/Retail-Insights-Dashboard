@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RetailGuard | Know your margins. Protect your profit.</title>
+<meta name="description" content="RetailGuard helps independent retailers find hidden margin leaks and recover lost profit. Get your free margin scan today.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600&family=Sora:wght@700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#FFFFFF;--bg-alt:#F7F5FF;--card:#FFFFFF;--border:#E8E4F0;
+  --accent:#6C47FF;--accent-light:#A78BFF;--cta:#6C47FF;--cta-text:#FFFFFF;
+  --text:#1A1A2E;--muted:#6B6B80;--radius:12px;
+  --font-display:'Sora',sans-serif;--font-body:'Plus Jakarta Sans',sans-serif;
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-body);color:var(--text);background:var(--bg);line-height:1.6;-webkit-font-smoothing:antialiased}
+h1,h2,h3{font-family:var(--font-display);font-weight:700;line-height:1.2}
+a{color:var(--accent);text-decoration:none}
+img{max-width:100%;display:block}
+.container{max-width:1140px;margin:0 auto;padding:0 24px}
+
+/* NAV */
+.nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.95);backdrop-filter:blur(8px);border-bottom:1px solid transparent;transition:border-color .3s}
+.nav.scrolled{border-bottom-color:var(--border)}
+.nav-inner{display:flex;align-items:center;justify-content:space-between;height:64px}
+.nav-logo{font-family:var(--font-display);font-size:1.25rem;font-weight:800;color:var(--text)}
+.nav-links{display:flex;gap:32px;list-style:none}
+.nav-links a{color:var(--muted);font-size:0.9rem;font-weight:500;transition:color .2s}
+.nav-links a:hover{color:var(--text)}
+.nav-cta{background:var(--cta);color:var(--cta-text);padding:10px 20px;border-radius:8px;font-size:0.875rem;font-weight:600;transition:transform .15s,box-shadow .15s}
+.nav-cta:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(108,71,255,0.3)}
+@media(max-width:768px){.nav-links{display:none}}
+
+/* HERO */
+.hero{padding:80px 0 60px;overflow:hidden}
+.hero-grid{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center}
+.hero-text h1{font-size:clamp(2.2rem,5vw,3.2rem);margin-bottom:20px;color:var(--text)}
+.hero-text p{font-size:1.125rem;color:var(--muted);margin-bottom:32px;max-width:480px}
+.btn-primary{display:inline-block;background:var(--cta);color:var(--cta-text);padding:16px 32px;border-radius:10px;font-size:1rem;font-weight:600;transition:transform .15s,box-shadow .15s;border:none;cursor:pointer}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(108,71,255,0.25)}
+.hero-visual{display:flex;align-items:center;justify-content:center;position:relative;min-height:300px}
+#barcode-canvas{width:100%;max-width:400px;height:300px;display:block;border-radius:var(--radius)}
+.barcode-fallback{display:none;width:100%;max-width:400px;height:300px}
+.barcode-fallback svg{width:100%;height:100%}
+@media(max-width:768px){
+  .hero-grid{grid-template-columns:1fr;text-align:center}
+  .hero-text p{margin-left:auto;margin-right:auto}
+  #barcode-canvas{display:none!important}
+  .barcode-fallback{display:block;margin:0 auto}
+}
+@media(prefers-reduced-motion:reduce){
+  #barcode-canvas{display:none!important}
+  .barcode-fallback{display:block;margin:0 auto}
+}
+
+/* PROOF */
+.proof{padding:40px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.proof-inner{text-align:center}
+.proof-inner p{font-size:0.875rem;color:var(--muted);margin-bottom:12px;font-weight:500}
+.proof-logos{display:flex;justify-content:center;gap:40px;flex-wrap:wrap;align-items:center;opacity:0.5}
+.proof-logos span{font-size:0.8rem;color:var(--muted);font-weight:600;letter-spacing:1px;text-transform:uppercase}
+
+/* FEATURES */
+.features{padding:80px 0}
+.feature-block{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center;margin-bottom:80px}
+.feature-block:nth-child(even){direction:rtl}
+.feature-block:nth-child(even)>*{direction:ltr}
+.feature-block:last-child{margin-bottom:0}
+.feature-text span{display:inline-block;font-size:0.75rem;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+.feature-text h3{font-size:1.5rem;margin-bottom:12px}
+.feature-text p{color:var(--muted);font-size:0.95rem}
+.feature-vignette{background:var(--bg-alt);border:1px solid var(--border);border-radius:var(--radius);padding:24px;min-height:200px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(108,71,255,0.06)}
+.vignette-inner{width:100%;font-size:0.8rem}
+/* Mini UI vignettes */
+.v-invoice{border-radius:8px;background:#fff;padding:16px;border:1px solid var(--border)}
+.v-invoice-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.v-invoice-header span{font-weight:600;color:var(--text)}
+.v-badge{font-size:0.7rem;background:#E8F5E9;color:#2E7D32;padding:2px 8px;border-radius:4px}
+.v-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f0f0f0}
+.v-row:last-child{border:none}
+.v-ask{border-radius:8px;background:#fff;padding:16px;border:1px solid var(--border)}
+.v-ask-q{background:var(--bg-alt);border-radius:8px;padding:10px 14px;margin-bottom:8px;color:var(--text);font-weight:500}
+.v-ask-a{background:#f0ebff;border-radius:8px;padding:10px 14px;color:var(--text)}
+.v-price{border-radius:8px;background:#fff;padding:16px;border:1px solid var(--border)}
+.v-price-row{display:flex;align-items:center;gap:12px;padding:6px 0;border-bottom:1px solid #f0f0f0}
+.v-price-row:last-child{border:none}
+.v-arrow{color:#2E7D32;font-weight:700}
+.v-arrow.down{color:#C62828}
+.v-leak{border-radius:8px;background:#fff;padding:16px;border:1px solid var(--border)}
+.v-leak-item{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f0f0f0}
+.v-leak-item:last-child{border:none}
+.v-leak-flag{font-size:0.7rem;background:#FFEBEE;color:#C62828;padding:2px 8px;border-radius:4px}
+.v-report{border-radius:8px;background:#fff;padding:16px;border:1px solid var(--border)}
+.v-report-header{font-weight:600;margin-bottom:8px;color:var(--text)}
+.v-report-stat{display:flex;justify-content:space-between;padding:4px 0}
+.v-report-stat .label{color:var(--muted)}
+.v-report-stat .value{font-weight:600}
+@media(max-width:768px){
+  .feature-block{grid-template-columns:1fr;gap:32px}
+  .feature-block:nth-child(even){direction:ltr}
+}
+
+/* HOW IT WORKS */
+.how{padding:80px 0;background:var(--bg-alt)}
+.section-header{text-align:center;margin-bottom:48px}
+.section-header h2{font-size:2rem;margin-bottom:12px}
+.section-header p{color:var(--muted);max-width:500px;margin:0 auto}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:32px}
+.step{text-align:center;padding:32px 24px;background:var(--card);border-radius:var(--radius);border:1px solid var(--border)}
+.step-num{width:40px;height:40px;border-radius:50%;background:var(--accent);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-weight:700;margin-bottom:16px}
+.step h3{font-size:1.1rem;margin-bottom:8px}
+.step p{color:var(--muted);font-size:0.9rem}
+@media(max-width:768px){.steps{grid-template-columns:1fr}}
+
+/* PRICING */
+.pricing{padding:80px 0}
+.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;align-items:start}
+.price-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:32px;position:relative}
+.price-card.popular{border-color:var(--accent);box-shadow:0 8px 32px rgba(108,71,255,0.12)}
+.price-badge{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;font-size:0.7rem;font-weight:600;padding:4px 12px;border-radius:20px;white-space:nowrap}
+.price-card h3{font-size:1.2rem;margin-bottom:8px}
+.price-amount{font-size:2.5rem;font-weight:800;font-family:var(--font-display);color:var(--text)}
+.price-amount span{font-size:1rem;font-weight:500;color:var(--muted)}
+.price-period{color:var(--muted);font-size:0.85rem;margin-bottom:20px}
+.price-features{list-style:none;margin-bottom:24px}
+.price-features li{padding:8px 0;border-bottom:1px solid #f5f5f5;font-size:0.875rem;color:var(--text);display:flex;align-items:flex-start;gap:8px}
+.price-features li::before{content:"";width:16px;height:16px;min-width:16px;border-radius:50%;background:#E8F5E9;margin-top:2px}
+.price-features li:last-child{border:none}
+.price-card .btn-primary{width:100%;text-align:center;display:block}
+.price-card:not(.popular) .btn-primary{background:transparent;color:var(--accent);border:2px solid var(--accent)}
+.price-card:not(.popular) .btn-primary:hover{background:var(--bg-alt)}
+.price-note{text-align:center;margin-top:20px;font-size:0.8rem;color:var(--muted)}
+@media(max-width:768px){.pricing-grid{grid-template-columns:1fr}}
+
+/* FAQ */
+.faq{padding:80px 0;background:var(--bg-alt)}
+.faq-list{max-width:700px;margin:0 auto}
+.faq-item{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:12px;overflow:hidden}
+.faq-q{padding:20px 24px;font-weight:600;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-size:0.95rem}
+.faq-q::after{content:"+";font-size:1.4rem;color:var(--accent);transition:transform .2s}
+.faq-item.open .faq-q::after{transform:rotate(45deg)}
+.faq-a{padding:0 24px 20px;color:var(--muted);font-size:0.9rem;display:none}
+.faq-item.open .faq-a{display:block}
+
+/* CONTACT */
+.contact{padding:80px 0}
+.contact-card{max-width:560px;margin:0 auto;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:40px}
+.contact-card h2{font-size:1.5rem;margin-bottom:8px;text-align:center}
+.contact-card>p{text-align:center;color:var(--muted);font-size:0.9rem;margin-bottom:24px}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-size:0.85rem;font-weight:500;margin-bottom:6px;color:var(--text)}
+.form-group input,.form-group textarea{width:100%;padding:12px 16px;border:1px solid var(--border);border-radius:8px;font-size:0.9rem;font-family:var(--font-body);transition:border-color .2s}
+.form-group input:focus,.form-group textarea:focus{outline:none;border-color:var(--accent)}
+.form-group textarea{resize:vertical;min-height:100px}
+.form-msg{text-align:center;margin-top:12px;font-size:0.875rem;display:none}
+.form-msg.success{color:#2E7D32;display:block}
+.form-msg.error{color:#C62828;display:block}
+
+/* FOOTER */
+.footer{padding:40px 0;border-top:1px solid var(--border)}
+.footer-inner{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px}
+.footer-inner p{font-size:0.8rem;color:var(--muted)}
+.footer-links{display:flex;gap:24px}
+.footer-links a{font-size:0.8rem;color:var(--muted);transition:color .2s}
+.footer-links a:hover{color:var(--text)}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav" id="nav">
+<div class="container nav-inner">
+  <a href="#" class="nav-logo">RetailGuard</a>
+  <ul class="nav-links">
+    <li><a href="#features">Features</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+    <li><a href="#faq">FAQ</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+  <a href="#contact" class="nav-cta">Get my free margin scan</a>
+</div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+<div class="container hero-grid">
+  <div class="hero-text">
+    <h1>Know your margins. Protect your profit.</h1>
+    <p>Typical opportunities identified can amount to thousands of euros per year, depending on store size. RetailGuard finds where money slips through the cracks, so you can fix it.</p>
+    <a href="#contact" class="btn-primary">Get my free margin scan</a>
+  </div>
+  <div class="hero-visual">
+    <canvas id="barcode-canvas" aria-hidden="true"></canvas>
+    <div class="barcode-fallback" aria-hidden="true">
+      <svg viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="60" y="80" width="8" height="140" rx="4" fill="#6C47FF"/>
+        <rect x="80" y="100" width="8" height="120" rx="4" fill="#7C5CFF"/>
+        <rect x="100" y="70" width="8" height="160" rx="4" fill="#8B6BFF"/>
+        <rect x="120" y="90" width="8" height="130" rx="4" fill="#9A7AFF"/>
+        <rect x="140" y="60" width="8" height="180" rx="4" fill="#A78BFF"/>
+        <rect x="160" y="85" width="8" height="140" rx="4" fill="#6C47FF"/>
+        <rect x="180" y="75" width="8" height="150" rx="4" fill="#7C5CFF"/>
+        <rect x="200" y="95" width="8" height="120" rx="4" fill="#8B6BFF"/>
+        <rect x="220" y="65" width="8" height="170" rx="4" fill="#9A7AFF"/>
+        <rect x="240" y="80" width="8" height="140" rx="4" fill="#A78BFF"/>
+        <rect x="260" y="100" width="8" height="110" rx="4" fill="#6C47FF"/>
+        <rect x="280" y="70" width="8" height="160" rx="4" fill="#7C5CFF"/>
+        <rect x="300" y="90" width="8" height="130" rx="4" fill="#8B6BFF"/>
+        <rect x="320" y="75" width="8" height="150" rx="4" fill="#9A7AFF"/>
+      </svg>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- SOCIAL PROOF -->
+<section class="proof">
+<div class="container proof-inner">
+  <p>Trusted by independent retailers across Ireland</p>
+  <div class="proof-logos">
+    <span>Convenience</span>
+    <span>Forecourts</span>
+    <span>Newsagents</span>
+    <span>Off-licences</span>
+    <span>Delis</span>
+  </div>
+</div>
+</section>
+
+<!-- FEATURES -->
+<section class="features" id="features">
+<div class="container">
+  <div class="section-header">
+    <h2>Five tools, one dashboard</h2>
+    <p>Everything you need to understand what is happening in your shop, without spreadsheets.</p>
+  </div>
+
+  <div class="feature-block">
+    <div class="feature-text">
+      <span>Invoice Scanner</span>
+      <h3>Scan invoices, spot problems instantly</h3>
+      <p>Upload a supplier invoice and see which products are new, which have changed price, and where your margin may be squeezed. No typing, no spreadsheets.</p>
+    </div>
+    <div class="feature-vignette">
+      <div class="vignette-inner">
+        <div class="v-invoice">
+          <div class="v-invoice-header"><span>Murphy's Farm Fresh</span><div class="v-badge">Scanned</div></div>
+          <div class="v-row"><span>Brown Bread 800g</span><span style="color:#2E7D32;font-weight:600">New</span></div>
+          <div class="v-row"><span>Free Range Eggs x12</span><span style="color:#E65100;font-weight:600">+8%</span></div>
+          <div class="v-row"><span>Full Cream Milk 2L</span><span style="color:var(--muted)">No change</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="feature-block">
+    <div class="feature-text">
+      <span>Ask Your Shop</span>
+      <h3>Ask a question, get an answer from your own data</h3>
+      <p>Type a question in plain English. Get clear answers drawn from your real sales, margins, and supplier records. No training needed.</p>
+    </div>
+    <div class="feature-vignette">
+      <div class="vignette-inner">
+        <div class="v-ask">
+          <div class="v-ask-q">What sold best last month?</div>
+          <div class="v-ask-a">Milk 2L (312 units), Brennans Bread (287 units), and Lucozade 500ml (245 units) were your top sellers.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="feature-block">
+    <div class="feature-text">
+      <span>Price Moves History</span>
+      <h3>See every price change, past and present</h3>
+      <p>Track what moved, when it moved, and by how much. Know when a supplier raised prices before your next order.</p>
+    </div>
+    <div class="feature-vignette">
+      <div class="vignette-inner">
+        <div class="v-price">
+          <div class="v-price-row"><span>Brennans Bread</span><span class="v-arrow">+5c</span><span style="color:var(--muted)">Mar 12</span></div>
+          <div class="v-price-row"><span>Tayto Multipack</span><span class="v-arrow down">-10c</span><span style="color:var(--muted)">Mar 8</span></div>
+          <div class="v-price-row"><span>Avonmore Milk 2L</span><span class="v-arrow">+3c</span><span style="color:var(--muted)">Mar 1</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="feature-block">
+    <div class="feature-text">
+      <span>Margin Leak Finder</span>
+      <h3>Find the products quietly losing you money</h3>
+      <p>See which items are selling below cost or below your target margin. Sorted by impact, so you fix the biggest leaks first.</p>
+    </div>
+    <div class="feature-vignette">
+      <div class="vignette-inner">
+        <div class="v-leak">
+          <div class="v-leak-item"><span>Ice Cream Tub 1L</span><div class="v-leak-flag">Below cost</div></div>
+          <div class="v-leak-item"><span>Orange Juice 1L</span><div class="v-leak-flag">4% margin</div></div>
+          <div class="v-leak-item"><span>Cat Food 400g</span><div class="v-leak-flag">7% margin</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="feature-block">
+    <div class="feature-text">
+      <span>Morning Report</span>
+      <h3>Yesterday's numbers on your desk before you open</h3>
+      <p>A short summary of sales, margin health, and anything that needs attention. Delivered every morning, no login required.</p>
+    </div>
+    <div class="feature-vignette">
+      <div class="vignette-inner">
+        <div class="v-report">
+          <div class="v-report-header">Morning Report: Tuesday</div>
+          <div class="v-report-stat"><span class="label">Yesterday's sales</span><span class="value">&euro;4,218</span></div>
+          <div class="v-report-stat"><span class="label">Avg margin</span><span class="value">27.3%</span></div>
+          <div class="v-report-stat"><span class="label">Items needing attention</span><span class="value" style="color:#C62828">3</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how">
+<div class="container">
+  <div class="section-header">
+    <h2>How it works</h2>
+    <p>Up and running in a day, not a month.</p>
+  </div>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <h3>Connect your till system</h3>
+      <p>We pull data from your existing point of sale. No new hardware, no disruption to your day.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <h3>We find the gaps</h3>
+      <p>RetailGuard analyses every product, margin, and supplier price across your range automatically.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <h3>You fix what matters</h3>
+      <p>See clear recommendations ranked by impact. Make changes at your pace and watch margins improve.</p>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- PRICING -->
+<section class="pricing" id="pricing">
+<div class="container">
+  <div class="section-header">
+    <h2>Simple, transparent pricing</h2>
+    <p>No setup fee. Cancel any time. Net of VAT.</p>
+  </div>
+  <div class="pricing-grid">
+    <div class="price-card">
+      <h3>Insight</h3>
+      <div class="price-amount">&euro;500<span>/mo</span></div>
+      <div class="price-period">Net of VAT. No setup fee.</div>
+      <ul class="price-features">
+        <li>Full margin dashboard</li>
+        <li>Alerts when margins slip</li>
+        <li>Drill-down by department</li>
+        <li>Barcode product lookup</li>
+        <li>Supplier analytics</li>
+      </ul>
+      <a href="#contact" class="btn-primary">Get my free margin scan</a>
+    </div>
+    <div class="price-card popular">
+      <div class="price-badge">Most popular</div>
+      <h3>Complete</h3>
+      <div class="price-amount">&euro;1,000<span>/mo</span></div>
+      <div class="price-period">Net of VAT. No setup fee.</div>
+      <ul class="price-features">
+        <li>Everything in Insight</li>
+        <li>Invoice Scanner</li>
+        <li>Ask Your Shop</li>
+        <li>Trading patterns</li>
+        <li>Product performance</li>
+        <li>Priority support</li>
+      </ul>
+      <a href="#contact" class="btn-primary">Get my free margin scan</a>
+    </div>
+    <div class="price-card">
+      <h3>Multi-site</h3>
+      <div class="price-amount">&euro;1,500<span>/mo</span></div>
+      <div class="price-period">Net of VAT. No setup fee.</div>
+      <ul class="price-features">
+        <li>Everything in Complete</li>
+        <li>Write-back (rolling out)</li>
+        <li>Morning report</li>
+        <li>Per-site onboarding</li>
+        <li>Dedicated account manager</li>
+      </ul>
+      <a href="#contact" class="btn-primary">Get my free margin scan</a>
+    </div>
+  </div>
+  <p class="price-note">All prices net of VAT. No long-term contracts.</p>
+</div>
+</section>
+
+<!-- FAQ -->
+<section class="faq" id="faq">
+<div class="container">
+  <div class="section-header">
+    <h2>Questions and answers</h2>
+  </div>
+  <div class="faq-list">
+    <div class="faq-item">
+      <div class="faq-q">What till systems do you support?</div>
+      <div class="faq-a">We work with most modern EPOS and back-office systems used by Irish convenience stores and forecourts. If you are unsure, book a free scan and we will confirm compatibility.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">How long does setup take?</div>
+      <div class="faq-a">Typically one day. We connect to your existing data export. There is no new hardware to install and no disruption to your trading day.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">Is my data secure?</div>
+      <div class="faq-a">Yes. Your data is encrypted in transit and at rest. We never share your figures with anyone, including other RetailGuard customers. Each shop is completely isolated.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">Can I cancel any time?</div>
+      <div class="faq-a">Yes. Monthly billing, no lock-in. Cancel whenever you like and your data is deleted within 30 days on request.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">What if I have multiple shops?</div>
+      <div class="faq-a">The Multi-site plan covers all your locations with a single dashboard. Each shop gets its own data and per-site onboarding.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">Do I need to change how I work?</div>
+      <div class="faq-a">No. RetailGuard reads from your system, it does not change it. You keep using your till and suppliers as normal. We just show you what your data already says.</div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- CONTACT -->
+<section class="contact" id="contact">
+<div class="container">
+  <div class="contact-card">
+    <h2>Book your free margin scan</h2>
+    <p>We will show you exactly where your margins sit today. No charge, no commitment.</p>
+    <form id="contact-form">
+      <input type="hidden" name="_subject" value="Prod3D Barcode Cursor Lead">
+      <div class="form-group">
+        <label for="name">Your name</label>
+        <input type="text" id="name" name="name" required autocomplete="name">
+      </div>
+      <div class="form-group">
+        <label for="email">Email address</label>
+        <input type="email" id="email" name="email" required autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label for="shop">Shop name (optional)</label>
+        <input type="text" id="shop" name="shop" autocomplete="organization">
+      </div>
+      <div class="form-group">
+        <label for="message">Anything else?</label>
+        <textarea id="message" name="message" rows="3"></textarea>
+      </div>
+      <button type="submit" class="btn-primary" style="width:100%">Get my free margin scan</button>
+      <div class="form-msg" id="form-msg"></div>
+    </form>
+  </div>
+</div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+<div class="container footer-inner">
+  <p>&copy; 2026 RetailGuard. All rights reserved.</p>
+  <div class="footer-links">
+    <a href="#">Privacy</a>
+    <a href="#">Terms</a>
+    <a href="mailto:retailguard.sales@gmail.com">Contact</a>
+  </div>
+</div>
+</footer>
+
+<!-- SCRIPTS -->
+<script>
+// Nav scroll effect
+const nav=document.getElementById('nav');
+window.addEventListener('scroll',()=>{nav.classList.toggle('scrolled',window.scrollY>10)},{passive:true});
+
+// FAQ accordion
+document.querySelectorAll('.faq-q').forEach(q=>{
+  q.addEventListener('click',()=>{
+    const item=q.parentElement;
+    const wasOpen=item.classList.contains('open');
+    document.querySelectorAll('.faq-item.open').forEach(i=>i.classList.remove('open'));
+    if(!wasOpen)item.classList.add('open');
+  });
+});
+
+// FormSubmit AJAX
+document.getElementById('contact-form').addEventListener('submit',async function(e){
+  e.preventDefault();
+  const msg=document.getElementById('form-msg');
+  msg.className='form-msg';msg.style.display='none';
+  const data=new FormData(this);
+  try{
+    const res=await fetch('https://formsubmit.co/ajax/retailguard.sales@gmail.com',{method:'POST',body:data});
+    const json=await res.json();
+    if(json.success==='true'||json.success===true){
+      msg.textContent='Thank you. We will be in touch shortly.';
+      msg.className='form-msg success';msg.style.display='block';
+      this.reset();
+    }else{throw new Error('fail');}
+  }catch(err){
+    msg.textContent='Something went wrong. Please email us directly.';
+    msg.className='form-msg error';msg.style.display='block';
+  }
+});
+</script>
+
+<!-- THREE.JS BARCODE (desktop only, not reduced-motion) -->
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js"}}
+</script>
+<script type="module" id="barcode-module">
+const canvas=document.getElementById('barcode-canvas');
+if(!canvas)throw new Error('no canvas');
+
+// Bail on mobile or reduced-motion (canvas is display:none via CSS, but also skip init)
+const isMobile=window.matchMedia('(max-width:768px)').matches;
+const prefersReduced=window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+if(isMobile||prefersReduced){
+  // Canvas hidden by CSS, fallback SVG shown. Do not load three.js.
+  throw new Error('skip-3d');
+}
+
+const {Scene,PerspectiveCamera,WebGLRenderer,InstancedMesh,Object3D,
+  CylinderGeometry,MeshStandardMaterial,AmbientLight,DirectionalLight,
+  PlaneGeometry,MeshBasicMaterial,Color,DoubleSide,Mesh} = await import('three');
+
+// Lazy init via IntersectionObserver
+let inited=false;
+let renderer,scene,camera,bars,barData,scanLine;
+let mouse={x:0.5,y:0.5};
+let animId=null;
+let isVisible=false;
+const BAR_COUNT=18;
+
+function init(){
+  if(inited)return;
+  inited=true;
+  const w=canvas.clientWidth,h=canvas.clientHeight;
+  renderer=new WebGLRenderer({canvas,antialias:true,alpha:true});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+  renderer.setSize(w,h);
+
+  scene=new Scene();
+  camera=new PerspectiveCamera(40,w/h,0.1,100);
+  camera.position.set(0,0,14);
+
+  scene.add(new AmbientLight(0xffffff,0.6));
+  const dir=new DirectionalLight(0xffffff,0.8);
+  dir.position.set(3,5,5);
+  scene.add(dir);
+
+  // Barcode bars using InstancedMesh
+  const geo=new CylinderGeometry(0.15,0.15,1,8,1);
+  const mat=new MeshStandardMaterial({color:0x6C47FF,metalness:0.1,roughness:0.5});
+  bars=new InstancedMesh(geo,mat,BAR_COUNT);
+  scene.add(bars);
+
+  // Floor reflection
+  const floorGeo=new PlaneGeometry(12,6);
+  const floorMat=new MeshBasicMaterial({color:0x6C47FF,transparent:true,opacity:0.04,side:DoubleSide});
+  const fMesh=new Mesh(floorGeo,floorMat);
+  fMesh.rotation.x=-Math.PI/2;
+  fMesh.position.y=-2.8;
+  scene.add(fMesh);
+
+  // Scan line
+  const slGeo=new PlaneGeometry(0.05,5);
+  const slMat=new MeshBasicMaterial({color:0xFF4444,transparent:true,opacity:0.6});
+  const slMesh=new Mesh(slGeo,slMat);
+  slMesh.position.z=0.5;
+  scene.add(slMesh);
+  scanLine=slMesh;
+
+  // Bar resting data
+  barData=[];
+  const dummy=new Object3D();
+  for(let i=0;i<BAR_COUNT;i++){
+    const restH=1.5+Math.random()*2.5;
+    const x=(i-BAR_COUNT/2)*0.5;
+    const t=i/BAR_COUNT;
+    const col=new Color().lerpColors(new Color(0x6C47FF),new Color(0xA78BFF),t);
+    barData.push({x,restH,currentH:0,targetH:restH,vel:0,col});
+    dummy.position.set(x,0,0);
+    dummy.scale.set(1,restH,1);
+    dummy.updateMatrix();
+    bars.setMatrixAt(i,dummy.matrix);
+    bars.setColorAt(i,col);
+  }
+  bars.instanceMatrix.needsUpdate=true;
+  bars.instanceColor.needsUpdate=true;
+
+  // Entrance animation
+  let entranceT=0;
+  const entranceDuration=400;
+  const entranceStart=performance.now();
+
+  startLoop(entranceStart);
+}
+
+function startLoop(entranceStart){
+  const dummy=new Object3D();
+  const entranceDuration=400;
+
+  function animate(now){
+    if(!isVisible||document.hidden){animId=null;return;}
+    animId=requestAnimationFrame(animate);
+
+    // Entrance
+    const elapsed=now-entranceStart;
+    const entranceProgress=Math.min(elapsed/entranceDuration,1);
+
+    // Mouse wave
+    for(let i=0;i<BAR_COUNT;i++){
+      const b=barData[i];
+      const normX=(b.x+BAR_COUNT*0.25)/(BAR_COUNT*0.5);
+      const dist=Math.abs(normX-mouse.x);
+      const wave=Math.max(0,1-dist*2.5)*0.8;
+      b.targetH=b.restH+wave*Math.sin(now*0.005+i*0.3)*0.5;
+
+      // Spring
+      const spring=0.08;
+      const damp=0.7;
+      b.vel+=(b.targetH-b.currentH)*spring;
+      b.vel*=damp;
+      b.currentH+=b.vel;
+
+      const h=b.currentH*Math.min(entranceProgress,(i/BAR_COUNT<entranceProgress?1:0));
+      dummy.position.set(b.x,h/2-2,0);
+      dummy.scale.set(1,Math.max(0.01,h),1);
+      dummy.updateMatrix();
+      bars.setMatrixAt(i,dummy.matrix);
+    }
+    bars.instanceMatrix.needsUpdate=true;
+
+    // Scan line
+    const scanCycle=8000;
+    const scanProgress=((now%scanCycle)/scanCycle);
+    const scanX=(scanProgress-0.5)*(BAR_COUNT*0.5);
+    scanLine.position.x=scanX;
+    scanLine.material.opacity=0.4+Math.sin(scanProgress*Math.PI)*0.3;
+
+    renderer.render(scene,camera);
+  }
+  animId=requestAnimationFrame(animate);
+}
+
+// Mouse tracking (throttled to rAF)
+let mouseRAF=false;
+canvas.parentElement.addEventListener('mousemove',(e)=>{
+  if(mouseRAF)return;
+  mouseRAF=true;
+  requestAnimationFrame(()=>{
+    const rect=canvas.parentElement.getBoundingClientRect();
+    mouse.x=(e.clientX-rect.left)/rect.width;
+    mouse.y=(e.clientY-rect.top)/rect.height;
+    mouseRAF=false;
+  });
+},{passive:true});
+
+// Visibility
+const observer=new IntersectionObserver((entries)=>{
+  entries.forEach(entry=>{
+    isVisible=entry.isIntersecting;
+    if(isVisible){
+      if(!inited)init();
+      else if(!animId)animId=requestAnimationFrame(function loop(t){
+        if(!isVisible||document.hidden){animId=null;return;}
+        animId=requestAnimationFrame(loop);
+        // re-render handled inside startLoop's animate
+      });
+    }
+  });
+},{threshold:0.1});
+observer.observe(canvas);
+
+// Tab visibility
+document.addEventListener('visibilitychange',()=>{
+  if(!document.hidden&&isVisible&&inited&&!animId){
+    const dummy=new Object3D();
+    // Restart loop
+    animId=requestAnimationFrame(function loop(t){
+      if(!isVisible||document.hidden){animId=null;return;}
+      // Inline render
+      for(let i=0;i<BAR_COUNT;i++){
+        const b=barData[i];
+        const normX=(b.x+BAR_COUNT*0.25)/(BAR_COUNT*0.5);
+        const dist=Math.abs(normX-mouse.x);
+        const wave=Math.max(0,1-dist*2.5)*0.8;
+        b.targetH=b.restH+wave*Math.sin(t*0.005+i*0.3)*0.5;
+        const spring=0.08,damp=0.7;
+        b.vel+=(b.targetH-b.currentH)*spring;
+        b.vel*=damp;
+        b.currentH+=b.vel;
+        dummy.position.set(b.x,b.currentH/2-2,0);
+        dummy.scale.set(1,Math.max(0.01,b.currentH),1);
+        dummy.updateMatrix();
+        bars.setMatrixAt(i,dummy.matrix);
+      }
+      bars.instanceMatrix.needsUpdate=true;
+      const scanCycle=8000;
+      const sp=((t%scanCycle)/scanCycle);
+      scanLine.position.x=(sp-0.5)*(BAR_COUNT*0.5);
+      scanLine.material.opacity=0.4+Math.sin(sp*Math.PI)*0.3;
+      renderer.render(scene,camera);
+      animId=requestAnimationFrame(loop);
+    });
+  }
+});
+
+// Resize
+window.addEventListener('resize',()=>{
+  if(!inited||!renderer)return;
+  const w=canvas.clientWidth,h=canvas.clientHeight;
+  renderer.setSize(w,h);
+  camera.aspect=w/h;
+  camera.updateProjectionMatrix();
+});
+</script>
+</body>
+</html>

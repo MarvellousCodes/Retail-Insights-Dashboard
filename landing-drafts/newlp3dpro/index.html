@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RetailGuard Landing Gallery: Production 3D Batch</title>
+<meta name="description" content="Five production landing pages for RetailGuard, each with one restrained 3D moment that serves the retail story.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root { --bg:#0b0b12; --card:#15151f; --border:#262636; --text:#f2f2f7; --muted:#9a9ab0; --accent:#8b5cf6; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:'Inter',sans-serif; min-height:100vh; padding:56px 24px; }
+  .wrap { max-width:980px; margin:0 auto; }
+  h1 { font-family:'Space Grotesk',sans-serif; font-size:clamp(28px,5vw,44px); letter-spacing:-0.02em; }
+  .sub { color:var(--muted); margin:12px 0 40px; max-width:660px; line-height:1.6; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:18px; }
+  a.card { display:block; background:var(--card); border:1px solid var(--border); border-radius:14px; padding:26px 24px; text-decoration:none; color:var(--text); transition:transform .18s ease, border-color .18s ease; }
+  a.card:hover { transform:translateY(-4px); border-color:var(--accent); }
+  .num { font-family:'Space Grotesk',sans-serif; color:var(--accent); font-size:13px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; }
+  .name { font-family:'Space Grotesk',sans-serif; font-size:21px; margin:8px 0 8px; }
+  .desc { color:var(--muted); font-size:14px; line-height:1.55; }
+  .chip { display:inline-block; margin-top:14px; font-size:12px; color:var(--accent); font-weight:500; }
+  footer { color:var(--muted); font-size:12px; margin-top:44px; line-height:1.6; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>RetailGuard Landing Gallery</h1>
+  <p class="sub">Production 3D batch: five real marketing pages, each with exactly one restrained 3D moment that serves the retail story. Every page degrades to a static image on mobile and under reduced motion, caps pixel ratio, and pauses when offscreen. All copy rules enforced, forms live and tagged per page, illustrative numbers only.</p>
+  <div class="grid">
+    <a class="card" href="/p1"><span class="num">P1</span><div class="name">Floating Shelf</div><div class="desc">A hero shelf that rotates gently on scroll, its price tag flipping red to green. Static CSS shelf on mobile and reduced motion.</div><span class="chip">Open page</span></a>
+    <a class="card" href="/p2"><span class="num">P2</span><div class="name">Receipt Unroll</div><div class="desc">A scroll pinned receipt that unrolls its line items via a vertex shader curl, ending on a green savings badge. Dark palette, Space Grotesk.</div><span class="chip">Open page</span></a>
+    <a class="card" href="/p3"><span class="num">P3</span><div class="name">Barcode Cursor</div><div class="desc">A hero barcode whose bars ripple toward your cursor with a spring decay wave, plus a slow sweeping scan line. Static SVG fallback.</div><span class="chip">Open page</span></a>
+    <a class="card" href="/p4"><span class="num">P4</span><div class="name">Card Stack Depth</div><div class="desc">Pure CSS 3D with zero WebGL. Dashboard cards fan out on scroll and tilt to the mouse, resting flat on touch and reduced motion.</div><span class="chip">Open page</span></a>
+    <a class="card" href="/p5"><span class="num">P5</span><div class="name">Ambient Depth Field</div><div class="desc">Frosted glass shapes drifting slowly behind clean content, fading to flat below the fold. Static gradient blobs on mobile.</div><span class="chip">Open page</span></a>
+  </div>
+  <footer>Sister galleries: rg-landing-lab.pages.dev (conversion clean), rg-landing-3d.pages.dev (cinematic 3D), rg-landing-dribbble.pages.dev (designer polish), rg-landing-showcase.pages.dev (Awwwards, Framer, 21st.dev).</footer>
+</div>
+</body>
+</html>

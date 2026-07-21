@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RetailGuard | See Every Margin Gap Before Your Supplier Does</title>
+<meta name="description" content="RetailGuard reads your till export and finds the money left on the table. Free margin scan, no card required, takes 2 minutes.">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --violet:#7C3AED;--violet-light:#EDE9FE;--violet-dark:#5B21B6;
+  --green:#16A34A;--green-light:#DCFCE7;
+  --red:#DC2626;--red-light:#FEE2E2;
+  --amber:#D97706;--amber-light:#FEF3C7;
+  --grey-50:#F9FAFB;--grey-100:#F3F4F6;--grey-200:#E5E7EB;--grey-300:#D1D5DB;
+  --grey-500:#6B7280;--grey-700:#374151;--grey-900:#111827;
+  --radius:12px;--radius-sm:8px;--radius-xs:4px;
+  --shadow:0 4px 24px rgba(0,0,0,.08);--shadow-sm:0 2px 8px rgba(0,0,0,.06);
+  --max-w:1140px;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:var(--grey-900);line-height:1.6;background:#fff}
+img{max-width:100%;display:block}
+a{color:var(--violet);text-decoration:none}
+a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid var(--violet);outline-offset:2px}
+.container{max-width:var(--max-w);margin:0 auto;padding:0 24px}
+/* NAV */
+.nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,.97);backdrop-filter:blur(8px);border-bottom:1px solid var(--grey-200);padding:16px 0}
+.nav .container{display:flex;align-items:center;justify-content:space-between}
+.nav-brand{font-weight:700;font-size:1.25rem;color:var(--violet)}
+.nav-cta{background:var(--violet);color:#fff;padding:10px 20px;border-radius:var(--radius-sm);font-weight:600;font-size:.875rem;border:none;cursor:pointer;transition:background .2s}
+.nav-cta:hover{background:var(--violet-dark)}
+/* HERO */
+.hero{padding:64px 0 80px;background:var(--grey-50)}
+.hero .container{display:grid;grid-template-columns:1fr;gap:40px;text-align:center}
+.hero-headline{font-size:clamp(1.75rem,4vw,2.75rem);font-weight:800;line-height:1.2;color:var(--grey-900);margin-bottom:16px}
+.hero-sub{font-size:1.125rem;color:var(--grey-500);max-width:560px;margin:0 auto 24px}
+.hero-cta-wrap{display:flex;flex-direction:column;align-items:center;gap:12px}
+.btn-primary{display:inline-block;background:var(--violet);color:#fff;padding:16px 32px;border-radius:var(--radius-sm);font-size:1.0625rem;font-weight:700;border:none;cursor:pointer;transition:background .2s,transform .15s}
+.btn-primary:hover{background:var(--violet-dark);transform:translateY(-1px)}
+.friction{font-size:.875rem;color:var(--grey-500)}
+.hero-mockup{margin:32px auto 0;max-width:900px;width:100%}
+/* MOCKUP SHARED */
+.mockup{background:#fff;border:1px solid var(--grey-200);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+.mockup-bar{background:var(--grey-100);padding:8px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--grey-200)}
+.mockup-dot{width:10px;height:10px;border-radius:50%;background:var(--grey-300)}
+.mockup-dot.r{background:#EF4444}.mockup-dot.y{background:#F59E0B}.mockup-dot.g{background:#22C55E}
+.mockup-body{padding:24px}
+/* HERO DASHBOARD MOCKUP */
+.dash-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:16px;margin-bottom:24px}
+.dash-card{background:var(--grey-50);border-radius:var(--radius-sm);padding:16px;text-align:center}
+.dash-card-label{font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;color:var(--grey-500);margin-bottom:4px}
+.dash-card-val{font-size:1.5rem;font-weight:700;color:var(--grey-900)}
+.dash-card-val.green{color:var(--green)}.dash-card-val.red{color:var(--red)}.dash-card-val.amber{color:var(--amber)}
+.margin-ladder{display:flex;gap:6px;align-items:flex-end;height:100px}
+.ml-bar{border-radius:4px 4px 0 0;width:100%;min-width:20px;position:relative}
+.ml-bar.loss{background:var(--red)}.ml-bar.thin{background:var(--amber)}.ml-bar.healthy{background:var(--green)}.ml-bar.strong{background:var(--violet)}
+.ml-legend{display:flex;gap:16px;margin-top:12px;font-size:.75rem;color:var(--grey-500)}
+.ml-legend span::before{content:'';display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:middle}
+.ml-legend .l-loss::before{background:var(--red)}.ml-legend .l-thin::before{background:var(--amber)}.ml-legend .l-healthy::before{background:var(--green)}.ml-legend .l-strong::before{background:var(--violet)}
+/* PROBLEM */
+.problem{padding:80px 0;text-align:center}
+.problem h2{font-size:clamp(1.5rem,3vw,2.25rem);font-weight:700;margin-bottom:16px}
+.problem p{max-width:640px;margin:0 auto;color:var(--grey-500);font-size:1.0625rem}
+.pain-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:24px;margin-top:40px;text-align:left}
+.pain-card{background:var(--grey-50);border-radius:var(--radius-sm);padding:24px;border-left:4px solid var(--red)}
+.pain-card h3{font-size:1rem;font-weight:700;margin-bottom:8px}
+.pain-card p{font-size:.9rem;color:var(--grey-500)}
+/* FEATURES */
+.features{padding:80px 0;background:var(--grey-50)}
+.features h2{font-size:clamp(1.5rem,3vw,2.25rem);font-weight:700;text-align:center;margin-bottom:56px}
+.feature-row{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center;margin-bottom:64px}
+.feature-row:nth-child(even){direction:rtl}
+.feature-row:nth-child(even)>*{direction:ltr}
+.feature-text h3{font-size:1.375rem;font-weight:700;margin-bottom:12px}
+.feature-text p{color:var(--grey-500);margin-bottom:16px;font-size:.95rem}
+.before-after{display:flex;gap:16px;flex-wrap:wrap}
+.ba-item{font-size:.875rem;padding:6px 12px;border-radius:var(--radius-xs);font-weight:600}
+.ba-before{background:var(--red-light);color:var(--red);text-decoration:line-through}
+.ba-after{background:var(--green-light);color:var(--green)}
+/* FEATURE MOCKUPS */
+.f-mockup{border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow-sm);border:1px solid var(--grey-200);background:#fff}
+.f-mockup-header{background:var(--violet-light);padding:12px 16px;font-size:.75rem;font-weight:600;color:var(--violet);border-bottom:1px solid var(--grey-200)}
+.f-mockup-body{padding:20px}
+/* Margin Ladder Mockup */
+.ladder-rows{display:flex;flex-direction:column;gap:10px}
+.ladder-row{display:grid;grid-template-columns:100px 1fr 60px;align-items:center;gap:12px;font-size:.8rem}
+.ladder-row .label{color:var(--grey-700);font-weight:500}
+.ladder-row .bar-wrap{height:18px;background:var(--grey-100);border-radius:9px;overflow:hidden}
+.ladder-row .bar-fill{height:100%;border-radius:9px}
+.ladder-row .pct{font-weight:700;text-align:right}
+/* Price Moves Mockup */
+.price-table{width:100%;font-size:.8rem;border-collapse:collapse}
+.price-table th{text-align:left;padding:8px 6px;border-bottom:2px solid var(--grey-200);color:var(--grey-500);font-weight:600;font-size:.7rem;text-transform:uppercase}
+.price-table td{padding:8px 6px;border-bottom:1px solid var(--grey-100)}
+.verdict{display:inline-block;padding:2px 8px;border-radius:10px;font-size:.7rem;font-weight:700}
+.verdict.good{background:var(--green-light);color:var(--green)}.verdict.bad{background:var(--red-light);color:var(--red)}.verdict.watch{background:var(--amber-light);color:var(--amber)}
+/* Invoice Mockup */
+.inv-table{width:100%;font-size:.8rem;border-collapse:collapse}
+.inv-table th{text-align:left;padding:6px;border-bottom:2px solid var(--grey-200);color:var(--grey-500);font-size:.7rem;text-transform:uppercase;font-weight:600}
+.inv-table td{padding:6px;border-bottom:1px solid var(--grey-100)}
+.flag{display:inline-block;padding:2px 6px;border-radius:8px;font-size:.65rem;font-weight:700}
+.flag.new{background:var(--violet-light);color:var(--violet)}.flag.mismatch{background:var(--red-light);color:var(--red)}.flag.match{background:var(--green-light);color:var(--green)}
+/* Morning Report Mockup */
+.report-email{font-size:.8rem}
+.report-subject{font-weight:700;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--grey-200)}
+.report-row{display:grid;grid-template-columns:1fr auto auto;gap:12px;padding:6px 0;border-bottom:1px solid var(--grey-100);align-items:center}
+.report-row .dept{font-weight:500;color:var(--grey-700)}
+.report-row .issues{font-weight:700;color:var(--red)}
+.report-row .impact{font-size:.75rem;color:var(--grey-500)}
+/* HOW IT WORKS */
+.how{padding:80px 0}
+.how h2{font-size:clamp(1.5rem,3vw,2.25rem);font-weight:700;text-align:center;margin-bottom:12px}
+.how-sub{text-align:center;color:var(--grey-500);margin-bottom:48px;font-size:1rem}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:32px}
+.step{text-align:center;padding:24px}
+.step-num{width:48px;height:48px;border-radius:50%;background:var(--violet-light);color:var(--violet);font-weight:800;font-size:1.25rem;display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
+.step h3{font-weight:700;margin-bottom:8px}
+.step p{font-size:.9rem;color:var(--grey-500)}
+.how-cta{text-align:center;margin-top:40px}
+/* PRICING */
+.pricing{padding:80px 0;background:var(--grey-50)}
+.pricing h2{font-size:clamp(1.5rem,3vw,2.25rem);font-weight:700;text-align:center;margin-bottom:12px}
+.pricing-sub{text-align:center;color:var(--grey-500);margin-bottom:48px}
+.plans{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px;max-width:960px;margin:0 auto}
+.plan{background:#fff;border:2px solid var(--grey-200);border-radius:var(--radius);padding:32px 24px;position:relative;transition:transform .2s}
+.plan:hover{transform:translateY(-4px)}
+.plan.popular{border-color:var(--violet);box-shadow:0 8px 32px rgba(124,58,237,.15)}
+.plan-badge{position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:var(--violet);color:#fff;padding:4px 16px;border-radius:20px;font-size:.75rem;font-weight:700;white-space:nowrap}
+.plan-name{font-size:1.125rem;font-weight:700;margin-bottom:4px}
+.plan-price{font-size:2.5rem;font-weight:800;color:var(--grey-900);margin-bottom:4px}
+.plan-price span{font-size:1rem;font-weight:400;color:var(--grey-500)}
+.plan-note{font-size:.75rem;color:var(--grey-500);margin-bottom:20px}
+.plan-features{list-style:none;margin-bottom:24px}
+.plan-features li{padding:6px 0;font-size:.875rem;color:var(--grey-700);border-bottom:1px solid var(--grey-100);display:flex;align-items:flex-start;gap:8px}
+.plan-features li::before{content:'\2713';color:var(--green);font-weight:700;flex-shrink:0}
+.plan-btn{display:block;width:100%;text-align:center;padding:14px;border-radius:var(--radius-sm);font-weight:700;font-size:.9375rem;border:2px solid var(--violet);color:var(--violet);background:transparent;cursor:pointer;transition:all .2s}
+.plan.popular .plan-btn{background:var(--violet);color:#fff}
+.plan-btn:hover{background:var(--violet-dark);color:#fff;border-color:var(--violet-dark)}
+/* CTA */
+.cta-section{padding:80px 0;text-align:center}
+.cta-section h2{font-size:clamp(1.5rem,3vw,2.25rem);font-weight:700;margin-bottom:12px}
+.cta-section p{color:var(--grey-500);max-width:480px;margin:0 auto 32px}
+/* FORM */
+.form-wrap{max-width:480px;margin:0 auto;background:var(--grey-50);padding:32px;border-radius:var(--radius);border:1px solid var(--grey-200)}
+.form-wrap input,.form-wrap textarea{width:100%;padding:12px 16px;border:1px solid var(--grey-200);border-radius:var(--radius-sm);font-size:.9375rem;font-family:inherit;margin-bottom:12px;transition:border .2s}
+.form-wrap input:focus,.form-wrap textarea:focus{border-color:var(--violet);outline:none;box-shadow:0 0 0 3px rgba(124,58,237,.12)}
+.form-wrap textarea{resize:vertical;min-height:80px}
+.form-wrap .btn-primary{width:100%}
+.form-msg{margin-top:12px;font-size:.875rem;text-align:center;display:none}
+.form-msg.success{display:block;color:var(--green)}.form-msg.error{display:block;color:var(--red)}
+/* FOOTER */
+.footer{padding:40px 0;border-top:1px solid var(--grey-200);text-align:center;font-size:.8rem;color:var(--grey-500)}
+/* RESPONSIVE */
+@media(max-width:768px){
+  .feature-row{grid-template-columns:1fr;gap:24px}
+  .feature-row:nth-child(even){direction:ltr}
+  .dash-grid{grid-template-columns:repeat(2,1fr)}
+  .plans{grid-template-columns:1fr}
+  .hero{padding:48px 0 56px}
+}
+@media(max-width:480px){
+  .container{padding:0 16px}
+  .dash-grid{grid-template-columns:1fr 1fr}
+  .steps{grid-template-columns:1fr}
+  .before-after{flex-direction:column;gap:8px}
+}
+/* SKIP LINK */
+.skip{position:absolute;top:-40px;left:0;background:var(--violet);color:#fff;padding:8px 16px;z-index:200;transition:top .2s}
+.skip:focus{top:0}
+</style>
+</head>
+<body>
+<a href="#main" class="skip">Skip to main content</a>
+
+<!-- NAV -->
+<nav class="nav" aria-label="Primary">
+<div class="container">
+  <a href="#" class="nav-brand" aria-label="RetailGuard home">RetailGuard</a>
+  <a href="#cta" class="nav-cta">Get my free margin scan</a>
+</div>
+</nav>
+
+<!-- HERO: Product Visual + Visual Hierarchy + Clear Value Proposition + Risk Reducer + Outcome Timeframe -->
+<header class="hero" id="main">
+<div class="container">
+  <h1 class="hero-headline">See every margin gap before your supplier does</h1>
+  <p class="hero-sub">Your till export already holds the answers. RetailGuard reads it and shows you exactly where money is left on the table.</p>
+  <div class="hero-cta-wrap">
+    <a href="#cta" class="btn-primary">Get my free margin scan</a>
+    <span class="friction">Free. No card. Takes 2 minutes.</span>
+  </div>
+
+  <!-- CSS DASHBOARD MOCKUP -->
+  <div class="hero-mockup">
+    <div class="mockup">
+      <div class="mockup-bar"><span class="mockup-dot r"></span><span class="mockup-dot y"></span><span class="mockup-dot g"></span></div>
+      <div class="mockup-body">
+        <div class="dash-grid">
+          <div class="dash-card"><div class="dash-card-label">Products Tracked</div><div class="dash-card-val">1,247</div></div>
+          <div class="dash-card"><div class="dash-card-label">Margin Issues</div><div class="dash-card-val red">34</div></div>
+          <div class="dash-card"><div class="dash-card-label">Avg Margin</div><div class="dash-card-val green">28.4%</div></div>
+          <div class="dash-card"><div class="dash-card-label">Est. Opportunity</div><div class="dash-card-val amber">&euro;312/wk</div></div>
+        </div>
+        <div class="margin-ladder">
+          <div class="ml-bar loss" style="height:25%"></div>
+          <div class="ml-bar loss" style="height:15%"></div>
+          <div class="ml-bar thin" style="height:35%"></div>
+          <div class="ml-bar thin" style="height:45%"></div>
+          <div class="ml-bar thin" style="height:40%"></div>
+          <div class="ml-bar healthy" style="height:65%"></div>
+          <div class="ml-bar healthy" style="height:70%"></div>
+          <div class="ml-bar healthy" style="height:80%"></div>
+          <div class="ml-bar healthy" style="height:75%"></div>
+          <div class="ml-bar strong" style="height:90%"></div>
+          <div class="ml-bar strong" style="height:100%"></div>
+          <div class="ml-bar strong" style="height:85%"></div>
+        </div>
+        <div class="ml-legend">
+          <span class="l-loss">Below cost</span>
+          <span class="l-thin">Thin</span>
+          <span class="l-healthy">Healthy</span>
+          <span class="l-strong">Strong</span>
+        </div>
+        <p style="margin-top:12px;font-size:.7rem;color:var(--grey-500);text-align:center">Illustrative example shop data</p>
+      </div>
+    </div>
+  </div>
+</div>
+</header>
+
+<!-- PROBLEM -->
+<section class="problem">
+<div class="container">
+  <h2>Margins leak silently. Every single week.</h2>
+  <p>Supplier prices creep up. Shelf prices stay the same. By the time you notice, months of margin have already walked out the door.</p>
+  <div class="pain-cards">
+    <div class="pain-card">
+      <h3>Cost rises go unnoticed</h3>
+      <p>A supplier bumps your cost by 8c. You never changed the shelf price. That product now costs you money every time it sells.</p>
+    </div>
+    <div class="pain-card">
+      <h3>No time to check 1,000+ lines</h3>
+      <p>You know the problem exists but checking every product against every invoice is a full day you do not have.</p>
+    </div>
+    <div class="pain-card">
+      <h3>Spreadsheets tell you what happened, not what to do</h3>
+      <p>Your till prints numbers. It does not tell you which ones are bleeding or how much you stand to recover.</p>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- FEATURES: Outcome Visualization + Before/After Contrast + Benefit-Led Copy + Pain-to-Outcome Mapping + Internal Linking -->
+<section class="features" aria-label="Features">
+<div class="container">
+  <h2>Your whole shop, made visible</h2>
+
+  <!-- Feature 1: Margin Ladder -->
+  <div class="feature-row">
+    <div class="feature-text">
+      <h3>Every product ranked by margin health</h3>
+      <p>The margin ladder sorts your entire range from bleeding to thriving. Red bars are costing you money right now. You see them instantly.</p>
+      <div class="before-after">
+        <span class="ba-before">34 margin issues hidden</span>
+        <span class="ba-after">34 issues surfaced in seconds</span>
+      </div>
+    </div>
+    <div class="f-mockup" aria-label="Margin ladder showing product margin health">
+      <div class="f-mockup-header">Margin Ladder</div>
+      <div class="f-mockup-body">
+        <div class="ladder-rows">
+          <div class="ladder-row"><span class="label">Fresh Bread</span><div class="bar-wrap"><div class="bar-fill" style="width:8%;background:var(--red)"></div></div><span class="pct" style="color:var(--red)">-2.1%</span></div>
+          <div class="ladder-row"><span class="label">Butter 250g</span><div class="bar-wrap"><div class="bar-fill" style="width:18%;background:var(--amber)"></div></div><span class="pct" style="color:var(--amber)">9.3%</span></div>
+          <div class="ladder-row"><span class="label">Crisps Multi</span><div class="bar-wrap"><div class="bar-fill" style="width:42%;background:var(--green)"></div></div><span class="pct" style="color:var(--green)">21.5%</span></div>
+          <div class="ladder-row"><span class="label">Energy Drink</span><div class="bar-wrap"><div class="bar-fill" style="width:68%;background:var(--green)"></div></div><span class="pct" style="color:var(--green)">34.2%</span></div>
+          <div class="ladder-row"><span class="label">Cleaning Wipes</span><div class="bar-wrap"><div class="bar-fill" style="width:84%;background:var(--violet)"></div></div><span class="pct" style="color:var(--violet)">42.7%</span></div>
+        </div>
+        <p style="margin-top:10px;font-size:.65rem;color:var(--grey-500)">Illustrative example shop</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Feature 2: Price Moves -->
+  <div class="feature-row">
+    <div class="feature-text">
+      <h3>Spot every price change and its profit impact</h3>
+      <p>When a cost moves, RetailGuard shows the impact on your margin and gives a verdict: absorb it, pass it on, or investigate. No guesswork.</p>
+      <div class="before-after">
+        <span class="ba-before">Noticed 3 weeks late</span>
+        <span class="ba-after">Flagged the same day</span>
+      </div>
+    </div>
+    <div class="f-mockup" aria-label="Price moves chart showing cost change verdicts">
+      <div class="f-mockup-header">Price Moves</div>
+      <div class="f-mockup-body">
+        <table class="price-table">
+          <thead><tr><th>Product</th><th>Change</th><th>Margin Now</th><th>Verdict</th></tr></thead>
+          <tbody>
+            <tr><td>Milk 2L</td><td style="color:var(--red)">+12c</td><td>14.1%</td><td><span class="verdict bad">Pass on</span></td></tr>
+            <tr><td>Orange Juice 1L</td><td style="color:var(--red)">+8c</td><td>22.4%</td><td><span class="verdict watch">Review</span></td></tr>
+            <tr><td>Sliced Pan</td><td style="color:var(--green)">-5c</td><td>31.7%</td><td><span class="verdict good">Absorb</span></td></tr>
+            <tr><td>Cheddar Block</td><td style="color:var(--red)">+18c</td><td>8.2%</td><td><span class="verdict bad">Pass on</span></td></tr>
+          </tbody>
+        </table>
+        <p style="margin-top:10px;font-size:.65rem;color:var(--grey-500)">Illustrative example shop</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Feature 3: Invoice Scanner -->
+  <div class="feature-row">
+    <div class="feature-text">
+      <h3>Scan a supplier invoice and catch mismatches instantly</h3>
+      <p>Snap a photo of any invoice. RetailGuard matches every line to your stock, flags new products, and highlights where costs have changed since the last delivery.</p>
+      <div class="before-after">
+        <span class="ba-before">Manually checking 40 lines</span>
+        <span class="ba-after">Scanned and matched in 10 seconds</span>
+      </div>
+    </div>
+    <div class="f-mockup" aria-label="Invoice scan results showing matched and flagged items">
+      <div class="f-mockup-header">Invoice Scan Result</div>
+      <div class="f-mockup-body">
+        <table class="inv-table">
+          <thead><tr><th>Line Item</th><th>Invoice Cost</th><th>Your Cost</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>Semi Skimmed 2L</td><td>&euro;1.42</td><td>&euro;1.38</td><td><span class="flag mismatch">Cost up +4c</span></td></tr>
+            <tr><td>Wholemeal Bread</td><td>&euro;1.15</td><td>&euro;1.15</td><td><span class="flag match">Match</span></td></tr>
+            <tr><td>Organic Eggs 6pk</td><td>&euro;2.10</td><td>N/A</td><td><span class="flag new">New product</span></td></tr>
+            <tr><td>Coleslaw 250g</td><td>&euro;0.89</td><td>&euro;0.82</td><td><span class="flag mismatch">Cost up +7c</span></td></tr>
+          </tbody>
+        </table>
+        <p style="margin-top:10px;font-size:.65rem;color:var(--grey-500)">Illustrative example scan</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Feature 4: Morning Report -->
+  <div class="feature-row">
+    <div class="feature-text">
+      <h3>Yesterday's margin anomalies, on your desk at open</h3>
+      <p>A summary of what went wrong yesterday, organised by department, delivered before you open the doors. No logging in, no searching. Just read and act.</p>
+      <div class="before-after">
+        <span class="ba-before">Problems found weeks later</span>
+        <span class="ba-after">On your desk every morning</span>
+      </div>
+    </div>
+    <div class="f-mockup" aria-label="Morning report email showing margin anomalies by department">
+      <div class="f-mockup-header">Morning Report</div>
+      <div class="f-mockup-body">
+        <div class="report-email">
+          <div class="report-subject">RetailGuard Morning Report: 7 margin anomalies yesterday</div>
+          <div class="report-row"><span class="dept">Dairy</span><span class="issues">3 items</span><span class="impact">Est. &euro;14/wk exposure</span></div>
+          <div class="report-row"><span class="dept">Bakery</span><span class="issues">2 items</span><span class="impact">Est. &euro;9/wk exposure</span></div>
+          <div class="report-row"><span class="dept">Household</span><span class="issues">1 item</span><span class="impact">Est. &euro;6/wk exposure</span></div>
+          <div class="report-row"><span class="dept">Snacks</span><span class="issues">1 item</span><span class="impact">Est. &euro;4/wk exposure</span></div>
+        </div>
+        <p style="margin-top:10px;font-size:.65rem;color:var(--grey-500)">Illustrative example report</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+</section>
+
+<!-- HOW IT WORKS: Step Clarity + Effort Perception + Visual Progression + Outcome Preview + Clear CTA -->
+<section class="how">
+<div class="container">
+  <h2>Get started in three steps</h2>
+  <p class="how-sub">Totally free. Takes about two minutes.</p>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <h3>Export your till data</h3>
+      <p>One click in your back office. A CSV file lands on your desktop.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <h3>We read it</h3>
+      <p>Upload the file. RetailGuard maps every product, cost, and price automatically.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <h3>See your margin gaps</h3>
+      <p>Within minutes you see exactly which products are bleeding and how much you could recover.</p>
+    </div>
+  </div>
+  <div class="how-cta"><a href="#cta" class="btn-primary">Get my free margin scan</a></div>
+</div>
+</section>
+
+<!-- PRICING: Plan Clarity + Anchoring Tags + Easy Comparison + Value-Based Naming -->
+<section class="pricing" id="pricing">
+<div class="container">
+  <h2>Simple pricing that grows with you</h2>
+  <p class="pricing-sub">Net of VAT. No setup fee. Cancel anytime.</p>
+  <div class="plans">
+    <!-- Insight -->
+    <div class="plan">
+      <div class="plan-name">Insight</div>
+      <div class="plan-price">&euro;500<span>/mo</span></div>
+      <div class="plan-note">Net of VAT. No setup fee.</div>
+      <ul class="plan-features">
+        <li>Full dashboard with sales trends</li>
+        <li>Margin health alerts</li>
+        <li>Drill down by department and product</li>
+        <li>Barcode lookup</li>
+        <li>Supplier analytics</li>
+      </ul>
+      <a href="#cta" class="plan-btn">Get my free margin scan</a>
+    </div>
+    <!-- Complete -->
+    <div class="plan popular">
+      <div class="plan-badge">Most popular</div>
+      <div class="plan-name">Complete</div>
+      <div class="plan-price">&euro;1,000<span>/mo</span></div>
+      <div class="plan-note">Net of VAT. No setup fee.</div>
+      <ul class="plan-features">
+        <li>Everything in Insight</li>
+        <li>Invoice scanner</li>
+        <li>Ask your shop (plain English questions)</li>
+        <li>Trading patterns and product performance</li>
+        <li>Priority support</li>
+      </ul>
+      <a href="#cta" class="plan-btn">Get my free margin scan</a>
+    </div>
+    <!-- Multi-site -->
+    <div class="plan">
+      <div class="plan-name">Multi-site</div>
+      <div class="plan-price">&euro;1,500<span>/mo</span></div>
+      <div class="plan-note">Net of VAT. No setup fee.</div>
+      <ul class="plan-features">
+        <li>Everything in Complete</li>
+        <li>Write-back to back office (rolling out)</li>
+        <li>Morning report by department</li>
+        <li>Per-site onboarding</li>
+      </ul>
+      <a href="#cta" class="plan-btn">Get my free margin scan</a>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- CTA + FORM -->
+<section class="cta-section" id="cta">
+<div class="container">
+  <h2>Get my free margin scan</h2>
+  <p>See exactly where your shop is leaving money on the table. Free, no card, takes 2 minutes.</p>
+  <div class="form-wrap">
+    <form id="contact-form" aria-label="Free margin scan request">
+      <input type="hidden" name="_subject" value="WebAnatomy Show Product Lead">
+      <input type="hidden" name="_captcha" value="false">
+      <label for="f-name" class="sr-only">Your name</label>
+      <input type="text" id="f-name" name="name" placeholder="Your name" required autocomplete="name" aria-required="true">
+      <label for="f-email" class="sr-only">Email address</label>
+      <input type="email" id="f-email" name="email" placeholder="Email address" required autocomplete="email" aria-required="true">
+      <label for="f-shop" class="sr-only">Shop name (optional)</label>
+      <input type="text" id="f-shop" name="shop" placeholder="Shop name (optional)" autocomplete="organization">
+      <label for="f-message" class="sr-only">Anything else?</label>
+      <textarea id="f-message" name="message" placeholder="Anything else? (optional)" rows="3"></textarea>
+      <button type="submit" class="btn-primary">Get my free margin scan</button>
+      <p class="friction" style="margin-top:10px">Free. No card. Takes 2 minutes.</p>
+    </form>
+    <p class="form-msg" id="form-success" role="status">Thanks! We will be in touch within 24 hours.</p>
+    <p class="form-msg" id="form-error" role="alert">Something went wrong. Please try again or email retailguard.sales@gmail.com.</p>
+  </div>
+</div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+<div class="container">
+  <p>&copy; 2026 RetailGuard. All rights reserved.</p>
+</div>
+</footer>
+
+<style>.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}</style>
+
+<script type="module">
+const form = document.getElementById('contact-form');
+const successMsg = document.getElementById('form-success');
+const errorMsg = document.getElementById('form-error');
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  successMsg.className = 'form-msg';
+  errorMsg.className = 'form-msg';
+
+  const data = new FormData(form);
+  try {
+    const res = await fetch('https://formsubmit.co/ajax/retailguard.sales@gmail.com', {
+      method: 'POST',
+      body: data,
+      headers: { 'Accept': 'application/json' }
+    });
+    if (res.ok) {
+      successMsg.className = 'form-msg success';
+      form.reset();
+    } else {
+      errorMsg.className = 'form-msg error';
+    }
+  } catch {
+    errorMsg.className = 'form-msg error';
+  }
+});
+</script>
+</body>
+</html>
