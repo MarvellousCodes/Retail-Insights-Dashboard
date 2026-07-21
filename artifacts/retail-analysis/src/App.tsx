@@ -24,12 +24,13 @@ import { InsightsLivePage } from "@/pages/InsightsLivePage";
 import { IssuesLivePage } from "@/pages/IssuesLivePage";
 import { BarcodeScannerPage } from "@/pages/BarcodeScannerPage";
 import { AskPage } from "@/pages/AskPage";
+import { PriceHistoryPage } from "@/pages/PriceHistoryPage";
 import { AskWidget } from "@/components/AskWidget";
 import { isLoggedIn } from "@/lib/api";
 
 const queryClient = new QueryClient();
 
-export type NavTab = "dashboard" | "upload" | "issues" | "reports" | "insights" | "departments" | "invoices" | "scanner" | "askshop" | "livedata" | "turnover" | "transactions" | "suppliers" | "customers" | "depts" | "margins" | "settings";
+export type NavTab = "dashboard" | "upload" | "issues" | "reports" | "insights" | "departments" | "invoices" | "scanner" | "askshop" | "livedata" | "turnover" | "transactions" | "suppliers" | "customers" | "depts" | "margins" | "pricemoves" | "settings";
 type InternalTab = NavTab | "analyse";
 
 // ─── Core Types ───────────────────────────────────────────────────────────────
@@ -400,6 +401,7 @@ function App() {
           {tab === "invoices" && <InvoiceScannerPage existingProducts={activeProducts} onAddToSystem={handleAnalyseMultiple} />}
           {tab === "scanner" && <BarcodeScannerPage />}
           {tab === "askshop" && <AskPage />}
+          {tab === "pricemoves" && <PriceHistoryPage />}
           {tab === "settings" && (
             <SettingsPage theme={theme} onThemeToggle={() => setTheme((t) => (t === "dark" ? "light" : "dark"))} />
           )}

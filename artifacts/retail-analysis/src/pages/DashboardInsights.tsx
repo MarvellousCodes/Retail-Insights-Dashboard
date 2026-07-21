@@ -48,6 +48,8 @@ export function DashboardInsights({ onNavigate }: Props) {
   if (!data || data.error) return <div className="p-8 text-center text-gray-400">No data available yet.</div>;
 
   const ld = data.latest_day || {};
+  const yd = data.yesterday_detail || {};
+  const tpm = data.top_products_month || {};
   const tm = data.this_month || {};
   const am = data.avg_margin || {};
   const risk = data.margin_at_risk || {};
@@ -146,25 +148,34 @@ export function DashboardInsights({ onNavigate }: Props) {
           </div>
         </div>
 
-        {/* Row 3: top products + top departments */}
+        {/* Row 3: yesterday in detail + top products this month */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-          <ChartCard title="Top products" note="By units sold, last 12 months" onGo={() => onNavigate?.("turnover")}>
-            <ResponsiveContainer width="100%" height={280}>
-              <BarChart data={topProducts} layout="vertical" margin={{ left: 10 }}>
-                <XAxis type="number" tickFormatter={numShort} tick={{ fontSize: 11, fill: AXIS }} axisLine={false} tickLine={false} />
-                <YAxis type="category" dataKey="name" width={150} tick={{ fontSize: 10, fill: AXIS }} axisLine={false} tickLine={false} />
-                <Tooltip formatter={(v: any) => numShort(Number(v)) + " units"} cursor={{ fill: "rgba(37,99,235,0.08)" }} />
-                <Bar dataKey="units" fill="#2563eb" radius={[0,4,4,0]} cursor="pointer" onClick={() => onNavigate?.("turnover")} />
-              </BarChart>
-            </ResponsiveContainer>
+          <ChartCard title="Yesterday in detail" note={yd.date ? `Newest trading day, ${yd.date}` : "Newest trading day"} onGo={() => onNavigate?.("transactions")}>
+            <div className="grid grid-cols-2 gap-3 mb-3">
+              <div className="rounded-xl border border-gray-100 dark:border-gray-700 p-3">
+                <p className="text-[10px] uppercase tracking-wide text-gray-400">Takings</p>
+                <p className="text-xl font-black text-gray-900 dark:text-white">{M(yd.total || 0)}</p>
+                <p className="text-[11px] text-gray-400">{Math.round(yd.items || 0)} items sold</p>
+              </div>
+              <div className="rounded-xl border border-gray-100 dark:border-gray-700 p-3">
+                <p className="text-[10px] uppercase tracking-wide text-gray-400">Busiest hour</p>
+                <p className="text-xl font-black text-gray-900 dark:text-white">{yd.busiest_hour != null ? `${yd.busiest_hour}:00` : "n/a"}</p>
+                <p className="text-[11px] text-gray-400">{yd.busiest_hour_value != null ? `${M(yd.busiest_hour_value)} in that hour` : ""}</p>
+              </div>
+            </div>
+            <div className={`rounded-xl p-3 text-sm ${(yd.vs_last_year_pct || 0) >= 0 ? "bg-green-50 dark:bg-green-900/15 text-green-700 dark:text-green-400" : "bg-red-50 dark:bg-red-900/15 text-red-700 dark:text-red-400"}`}>
+              {yd.vs_last_year_pct == null
+                ? "No matching day last year to compare against."
+                : <>Same day last year: {M(yd.last_year_total || 0)}. Yesterday was <b>{yd.vs_last_year_pct > 0 ? "+" : ""}{yd.vs_last_year_pct}%</b> {yd.vs_last_year_pct >= 0 ? "ahead" : "behind"}.</>}
+            </div>
           </ChartCard>
-          <ChartCard title="Top departments" note="By revenue" onGo={() => onNavigate?.("departments")}>
+          <ChartCard title="Top products" note={tpm.period ? `By sales value, ${fmtPeriod(tpm.period)} (product sales arrive monthly)` : "By sales value, latest month"} onGo={() => onNavigate?.("turnover")}>
             <ResponsiveContainer width="100%" height={280}>
-              <BarChart data={topDepts} layout="vertical" margin={{ left: 10 }}>
+              <BarChart data={(tpm.items || []).map((p: any) => ({ name: p.name.slice(0, 22), value: p.value }))} layout="vertical" margin={{ left: 10 }}>
                 <XAxis type="number" tickFormatter={(v) => (masked ? "" : eurShort(v))} tick={{ fontSize: 11, fill: AXIS }} axisLine={false} tickLine={false} />
                 <YAxis type="category" dataKey="name" width={150} tick={{ fontSize: 10, fill: AXIS }} axisLine={false} tickLine={false} />
-                <Tooltip formatter={moneyTip} cursor={{ fill: "rgba(5,150,105,0.08)" }} />
-                <Bar dataKey="value" fill="#059669" radius={[0,4,4,0]} cursor="pointer" onClick={() => onNavigate?.("departments")} />
+                <Tooltip formatter={moneyTip} cursor={{ fill: "rgba(37,99,235,0.08)" }} />
+                <Bar dataKey="value" fill="#2563eb" radius={[0,4,4,0]} cursor="pointer" onClick={() => onNavigate?.("turnover")} />
               </BarChart>
             </ResponsiveContainer>
           </ChartCard>
