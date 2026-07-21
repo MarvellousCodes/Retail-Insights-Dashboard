@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { apiCall } from "@/lib/api";
 import { useRevenueMask, RevenueMaskToggle, STARS } from "@/lib/privacy";
-import { ArrowRight, TrendingUp, TrendingDown } from "lucide-react";
+import { ArrowRight, TrendingUp, TrendingDown, Lightbulb } from "lucide-react";
 import type { NavTab } from "@/App";
 import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid,
@@ -20,20 +20,13 @@ function eurShort(n: number) {
   if (a >= 1e3) return "€" + (n / 1e3).toFixed(a >= 1e4 ? 0 : 1) + "k";
   return "€" + Math.round(n || 0).toLocaleString();
 }
-function numShort(n: number) {
-  const a = Math.abs(n || 0);
-  if (a >= 1e6) return (n / 1e6).toFixed(1) + "M";
-  if (a >= 1e3) return (n / 1e3).toFixed(1) + "k";
-  return Math.round(n || 0).toLocaleString();
-}
 
-const PIE_COLORS = ["#7c3aed","#2563eb","#0891b2","#059669","#d97706","#db2777","#64748b"];
+const PIE_COLORS = ["#7c3aed","#2563eb","#0891b2","#059669","#d97706","#db2777","#64748b","#9333ea"];
 const AXIS = "#94a3b8";
 
 export function DashboardInsights({ onNavigate }: Props) {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [shopOnly, setShopOnly] = useState(false);
   const { masked, toggle } = useRevenueMask();
   const M = (n: number) => (masked ? STARS : eurShort(n));
 
@@ -54,24 +47,9 @@ export function DashboardInsights({ onNavigate }: Props) {
   const am = data.avg_margin || {};
   const risk = data.margin_at_risk || {};
   const counts = data.counts || {};
-  const mh = data.margin_health || {};
 
   const trend = (data.sales_trend || []).map((t: any) => ({ ...t, label: fmtPeriod(t.period).slice(0, 3) }));
-  const deptAll = data.revenue_by_dept || [];
-  const deptsFiltered = shopOnly ? deptAll.filter((d: any) => !d.nonrepriceable) : deptAll;
-  const top6 = deptsFiltered.slice(0, 6);
-  const otherVal = deptsFiltered.slice(6).reduce((s: number, d: any) => s + d.value, 0);
-  const pieData = [...top6.map((d: any) => ({ name: d.name, value: d.value })), ...(otherVal > 0 ? [{ name: "Other", value: otherVal }] : [])];
-  const topDepts = deptsFiltered.slice(0, 8).map((d: any) => ({ name: d.name, value: d.value }));
-  const topProducts = (data.top_products || []).map((p: any) => ({ name: p.name, units: p.units, revenue: p.revenue }));
-  const dow = (data.by_dow || []).map((r: any) => ({ name: DOW[r.dow] ?? r.dow, value: r.value }));
-  const hours = (data.by_hour || []).map((r: any) => ({ name: `${r.hour}`, value: r.value }));
-  const health = [
-    { name: "Healthy", value: mh.healthy || 0, color: "#059669" },
-    { name: "Low margin", value: mh.low || 0, color: "#d97706" },
-    { name: "Below cost", value: mh.below_cost || 0, color: "#dc2626" },
-    { name: "Not set up", value: mh.missing_price || 0, color: "#94a3b8" },
-  ].filter((s) => s.value > 0);
+  const tpItems = (tpm.items || []);
 
   const moneyTip = (v: any) => (masked ? STARS : eurShort(Number(v)));
   const card = "bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm";
@@ -105,7 +83,7 @@ export function DashboardInsights({ onNavigate }: Props) {
                value={(counts.active_products||0).toLocaleString()} sub="in your range" />
         </div>
 
-        {/* Row 2: trend + revenue mix */}
+        {/* Row A: 12-month trend + yesterday in detail */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
           <div className={`${card} lg:col-span-2 p-5`}>
             <h2 className="text-sm font-black text-gray-900 dark:text-white mb-1">Sales, last 12 months</h2>
@@ -120,36 +98,6 @@ export function DashboardInsights({ onNavigate }: Props) {
               </BarChart>
             </ResponsiveContainer>
           </div>
-          <div className={`${card} p-5`}>
-            <div className="flex items-center justify-between mb-1">
-              <h2 className="text-sm font-black text-gray-900 dark:text-white">Revenue mix</h2>
-              <label className="flex items-center gap-1.5 text-[11px] text-gray-500 dark:text-gray-400 cursor-pointer">
-                <input type="checkbox" checked={shopOnly} onChange={(e) => setShopOnly(e.target.checked)} className="accent-violet-600" />
-                Shop only
-              </label>
-            </div>
-            <p className="text-xs text-gray-400 mb-2">{shopOnly ? "Excludes fuel, vouchers, lottery" : "All departments"}</p>
-            <ResponsiveContainer width="100%" height={210}>
-              <PieChart>
-                <Pie data={pieData} dataKey="value" nameKey="name" innerRadius={45} outerRadius={80} paddingAngle={2}
-                     onClick={() => onNavigate?.("departments")} cursor="pointer">
-                  {pieData.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
-                </Pie>
-                <Tooltip formatter={moneyTip} />
-              </PieChart>
-            </ResponsiveContainer>
-            <div className="flex flex-wrap gap-x-3 gap-y-1 mt-1">
-              {pieData.map((d: any, i: number) => (
-                <span key={i} className="flex items-center gap-1 text-[11px] text-gray-500 dark:text-gray-400">
-                  <span className="w-2 h-2 rounded-full" style={{ background: PIE_COLORS[i % PIE_COLORS.length] }} />{d.name}
-                </span>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Row 3: yesterday in detail + top products this month */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
           <ChartCard title="Yesterday in detail" note={yd.date ? `Newest trading day, ${yd.date}` : "Newest trading day"} onGo={() => onNavigate?.("transactions")}>
             <div className="grid grid-cols-2 gap-3 mb-3">
               <div className="rounded-xl border border-gray-100 dark:border-gray-700 p-3">
@@ -169,61 +117,66 @@ export function DashboardInsights({ onNavigate }: Props) {
                 : <>Same day last year: {M(yd.last_year_total || 0)}. Yesterday was <b>{yd.vs_last_year_pct > 0 ? "+" : ""}{yd.vs_last_year_pct}%</b> {yd.vs_last_year_pct >= 0 ? "ahead" : "behind"}.</>}
             </div>
           </ChartCard>
-          <ChartCard title="Top products" note={tpm.period ? `By sales value, ${fmtPeriod(tpm.period)} (product sales arrive monthly)` : "By sales value, latest month"} onGo={() => onNavigate?.("turnover")}>
-            <ResponsiveContainer width="100%" height={280}>
-              <BarChart data={(tpm.items || []).map((p: any) => ({ name: p.name.slice(0, 22), value: p.value }))} layout="vertical" margin={{ left: 10 }}>
-                <XAxis type="number" tickFormatter={(v) => (masked ? "" : eurShort(v))} tick={{ fontSize: 11, fill: AXIS }} axisLine={false} tickLine={false} />
-                <YAxis type="category" dataKey="name" width={150} tick={{ fontSize: 10, fill: AXIS }} axisLine={false} tickLine={false} />
-                <Tooltip formatter={moneyTip} cursor={{ fill: "rgba(37,99,235,0.08)" }} />
-                <Bar dataKey="value" fill="#2563eb" radius={[0,4,4,0]} cursor="pointer" onClick={() => onNavigate?.("turnover")} />
-              </BarChart>
-            </ResponsiveContainer>
-          </ChartCard>
         </div>
 
-        {/* Row 4: day of week + hour + margin health */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-          <ChartCard title="Sales by day" note="Busiest trading days" onGo={() => onNavigate?.("transactions")}>
-            <ResponsiveContainer width="100%" height={200}>
-              <BarChart data={dow}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
-                <XAxis dataKey="name" tick={{ fontSize: 11, fill: AXIS }} axisLine={false} tickLine={false} />
-                <YAxis tickFormatter={(v) => (masked ? "" : eurShort(v))} tick={{ fontSize: 10, fill: AXIS }} axisLine={false} tickLine={false} width={44} />
-                <Tooltip formatter={moneyTip} cursor={{ fill: "rgba(124,58,237,0.08)" }} />
-                <Bar dataKey="value" fill="#7c3aed" radius={[4,4,0,0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </ChartCard>
-          <ChartCard title="Sales by hour" note="Busiest times of day" onGo={() => onNavigate?.("transactions")}>
-            <ResponsiveContainer width="100%" height={200}>
-              <BarChart data={hours}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
-                <XAxis dataKey="name" tick={{ fontSize: 9, fill: AXIS }} interval={2} axisLine={false} tickLine={false} />
-                <YAxis tickFormatter={(v) => (masked ? "" : eurShort(v))} tick={{ fontSize: 10, fill: AXIS }} axisLine={false} tickLine={false} width={44} />
-                <Tooltip formatter={moneyTip} cursor={{ fill: "rgba(8,145,178,0.08)" }} />
-                <Bar dataKey="value" fill="#0891b2" radius={[4,4,0,0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </ChartCard>
-          <ChartCard title="Margin health" note="Click to review issues" onGo={() => onNavigate?.("issues")}>
-            <ResponsiveContainer width="100%" height={200}>
-              <PieChart>
-                <Pie data={health} dataKey="value" nameKey="name" innerRadius={40} outerRadius={75} paddingAngle={2}
-                     onClick={() => onNavigate?.("issues")} cursor="pointer">
-                  {health.map((s, i) => <Cell key={i} fill={s.color} />)}
-                </Pie>
-                <Tooltip formatter={(v: any) => `${v} products`} />
-              </PieChart>
-            </ResponsiveContainer>
-            <div className="flex flex-wrap gap-x-3 gap-y-1">
-              {health.map((s, i) => (
-                <span key={i} className="flex items-center gap-1 text-[11px] text-gray-500 dark:text-gray-400">
-                  <span className="w-2 h-2 rounded-full" style={{ background: s.color }} />{s.name} ({s.value})
-                </span>
-              ))}
+        {/* Row B: Top products (newest available period) + what-if smart insight */}
+        {tpItems.length > 0 && (
+          <div className={`${card} p-5`}>
+            <div className="flex items-start justify-between mb-3">
+              <div>
+                <h2 className="text-sm font-black text-gray-900 dark:text-white">Top products</h2>
+                <p className="text-xs text-gray-400">Best sellers, {fmtPeriod(tpm.period)} (newest available; product sales arrive monthly)</p>
+              </div>
+              <button onClick={() => onNavigate?.("turnover")} className="text-violet-600 dark:text-violet-400 hover:text-violet-700"><ArrowRight className="w-4 h-4" /></button>
             </div>
-          </ChartCard>
-        </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+              {/* Bar: sales value */}
+              <ResponsiveContainer width="100%" height={280}>
+                <BarChart data={tpItems.map((p: any) => ({ name: (p.name || "").slice(0, 22), value: p.value }))} layout="vertical" margin={{ left: 10 }}>
+                  <XAxis type="number" tickFormatter={(v) => (masked ? "" : eurShort(v))} tick={{ fontSize: 11, fill: AXIS }} axisLine={false} tickLine={false} />
+                  <YAxis type="category" dataKey="name" width={150} tick={{ fontSize: 10, fill: AXIS }} axisLine={false} tickLine={false} />
+                  <Tooltip formatter={moneyTip} cursor={{ fill: "rgba(37,99,235,0.08)" }} />
+                  <Bar dataKey="value" fill="#2563eb" radius={[0,4,4,0]} cursor="pointer" onClick={() => onNavigate?.("turnover")} />
+                </BarChart>
+              </ResponsiveContainer>
+              {/* Pie: share of top sellers */}
+              <div>
+                <ResponsiveContainer width="100%" height={240}>
+                  <PieChart>
+                    <Pie data={tpItems.map((p: any) => ({ name: (p.name || "").slice(0, 18), value: p.value }))} dataKey="value" nameKey="name" innerRadius={45} outerRadius={85} paddingAngle={2}>
+                      {tpItems.map((_: any, i: number) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
+                    </Pie>
+                    <Tooltip formatter={moneyTip} />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="flex flex-wrap gap-x-3 gap-y-1 justify-center mt-1">
+                  {tpItems.map((p: any, i: number) => (
+                    <span key={i} className="flex items-center gap-1 text-[10px] text-gray-500 dark:text-gray-400">
+                      <span className="w-2 h-2 rounded-full" style={{ background: PIE_COLORS[i % PIE_COLORS.length] }} />{(p.name || "").slice(0, 16)}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* What-if smart insight */}
+            <div className="mt-4 rounded-xl p-4 bg-violet-50 dark:bg-violet-900/15 border border-violet-200 dark:border-violet-800">
+              <p className="text-[11px] font-bold uppercase tracking-wide text-violet-700 dark:text-violet-300 mb-1 flex items-center gap-1.5">
+                <Lightbulb className="w-3.5 h-3.5" /> Smart insight · what could have happened
+              </p>
+              {tpm.whatif_total > 0 ? (
+                <p className="text-sm text-gray-700 dark:text-gray-200 leading-relaxed">
+                  Your top {tpItems.length} products took <b>{M(tpm.total_value || 0)}</b> in {fmtPeriod(tpm.period)}. <b>{tpm.below_target}</b> of them are selling below their department's target margin, so if you had repriced those to target you would have kept an extra <b className="text-violet-700 dark:text-violet-300">{M(tpm.whatif_total)}</b> that month, roughly <b>{M((tpm.whatif_total || 0) * 12)}</b> a year.{" "}
+                  <button onClick={() => onNavigate?.("issues")} className="text-violet-700 dark:text-violet-300 underline font-semibold">Review these prices</button>
+                </p>
+              ) : (
+                <p className="text-sm text-gray-700 dark:text-gray-200 leading-relaxed">
+                  Your top {tpItems.length} products took <b>{M(tpm.total_value || 0)}</b> in {fmtPeriod(tpm.period)}, and they are all at or above their department targets. These best sellers are pulling their weight, nothing to reprice here.
+                </p>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

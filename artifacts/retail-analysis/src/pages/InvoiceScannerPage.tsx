@@ -133,7 +133,7 @@ export function InvoiceScannerPage(_props?: { existingProducts?: any[]; onAddToS
       </aside>
 
       {/* RIGHT: scanner */}
-      <div className="p-4 md:p-6 max-w-4xl mx-auto w-full">
+      <div className="p-4 md:p-6 w-full">
       <div className="flex items-center gap-2.5 mb-1">
         <ScanLine className="w-6 h-6 text-violet-600" />
         <h1 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">Invoice Scanner</h1>

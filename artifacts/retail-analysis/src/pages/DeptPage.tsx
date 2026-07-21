@@ -2,8 +2,6 @@ import { useState, useEffect } from "react";
 import { apiCall, API_BASE } from "@/lib/api";
 import { ProductDetail } from "@/components/ProductDetail";
 
-const TARGETS = [20, 25, 30];
-
 function eur(v: number | null | undefined) {
   return v === null || v === undefined ? "—" : `€${Number(v).toFixed(2)}`;
 }
@@ -69,12 +67,11 @@ export function DeptPage() {
   const [loadingProds, setLoadingProds] = useState(false);
   const [selId, setSelId] = useState<string | null>(null);
   const LIMIT = 100;
-  const hasTarget = targetPct !== null;
-  const t = hasTarget ? (targetPct! / 100).toFixed(2) : "";
+  const hasTarget = true;
 
   useEffect(() => {
     setLoading(true);
-    apiCall(hasTarget ? `/api/leak-tree?target=${t}` : `/api/leak-tree`).then((d) => {
+    apiCall(`/api/leak-tree`).then((d) => {
       setTree(d.departments || []);
       setSummary(d.summary || null);
       setLoading(false);
@@ -101,7 +98,7 @@ export function DeptPage() {
   const loadProducts = async (code: string, subCode: string, off: number) => {
     setLoadingProds(true);
     const d = await apiCall(
-      `/api/departments/${code}/products?sub=${subCode}&leaks_only=${leaksOnly && hasTarget ? 1 : 0}${hasTarget ? `&target=${t}` : ""}&limit=${LIMIT}&offset=${off}`
+      `/api/departments/${code}/products?sub=${subCode}&leaks_only=${leaksOnly ? 1 : 0}&limit=${LIMIT}&offset=${off}`
     );
     setProds(d.products || []);
     setTotal(d.total || 0);
@@ -110,7 +107,7 @@ export function DeptPage() {
   };
 
   const leakUrl = (code: string, subCode: string) =>
-    `${API_BASE}/api/export/leaks?target=${t}${code ? `&dept=${code}` : ""}${subCode ? `&sub=${subCode}` : ""}`;
+    `${API_BASE}/api/export/leaks?dept=${code}&sub=${subCode}`;
 
   if (loading) return <div className="p-8 text-center text-gray-400">Loading margin leaks...</div>;
 
@@ -125,73 +122,31 @@ export function DeptPage() {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-1">
-            <span className="text-[11px] text-gray-400 px-2">Target margin</span>
-            <button
-              onClick={() => setTargetPct(null)}
-              className={`px-2.5 py-1 rounded-lg text-xs font-bold ${targetPct === null ? "bg-violet-600 text-white" : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"}`}
-              title="Show every active product, no target filter"
-            >
-              All
-            </button>
-            {TARGETS.map((tp) => (
-              <button
-                key={tp}
-                onClick={() => setTargetPct(tp)}
-                className={`px-2.5 py-1 rounded-lg text-xs font-bold ${
-                  targetPct === tp ? "bg-violet-600 text-white" : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                }`}
-              >
-                {tp}%
-              </button>
-            ))}
-            <input
-              type="number" min={1} max={99} placeholder="Custom"
-              value={targetPct !== null && !TARGETS.includes(targetPct) ? targetPct : ""}
-              onChange={(e) => { const v = parseInt(e.target.value, 10); setTargetPct(Number.isFinite(v) && v >= 1 && v <= 99 ? v : null); }}
-              className="w-[68px] px-2 py-1 rounded-lg text-xs font-semibold bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200"
-              title="Type your own target margin %"
-            />
-          </div>
-          {hasTarget && (
+          <span className="text-[11px] text-gray-500 dark:text-gray-400 max-w-[240px] leading-snug text-right">Each department is measured against its own target margin.</span>
           <a
             href={leakUrl("", "")}
             className="shrink-0 inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-sm shadow-red-600/25"
-            title="Download every below-target product across the store, with recommended price and monthly euro impact"
+            title="Download every below-target product across the store, each against its own department target, with recommended price and monthly euro impact"
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
             Export all leaks
           </a>
-          )}
         </div>
       </div>
 
       {/* Summary band */}
       {summary && (
-        hasTarget ? (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
-            <StatCard label="Active products" value={(summary.active || 0).toLocaleString("en-IE")} />
-            <StatCard label={`Leaks below ${targetPct}%`} value={(summary.leaks || 0).toLocaleString("en-IE")} tone="text-red-600" />
-            <StatCard label="At risk / month" value={money0(summary.monthly_impact)} tone="text-red-600" />
-            <StatCard label="At risk / year" value={money0(summary.annual_impact)} tone="text-red-600" />
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
-            <StatCard label="Departments" value={(summary.departments || 0).toLocaleString("en-IE")} />
-            <StatCard label="Active products" value={(summary.active || 0).toLocaleString("en-IE")} />
-          </div>
-        )
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+          <StatCard label="Active products" value={(summary.active || 0).toLocaleString("en-IE")} />
+          <StatCard label="Leaks below dept target" value={(summary.leaks || 0).toLocaleString("en-IE")} tone="text-red-600" />
+          <StatCard label="At risk / month" value={money0(summary.monthly_impact)} tone="text-red-600" />
+          <StatCard label="At risk / year" value={money0(summary.annual_impact)} tone="text-red-600" />
+        </div>
       )}
-      {hasTarget ? (
-        <p className="text-[11px] text-gray-400 mb-4">
-          A leak is an active, priced product selling below the {targetPct}% target margin. Monthly euro figures use each
-          product's recent sales velocity, so a leak with no recent sales shows as €0 impact but still counts.
-        </p>
-      ) : (
-        <p className="text-[11px] text-gray-400 mb-4">
-          Showing every active product by department. Pick a target margin (20, 25, 30, or your own) to flag the products selling below it.
-        </p>
-      )}
+      <p className="text-[11px] text-gray-400 mb-4">
+        A leak is an active, priced product selling below its department's target margin. Monthly euro figures use each
+        product's recent sales velocity, so a leak with no recent sales shows as &euro;0 impact but still counts.
+      </p>
 
       <div className="space-y-3">
         {tree.map((dept) => (
@@ -217,6 +172,11 @@ export function DeptPage() {
                 </div>
               </div>
               <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+                {dept.target != null ? (
+                  <span className="text-[11px] font-semibold bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300 px-2 py-0.5 rounded-full" title="This department's own target margin">target {dept.target}%</span>
+                ) : (
+                  <span className="text-[11px] text-gray-400 hidden sm:inline" title="Commission or duty set, not repriceable">no target</span>
+                )}
                 {dept.leaks > 0 ? (
                   <span className="text-[11px] font-bold bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400 px-2 py-0.5 rounded-full">{dept.leaks} leaks</span>
                 ) : (
