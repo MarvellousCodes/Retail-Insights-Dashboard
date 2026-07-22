@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { apiCall, API_BASE } from "@/lib/api";
 import {
   ScanLine, UploadCloud, Loader2, CheckCircle2, AlertTriangle, Sparkles,
-  FileText, TrendingUp, Gauge, X, ClipboardCopy, ArrowRight,
+  FileText, TrendingUp, Gauge, X, ClipboardCopy, ArrowRight, Pencil,
 } from "lucide-react";
 
 /* ─── Types ─── */
@@ -21,6 +21,7 @@ interface Line {
   product_code_for_change?: string;
   current_price?: number | null;
   suggested_price?: number | null;
+  display_price?: number | null;
   eligible_for_price_change?: boolean;
   price_change_reason?: string;
 }
@@ -49,6 +50,12 @@ interface ScanRecord {
   change_groups?: ChangeGroups;
 }
 
+/* ─── Inline Edit Types ─── */
+interface RowEdit { price?: string; cost?: string; }
+type EditsMap = Record<string, RowEdit>;
+type RowStatus = "idle" | "pushed" | "queued";
+type RowStatusMap = Record<string, RowStatus>;
+
 /* ─── Helpers ─── */
 function timeAgo(ts: number) {
   const m = Math.floor((Date.now() - ts) / 60000);
@@ -73,8 +80,217 @@ function statusBadge(s: string) {
   if (s === "review") return { label: "Review", cls: "bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300" };
   return { label: "New", cls: "bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300" };
 }
+function rowKey(line: Line, idx: number) {
+  return line.product_code || line.product_code_for_change || `row-${idx}`;
+}
+function getPlU(line: Line) {
+  return line.product_code_for_change || line.product_code || "";
+}
+function getDisplayPrice(line: Line) {
+  return line.display_price ?? line.current_price ?? line.suggested_price ?? null;
+}
+function getInvoiceCostPerUnit(line: Line) {
+  return line.unit_cost_new ?? line.invoice_cost ?? null;
+}
 
-/* ─── Invoice Actions Modal ─── */
+/* ─── Inline Editable Cell ─── */
+function EditableCell({ value, originalValue, onChange, disabled }: {
+  value: string | undefined; originalValue: number | null;
+  onChange: (v: string) => void; disabled?: boolean;
+}) {
+  const [editing, setEditing] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const displayVal = value ?? (originalValue != null ? originalValue.toFixed(2) : "");
+  const isEdited = value !== undefined && originalValue != null && parseFloat(value) !== originalValue;
+
+  useEffect(() => { if (editing && inputRef.current) inputRef.current.focus(); }, [editing]);
+
+  if (disabled) return <span className="text-gray-400 tabular-nums">{eur(originalValue)}</span>;
+
+  if (!editing) {
+    return (
+      <button
+        onClick={() => setEditing(true)}
+        className="group relative text-right tabular-nums w-full flex items-center justify-end gap-1"
+        title="Click to edit"
+      >
+        {isEdited ? (
+          <span className="flex flex-col items-end">
+            <span className="text-violet-600 dark:text-violet-400 font-medium">&euro;{parseFloat(value!).toFixed(2)}</span>
+            <span className="text-[10px] text-gray-400 line-through">{eur(originalValue)}</span>
+          </span>
+        ) : (
+          <span className="text-gray-800 dark:text-gray-200">{eur(originalValue)}</span>
+        )}
+        <Pencil className="w-3 h-3 text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+      </button>
+    );
+  }
+
+  return (
+    <input
+      ref={inputRef}
+      type="number" step="0.01" min="0"
+      value={displayVal}
+      onChange={(e) => onChange(e.target.value)}
+      onBlur={() => setEditing(false)}
+      onKeyDown={(e) => { if (e.key === "Enter" || e.key === "Escape") setEditing(false); }}
+      className="w-20 text-right text-sm font-medium rounded-lg border border-violet-300 dark:border-violet-600 bg-white dark:bg-gray-800 px-2 py-1 focus:ring-1 focus:ring-violet-500 focus:border-violet-500 tabular-nums"
+    />
+  );
+}
+
+/* ─── Per-line Push Confirm ─── */
+function LinePushConfirm({ line, edits, onPush, onQueue, onCancel }: {
+  line: Line; edits: RowEdit;
+  onPush: () => void; onQueue: () => void; onCancel: () => void;
+}) {
+  const desc = line.matched || line.invoice_desc;
+  const changes: string[] = [];
+  if (edits.price !== undefined) {
+    const orig = getDisplayPrice(line);
+    changes.push(`selling price ${orig != null ? orig.toFixed(2) : "?"} \u2192 ${parseFloat(edits.price).toFixed(2)}`);
+  }
+  if (edits.cost !== undefined) {
+    const orig = line.old_cost;
+    changes.push(`cost ${orig != null ? orig.toFixed(2) : "?"} \u2192 ${parseFloat(edits.cost).toFixed(2)}`);
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4" onClick={onCancel}>
+      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 w-full max-w-md p-6" onClick={(e) => e.stopPropagation()}>
+        <h3 className="text-base font-bold text-gray-900 dark:text-white mb-2">Push this change now?</h3>
+        <p className="text-sm text-gray-700 dark:text-gray-300 mb-1 font-medium">{desc}</p>
+        <ul className="text-sm text-gray-500 mb-5 space-y-0.5">
+          {changes.map((c, i) => <li key={i}>&bull; {c}</li>)}
+        </ul>
+        <div className="flex items-center justify-end gap-3">
+          <button onClick={onCancel} className="px-3 py-2 rounded-xl text-sm text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800">Cancel</button>
+          <button onClick={onQueue} className="px-3 py-2 rounded-xl text-sm font-medium border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800">Queue instead</button>
+          <button onClick={onPush} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold bg-violet-600 text-white hover:bg-violet-700">Push now</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Push All Summary Panel ─── */
+function PushAllPanel({ lines, edits, editsInclude, setEditsInclude, editsValues, setEditsValues, onPushNow, onQueue, onClose, submitting }: {
+  lines: Line[];
+  edits: EditsMap;
+  editsInclude: Record<string, boolean>;
+  setEditsInclude: React.Dispatch<React.SetStateAction<Record<string, boolean>>>;
+  editsValues: EditsMap;
+  setEditsValues: React.Dispatch<React.SetStateAction<EditsMap>>;
+  onPushNow: () => void;
+  onQueue: () => void;
+  onClose: () => void;
+  submitting: boolean;
+}) {
+  const [showFinalConfirm, setShowFinalConfirm] = useState(false);
+  const editedLines = lines.filter((l, i) => {
+    const k = rowKey(l, i);
+    const e = edits[k];
+    if (!e) return false;
+    const plu = getPlU(l);
+    if (!plu) return false;
+    const priceChanged = e.price !== undefined && getDisplayPrice(l) != null && parseFloat(e.price) !== getDisplayPrice(l);
+    const costChanged = e.cost !== undefined && l.old_cost != null && parseFloat(e.cost) !== l.old_cost;
+    return priceChanged || costChanged;
+  });
+  const includedCount = editedLines.filter((l, i) => editsInclude[rowKey(l, i)] !== false).length;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4" onClick={onClose}>
+      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 w-full max-w-3xl max-h-[85vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <h2 className="text-lg font-bold text-gray-900 dark:text-white">Your edits ({editedLines.length})</h2>
+          <button onClick={onClose} className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800"><X className="w-5 h-5" /></button>
+        </div>
+        <div className="flex-1 overflow-y-auto px-6 py-4">
+          <div className="rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700">
+                <tr>
+                  <th className="w-8 px-3 py-2"></th>
+                  <th className="text-left px-3 py-2 text-[11px] font-semibold uppercase text-gray-500">Product</th>
+                  <th className="text-left px-3 py-2 text-[11px] font-semibold uppercase text-gray-500">Field</th>
+                  <th className="text-right px-3 py-2 text-[11px] font-semibold uppercase text-gray-500">Current</th>
+                  <th className="text-right px-3 py-2 text-[11px] font-semibold uppercase text-gray-500">New</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 dark:divide-gray-700/60">
+                {editedLines.map((l, idx) => {
+                  const k = rowKey(l, idx);
+                  const e = editsValues[k] || edits[k]!;
+                  const rows: { field: string; current: number | null; newVal: string }[] = [];
+                  if (e.price !== undefined && getDisplayPrice(l) != null && parseFloat(e.price) !== getDisplayPrice(l))
+                    rows.push({ field: "Selling price", current: getDisplayPrice(l), newVal: e.price });
+                  if (e.cost !== undefined && l.old_cost != null && parseFloat(e.cost) !== l.old_cost)
+                    rows.push({ field: "Cost", current: l.old_cost, newVal: e.cost });
+                  return rows.map((r, ri) => (
+                    <tr key={`${k}-${ri}`} className="hover:bg-gray-50 dark:hover:bg-gray-800/40">
+                      {ri === 0 && (
+                        <>
+                          <td className="px-3 py-2" rowSpan={rows.length}>
+                            <input type="checkbox" checked={editsInclude[k] !== false}
+                              onChange={() => setEditsInclude((s) => ({ ...s, [k]: s[k] === false ? true : false }))}
+                              className="w-4 h-4 rounded border-gray-300 text-violet-600 focus:ring-violet-500" />
+                          </td>
+                          <td className="px-3 py-2 text-gray-800 dark:text-gray-200 truncate max-w-[180px]" rowSpan={rows.length}>{l.matched || l.invoice_desc}</td>
+                        </>
+                      )}
+                      <td className="px-3 py-2 text-gray-500 text-xs">{r.field}</td>
+                      <td className="px-3 py-2 text-right text-gray-400 tabular-nums line-through">{eur(r.current)}</td>
+                      <td className="px-3 py-2 text-right">
+                        <input type="number" step="0.01" min="0"
+                          value={r.newVal}
+                          onChange={(ev) => {
+                            const field = r.field === "Selling price" ? "price" : "cost";
+                            setEditsValues((s) => ({ ...s, [k]: { ...s[k], [field]: ev.target.value } }));
+                          }}
+                          className="w-20 text-right text-sm font-medium rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-2 py-1 focus:ring-1 focus:ring-violet-500 focus:border-violet-500 tabular-nums" />
+                      </td>
+                    </tr>
+                  ));
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-200 dark:border-gray-700">
+          <button onClick={onQueue} disabled={submitting || includedCount === 0}
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50">
+            Queue changes
+          </button>
+          <button onClick={() => setShowFinalConfirm(true)} disabled={submitting || includedCount === 0}
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold bg-violet-600 text-white hover:bg-violet-700 disabled:opacity-50">
+            {submitting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null} Push changes now
+          </button>
+        </div>
+      </div>
+      {showFinalConfirm && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4" onClick={() => setShowFinalConfirm(false)}>
+          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 w-full max-w-md p-6" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-base font-bold text-gray-900 dark:text-white mb-2">Are you sure?</h3>
+            <p className="text-sm text-gray-500 mb-5">{includedCount} change{includedCount !== 1 ? "s" : ""} will be applied to your shop right away.</p>
+            <div className="flex items-center justify-end gap-3">
+              <button onClick={() => setShowFinalConfirm(false)} className="px-3 py-2 rounded-xl text-sm text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800">Cancel</button>
+              <button onClick={() => { setShowFinalConfirm(false); onQueue(); }} disabled={submitting}
+                className="px-3 py-2 rounded-xl text-sm font-medium border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50">Queue instead</button>
+              <button onClick={() => { setShowFinalConfirm(false); onPushNow(); }} disabled={submitting}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold bg-violet-600 text-white hover:bg-violet-700 disabled:opacity-50">
+                {submitting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null} Push now
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ─── Invoice Actions Modal (existing, mode=suggestions) ─── */
 interface ModalProps {
   groups: ChangeGroups;
   onClose: () => void;
@@ -160,15 +376,11 @@ function InvoiceActionsModal({ groups, onClose, onResult, writebackEnabled }: Mo
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4" onClick={onClose}>
       <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 w-full max-w-3xl max-h-[85vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
-        {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
           <h2 className="text-lg font-bold text-gray-900 dark:text-white">Invoice actions</h2>
           <button onClick={onClose} className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800"><X className="w-5 h-5" /></button>
         </div>
-
-        {/* Scrollable body */}
         <div className="flex-1 overflow-y-auto px-6 py-4 space-y-6">
-          {/* Section: Selling price changes */}
           {groups.price_changes.length > 0 && (
             <section>
               <h3 className="text-sm font-bold text-gray-800 dark:text-gray-100 mb-2">Selling price changes</h3>
@@ -205,8 +417,6 @@ function InvoiceActionsModal({ groups, onClose, onResult, writebackEnabled }: Mo
               </div>
             </section>
           )}
-
-          {/* Section: Cost price updates */}
           {groups.cost_changes.length > 0 && (
             <section>
               <h3 className="text-sm font-bold text-gray-800 dark:text-gray-100 mb-2">Cost price updates</h3>
@@ -243,8 +453,6 @@ function InvoiceActionsModal({ groups, onClose, onResult, writebackEnabled }: Mo
               </div>
             </section>
           )}
-
-          {/* Section: Not in your shop yet */}
           {groups.new_products.length > 0 && (
             <section>
               <h3 className="text-sm font-bold text-gray-800 dark:text-gray-100 mb-2">Not in your shop yet</h3>
@@ -279,8 +487,6 @@ function InvoiceActionsModal({ groups, onClose, onResult, writebackEnabled }: Mo
             </section>
           )}
         </div>
-
-        {/* Footer */}
         <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-200 dark:border-gray-700">
           {writebackEnabled && totalIncluded > 0 ? (
             <>
@@ -300,8 +506,6 @@ function InvoiceActionsModal({ groups, onClose, onResult, writebackEnabled }: Mo
           )}
         </div>
       </div>
-
-      {/* Confirm dialog */}
       {showConfirm && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4" onClick={() => setShowConfirm(false)}>
           <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 w-full max-w-md p-6" onClick={(e) => e.stopPropagation()}>
@@ -310,9 +514,7 @@ function InvoiceActionsModal({ groups, onClose, onResult, writebackEnabled }: Mo
             <div className="flex items-center justify-end gap-3">
               <button onClick={() => setShowConfirm(false)} className="px-3 py-2 rounded-xl text-sm text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800">Cancel</button>
               <button onClick={() => { setShowConfirm(false); submitJobs(true); }} disabled={submitting}
-                className="px-3 py-2 rounded-xl text-sm font-medium border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50">
-                Queue instead
-              </button>
+                className="px-3 py-2 rounded-xl text-sm font-medium border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50">Queue instead</button>
               <button onClick={() => submitJobs(false)} disabled={submitting}
                 className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold bg-violet-600 text-white hover:bg-violet-700 disabled:opacity-50">
                 {submitting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null} Push now
@@ -339,7 +541,31 @@ export function InvoiceScannerPage(_props?: { existingProducts?: any[]; onAddToS
   const [writebackEnabled, setWritebackEnabled] = useState(true);
   const [resultBanner, setResultBanner] = useState<{ msg: string; ok: boolean } | null>(null);
 
-  // Fetch writeback status from price-jobs summary
+  // Inline edit state
+  const [inlineEdits, setInlineEdits] = useState<EditsMap>({});
+  const [rowStatuses, setRowStatuses] = useState<RowStatusMap>({});
+  const [confirmingRow, setConfirmingRow] = useState<{ line: Line; idx: number } | null>(null);
+  const [showPushAll, setShowPushAll] = useState(false);
+  const [pushAllInclude, setPushAllInclude] = useState<Record<string, boolean>>({});
+  const [pushAllValues, setPushAllValues] = useState<EditsMap>({});
+  const [batchSubmitting, setBatchSubmitting] = useState(false);
+
+  // Reset inline edits when result changes
+  useEffect(() => { setInlineEdits({}); setRowStatuses({}); }, [result]);
+
+  // Derived: count of unpushed edited rows
+  const unpushedCount = result ? result.lines.filter((l, i) => {
+    const k = rowKey(l, i);
+    if (rowStatuses[k]) return false;
+    const e = inlineEdits[k];
+    if (!e) return false;
+    const plu = getPlU(l);
+    if (!plu) return false;
+    const priceChanged = e.price !== undefined && getDisplayPrice(l) != null && parseFloat(e.price) !== getDisplayPrice(l);
+    const costChanged = e.cost !== undefined && l.old_cost != null && parseFloat(e.cost) !== l.old_cost;
+    return priceChanged || costChanged;
+  }).length : 0;
+
   useEffect(() => {
     apiCall("/api/price-jobs").then((d) => {
       setWritebackEnabled(d.writeback_enabled !== false);
@@ -383,9 +609,98 @@ export function InvoiceScannerPage(_props?: { existingProducts?: any[]; onAddToS
     if (viewingPast) { setResult(null); setViewingPast(null); }
   };
 
+  // Submit inline edits for a single row
+  const submitRowEdits = async (line: Line, idx: number, draft: boolean) => {
+    const k = rowKey(line, idx);
+    const e = inlineEdits[k];
+    if (!e) return;
+    const plu = getPlU(line);
+    if (!plu) return;
+    const token = localStorage.getItem("rg-token");
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+    let ok = 0; let fail = 0;
+
+    if (e.price !== undefined && getDisplayPrice(line) != null && parseFloat(e.price) !== getDisplayPrice(line)) {
+      try {
+        const res = await fetch(`${API_BASE}/api/price-jobs`, {
+          method: "POST", headers,
+          body: JSON.stringify({ product_code: plu, new_price: parseFloat(e.price), draft, source: "invoice_scanner", field: "price" }),
+        });
+        if (res.ok) ok++; else fail++;
+      } catch { fail++; }
+    }
+    if (e.cost !== undefined && line.old_cost != null && parseFloat(e.cost) !== line.old_cost) {
+      try {
+        const res = await fetch(`${API_BASE}/api/price-jobs`, {
+          method: "POST", headers,
+          body: JSON.stringify({ product_code: plu, new_price: parseFloat(e.cost), draft, source: "invoice_scanner", field: "cost" }),
+        });
+        if (res.ok) ok++; else fail++;
+      } catch { fail++; }
+    }
+
+    if (fail === 0) {
+      setRowStatuses((s) => ({ ...s, [k]: draft ? "queued" : "pushed" }));
+      setInlineEdits((s) => { const n = { ...s }; delete n[k]; return n; });
+    }
+    const word = draft ? "queued" : "pushed";
+    const suffix = _props?.onNavigate ? "" : "";
+    if (fail > 0) setResultBanner({ msg: `${ok} ${word}, ${fail} failed`, ok: false });
+    else setResultBanner({ msg: `${ok} change${ok > 1 ? "s" : ""} ${word}`, ok: true });
+  };
+
+  // Submit batch (push all)
+  const submitBatch = async (draft: boolean) => {
+    if (!result) return;
+    setBatchSubmitting(true);
+    const token = localStorage.getItem("rg-token");
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+    let ok = 0; let fail = 0;
+
+    for (let i = 0; i < result.lines.length; i++) {
+      const l = result.lines[i];
+      const k = rowKey(l, i);
+      if (pushAllInclude[k] === false) continue;
+      if (rowStatuses[k]) continue;
+      const e = pushAllValues[k] || inlineEdits[k];
+      if (!e) continue;
+      const plu = getPlU(l);
+      if (!plu) continue;
+
+      if (e.price !== undefined && getDisplayPrice(l) != null && parseFloat(e.price) !== getDisplayPrice(l)) {
+        try {
+          const res = await fetch(`${API_BASE}/api/price-jobs`, {
+            method: "POST", headers,
+            body: JSON.stringify({ product_code: plu, new_price: parseFloat(e.price), draft, source: "invoice_scanner", field: "price" }),
+          });
+          if (res.ok) { ok++; setRowStatuses((s) => ({ ...s, [k]: draft ? "queued" : "pushed" })); }
+          else fail++;
+        } catch { fail++; }
+      }
+      if (e.cost !== undefined && l.old_cost != null && parseFloat(e.cost) !== l.old_cost) {
+        try {
+          const res = await fetch(`${API_BASE}/api/price-jobs`, {
+            method: "POST", headers,
+            body: JSON.stringify({ product_code: plu, new_price: parseFloat(e.cost), draft, source: "invoice_scanner", field: "cost" }),
+          });
+          if (res.ok) { ok++; setRowStatuses((s) => ({ ...s, [k]: draft ? "queued" : "pushed" })); }
+          else fail++;
+        } catch { fail++; }
+      }
+      // Clear the edit for pushed rows
+      if (!fail) setInlineEdits((s) => { const n = { ...s }; delete n[k]; return n; });
+    }
+    setBatchSubmitting(false);
+    setShowPushAll(false);
+    const word = draft ? "queued" : "pushed";
+    if (fail > 0) setResultBanner({ msg: `${ok} ${word}, ${fail} failed`, ok: false });
+    else setResultBanner({ msg: `${ok} change${ok > 1 ? "s" : ""} ${word}`, ok: true });
+  };
+
   const groups = result?.change_groups;
   const hasActions = groups && (groups.price_changes.length > 0 || groups.cost_changes.length > 0 || groups.new_products.length > 0);
-
   const u = usage;
   const pctBudget = u ? Math.min(100, Math.round((u.month_cost / u.monthly_ceiling) * 100)) : 0;
 
@@ -421,7 +736,6 @@ export function InvoiceScannerPage(_props?: { existingProducts?: any[]; onAddToS
       </div>
       <p className="text-xs text-gray-500 mb-5">Upload a supplier invoice (photo or PDF). It reads every line, matches against your stock, and flags cost rises and new margin leaks.</p>
 
-      {/* Usage meter */}
       {u && (
         <div className="flex flex-wrap items-center gap-4 mb-4 text-xs">
           <span className="inline-flex items-center gap-1.5 text-gray-500"><Gauge className="w-3.5 h-3.5" /> <b className="text-gray-700 dark:text-gray-200">{u.today}/{u.daily_limit}</b> scans today</span>
@@ -435,7 +749,6 @@ export function InvoiceScannerPage(_props?: { existingProducts?: any[]; onAddToS
         </div>
       )}
 
-      {/* Persistent result banner */}
       {resultBanner && (
         <div className={`mb-4 flex items-center gap-2 px-4 py-3 rounded-xl border text-sm ${resultBanner.ok ? "bg-green-50 dark:bg-green-900/15 border-green-200 dark:border-green-800 text-green-800 dark:text-green-300" : "bg-amber-50 dark:bg-amber-900/15 border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300"}`}>
           {resultBanner.ok ? <CheckCircle2 className="w-4 h-4 shrink-0" /> : <AlertTriangle className="w-4 h-4 shrink-0" />}
@@ -468,14 +781,12 @@ export function InvoiceScannerPage(_props?: { existingProducts?: any[]; onAddToS
       <input ref={fileRef} type="file" accept="image/*,application/pdf" capture="environment" className="hidden"
         onChange={(e) => onFile(e.target.files?.[0] ?? undefined)} />
 
-      {/* Error */}
       {error && (
         <div className="mt-4 flex items-start gap-2 p-3 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300 text-sm">
           <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" /> <span>{error}</span>
         </div>
       )}
 
-      {/* Result */}
       {result && (
         <div className="mt-5">
           <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
@@ -507,7 +818,7 @@ export function InvoiceScannerPage(_props?: { existingProducts?: any[]; onAddToS
               {writebackEnabled ? (
                 <button onClick={() => setShowModal(true)}
                   className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold bg-violet-600 text-white hover:bg-violet-700">
-                  Review changes <ArrowRight className="w-3.5 h-3.5" />
+                  Review suggestions <ArrowRight className="w-3.5 h-3.5" />
                 </button>
               ) : (
                 <p className="text-xs text-gray-400">Goes live once your shop link is set up</p>
@@ -515,26 +826,35 @@ export function InvoiceScannerPage(_props?: { existingProducts?: any[]; onAddToS
             </div>
           )}
 
-          {/* no-barcodes note */}
           {result.barcodes_missing && (
             <div className="mb-3 flex items-start gap-2 p-3 rounded-xl bg-violet-50 dark:bg-violet-900/15 border border-violet-200 dark:border-violet-800 text-violet-800 dark:text-violet-300 text-xs">
               <ScanLine className="w-4 h-4 mt-0.5 shrink-0" />
               <span>This invoice has no barcodes printed on it, so items were matched by name only. Invoices that print barcodes match against your stock exactly.</span>
             </div>
           )}
-          {/* table */}
+
+          {/* Scan results table with inline editing */}
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-x-auto">
             <table className="w-full text-sm border-collapse">
               <thead className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
                 <tr>
                   <th className="px-4 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wide text-gray-500">Invoice item</th>
-                  <th className="px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wide text-gray-500">Barcode</th>
-                  <th className="px-3 py-2.5 text-right text-[11px] font-semibold uppercase tracking-wide text-gray-500">Qty</th>
                   <th className="px-3 py-2.5 text-right text-[11px] font-semibold uppercase tracking-wide text-gray-500">Invoice cost</th>
                   <th className="px-4 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wide text-gray-500">Matched product</th>
                   <th className="px-3 py-2.5 text-right text-[11px] font-semibold uppercase tracking-wide text-gray-500">Your cost</th>
-                  <th className="px-3 py-2.5 text-right text-[11px] font-semibold uppercase tracking-wide text-gray-500">New margin</th>
-                  <th className="px-4 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wide text-gray-500">Status</th>
+                  <th className="px-3 py-2.5 text-right text-[11px] font-semibold uppercase tracking-wide text-gray-500">Selling price</th>
+                  <th className="px-3 py-2.5 text-right text-[11px] font-semibold uppercase tracking-wide text-gray-500">Margin</th>
+                  <th className="px-4 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wide text-gray-500">
+                    <span className="flex items-center justify-between">
+                      <span>Status</span>
+                      {writebackEnabled && unpushedCount > 0 && (
+                        <button onClick={() => { setPushAllInclude({}); setPushAllValues({ ...inlineEdits }); setShowPushAll(true); }}
+                          className="inline-flex items-center gap-1 text-[11px] font-semibold text-violet-600 hover:text-violet-800 px-2 py-0.5 rounded-lg hover:bg-violet-50 dark:hover:bg-violet-900/20 transition">
+                          Push all ({unpushedCount})
+                        </button>
+                      )}
+                    </span>
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-gray-700/60">
@@ -543,33 +863,77 @@ export function InvoiceScannerPage(_props?: { existingProducts?: any[]; onAddToS
                   return rank(a.status) - rank(b.status);
                 }).map((l, i) => {
                   const sb = statusBadge(l.status);
+                  const k = rowKey(l, i);
+                  const plu = getPlU(l);
+                  const isEditable = l.status === "matched" && !!plu && writebackEnabled;
+                  const edit = inlineEdits[k];
+                  const rStatus = rowStatuses[k];
+
+                  // Determine if this row has unpushed edits
+                  const priceChanged = edit?.price !== undefined && getDisplayPrice(l) != null && parseFloat(edit.price) !== getDisplayPrice(l);
+                  const costChanged = edit?.cost !== undefined && l.old_cost != null && parseFloat(edit.cost) !== l.old_cost;
+                  const hasUnpushedEdit = !rStatus && (priceChanged || costChanged);
+
                   return (
                     <React.Fragment key={i}>
-                    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800/60 align-top">
-                      <td className="px-4 py-2.5 text-gray-800 dark:text-gray-100 max-w-[230px] truncate" title={l.invoice_desc}>{l.invoice_desc}</td>
-                      <td className="px-3 py-2.5 font-mono text-[11px] text-gray-400 whitespace-nowrap">{l.barcode || "\u2014"}</td>
-                      <td className="px-3 py-2.5 text-right text-gray-500 tabular-nums">{l.qty ?? "\u2014"}</td>
+                    <tr className={`hover:bg-gray-50 dark:hover:bg-gray-800/60 align-top ${rStatus === "pushed" ? "bg-green-50/40 dark:bg-green-900/10" : rStatus === "queued" ? "bg-violet-50/30 dark:bg-violet-900/10" : ""}`}>
+                      <td className="px-4 py-2.5 text-gray-800 dark:text-gray-100 max-w-[200px] truncate" title={l.invoice_desc}>{l.invoice_desc}</td>
                       <td className="px-3 py-2.5 text-right whitespace-nowrap">
                         <div className="text-gray-800 dark:text-gray-200 tabular-nums">{eur(l.invoice_cost)}</div>
                         {l.pack_size && l.unit_cost_new != null
                           ? <div className="text-[10px] text-gray-400">case of {Math.round(l.pack_size)}, {eur(l.unit_cost_new)}/unit</div>
                           : null}
                       </td>
-                      <td className="px-4 py-2.5 max-w-[210px]">
+                      <td className="px-4 py-2.5 max-w-[180px]">
                         {l.status === "new"
                           ? <span className="text-violet-500 text-xs italic">Not in your shop yet</span>
                           : <span className="text-gray-600 dark:text-gray-300 block truncate" title={l.matched}>{l.matched}</span>}
                       </td>
-                      <td className="px-3 py-2.5 text-right text-gray-400 tabular-nums whitespace-nowrap">{eur(l.old_cost)}</td>
+                      <td className="px-3 py-2.5 text-right whitespace-nowrap">
+                        {isEditable ? (
+                          <EditableCell
+                            value={edit?.cost}
+                            originalValue={l.old_cost ?? null}
+                            onChange={(v) => setInlineEdits((s) => ({ ...s, [k]: { ...s[k], cost: v } }))}
+                            disabled={!!rStatus}
+                          />
+                        ) : (
+                          <span className="text-gray-400 tabular-nums">{eur(l.old_cost)}</span>
+                        )}
+                      </td>
+                      <td className="px-3 py-2.5 text-right whitespace-nowrap">
+                        {isEditable ? (
+                          <EditableCell
+                            value={edit?.price}
+                            originalValue={getDisplayPrice(l)}
+                            onChange={(v) => setInlineEdits((s) => ({ ...s, [k]: { ...s[k], price: v } }))}
+                            disabled={!!rStatus}
+                          />
+                        ) : (
+                          <span className="text-gray-400 tabular-nums">{eur(getDisplayPrice(l))}</span>
+                        )}
+                      </td>
                       <td className={`px-3 py-2.5 text-right tabular-nums whitespace-nowrap font-medium ${l.new_margin == null ? "text-gray-300 dark:text-gray-600" : l.new_margin < 20 ? "text-red-600" : "text-green-600"}`}>{l.new_margin == null ? "\u2014" : l.new_margin + "%"}</td>
                       <td className="px-4 py-2.5 whitespace-nowrap">
-                        <span className={`inline-block px-2 py-0.5 rounded-full text-[11px] font-semibold ${sb.cls}`}>{l.status === "review" ? l.flag : sb.label}</span>
-                        {l.status !== "review" && <span className="block text-[10px] text-gray-400 mt-0.5">{l.flag}</span>}
+                        <div className="flex items-center gap-2">
+                          <div>
+                            {rStatus === "pushed" && <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300"><CheckCircle2 className="w-3 h-3" /> Pushed</span>}
+                            {rStatus === "queued" && <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300">Queued</span>}
+                            {!rStatus && <span className={`inline-block px-2 py-0.5 rounded-full text-[11px] font-semibold ${sb.cls}`}>{l.status === "review" ? l.flag : sb.label}</span>}
+                          </div>
+                          {hasUnpushedEdit && (
+                            <button onClick={() => setConfirmingRow({ line: l, idx: i })}
+                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-violet-600 text-white hover:bg-violet-700 transition shrink-0">
+                              Push
+                            </button>
+                          )}
+                        </div>
+                        {!rStatus && l.status !== "review" && <span className="block text-[10px] text-gray-400 mt-0.5">{l.flag}</span>}
                       </td>
                     </tr>
                     {l.status === "review" && l.reason && (
                       <tr>
-                        <td colSpan={8} className="px-4 pb-2.5 pt-0">
+                        <td colSpan={7} className="px-4 pb-2.5 pt-0">
                           <div className="flex items-start gap-2 text-[11.5px] text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/15 border border-amber-200 dark:border-amber-800 rounded-lg px-3 py-2">
                             <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
                             <span>{l.reason}</span>
@@ -579,7 +943,7 @@ export function InvoiceScannerPage(_props?: { existingProducts?: any[]; onAddToS
                     )}
                     {l.note && (
                       <tr>
-                        <td colSpan={8} className="px-4 pb-2.5 pt-0">
+                        <td colSpan={7} className="px-4 pb-2.5 pt-0">
                           <div className="flex items-start gap-2 text-[11.5px] text-blue-800 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/15 border border-blue-200 dark:border-blue-800 rounded-lg px-3 py-2">
                             <FileText className="w-3.5 h-3.5 mt-0.5 shrink-0" />
                             <span>{l.note}</span>
@@ -608,18 +972,43 @@ export function InvoiceScannerPage(_props?: { existingProducts?: any[]; onAddToS
       )}
       </div>
 
-      {/* Modal */}
+      {/* Existing suggestions modal */}
       {showModal && groups && (
         <InvoiceActionsModal
           groups={groups}
           writebackEnabled={writebackEnabled}
           onClose={() => setShowModal(false)}
           onResult={(msg, ok) => {
-            const suffix = ok
-              ? (msg.includes("queued") ? " \u2014 review them on the Price changes page" : " \u2014 track them on the Price changes page")
-              : "";
+            const suffix = ok ? (msg.includes("queued") ? " \u2014 review them on the Price changes page" : " \u2014 track them on the Price changes page") : "";
             setResultBanner({ msg: msg + suffix, ok });
           }}
+        />
+      )}
+
+      {/* Per-line push confirm */}
+      {confirmingRow && inlineEdits[rowKey(confirmingRow.line, confirmingRow.idx)] && (
+        <LinePushConfirm
+          line={confirmingRow.line}
+          edits={inlineEdits[rowKey(confirmingRow.line, confirmingRow.idx)]!}
+          onPush={() => { submitRowEdits(confirmingRow.line, confirmingRow.idx, false); setConfirmingRow(null); }}
+          onQueue={() => { submitRowEdits(confirmingRow.line, confirmingRow.idx, true); setConfirmingRow(null); }}
+          onCancel={() => setConfirmingRow(null)}
+        />
+      )}
+
+      {/* Push All panel */}
+      {showPushAll && result && (
+        <PushAllPanel
+          lines={result.lines}
+          edits={inlineEdits}
+          editsInclude={pushAllInclude}
+          setEditsInclude={setPushAllInclude}
+          editsValues={pushAllValues}
+          setEditsValues={setPushAllValues}
+          onPushNow={() => submitBatch(false)}
+          onQueue={() => submitBatch(true)}
+          onClose={() => setShowPushAll(false)}
+          submitting={batchSubmitting}
         />
       )}
     </div>
