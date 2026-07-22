@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { API_BASE } from "@/lib/api";
-import { Sparkles, Send, Loader2, Code2, Download, Gauge, AlertTriangle, FileSpreadsheet, Plus, Trash2, MessageSquare, ArrowLeft } from "lucide-react";
-import { useAskHistory, useCurrentCid, runAsk, clearAskHistory, newConversation, setCurrentCid, groupConversations, askTimeAgo, type AskTurn } from "@/lib/askStore";
+import { Sparkles, Send, Loader2, Download, Gauge, AlertTriangle, FileSpreadsheet, Plus, Trash2, MessageSquare, ArrowLeft, ChevronDown } from "lucide-react";
+import { useAskHistory, useCurrentCid, runAsk, clearAskHistory, newConversation, setCurrentCid, groupConversations, askTimeAgo, type AskTurn, type VizSpec } from "@/lib/askStore";
+import { AskViz } from "./AskViz";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from "recharts";
 
 interface Usage { today: number; daily_limit: number; month_cost: number; monthly_ceiling: number; configured: boolean; }
@@ -37,12 +38,15 @@ function downloadB64(b64: string, type: string, filename: string) {
   a.download = filename; a.click();
 }
 
-const SUGGESTIONS = [
-  "Which 5 products am I losing money on?",
-  "Top 3 departments by sales revenue?",
-  "Which suppliers have the lowest average margin?",
-  "What's my busiest day of the week?",
+const STARTER_CHIPS: { group: string; questions: string[] }[] = [
+  { group: "Today", questions: ["What were my sales today", "How many transactions today", "What is selling right now"] },
+  { group: "Products", questions: ["Which products are below cost", "Top 10 sellers this week", "Products with no barcode"] },
+  { group: "Margins", questions: ["Average margin by department", "Lowest margin products", "Which suppliers have the worst margins"] },
+  { group: "When", questions: ["Busiest day of the week", "Busiest hour on Saturdays", "Slowest trading day this month"] },
+  { group: "Compare", questions: ["This month vs last month", "Weekend vs weekday sales", "This year vs last year"] },
 ];
+
+const SUGGESTIONS = STARTER_CHIPS.flatMap((g) => g.questions).slice(0, 4);
 
 const SHEET_SUGGESTIONS = [
   "All products below cost, with department and suggested price",
@@ -340,14 +344,21 @@ export function AskPage() {
                 <Sparkles className="w-6 h-6 text-violet-600" />
               </div>
               <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-1.5">What would you like to know?</h2>
-              <p className="text-xs text-gray-500 mb-5">Stock, margins, departments, sales or suppliers. Plain English is fine. If a question is unclear I will ask a quick follow-up.</p>
+              <p className="text-xs text-gray-500 mb-5">Stock, margins, departments, sales or suppliers. Plain English is fine. If a question is unclear I will ask a quick follow up.</p>
               {composer}
-              <div className="flex flex-wrap justify-center gap-2 mt-4">
-                {SUGGESTIONS.map((s) => (
-                  <button key={s} onClick={() => submit(s)} disabled={busy}
-                    className="px-3 py-1.5 rounded-full text-xs bg-violet-50 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 hover:bg-violet-100 dark:hover:bg-violet-900/50 transition disabled:opacity-50">
-                    {s}
-                  </button>
+              <div className="mt-5 text-left space-y-3">
+                {STARTER_CHIPS.map((g) => (
+                  <div key={g.group}>
+                    <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400 mb-1.5 px-1">{g.group}</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {g.questions.map((s) => (
+                        <button key={s} onClick={() => submit(s)} disabled={busy}
+                          className="px-3 py-1.5 rounded-full text-xs bg-violet-50 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 hover:bg-violet-100 dark:hover:bg-violet-900/50 transition disabled:opacity-50">
+                          {s}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 ))}
               </div>
               {error && (
@@ -363,53 +374,125 @@ export function AskPage() {
             <div className="flex-1 overflow-y-auto px-4 md:px-6 py-5">
               <div className="max-w-3xl mx-auto flex flex-col gap-3">
                 {turns.map((t) => {
-                  const cd = t.clarify ? null : chartData(t);
+                  const cd = (!t.clarify && !t.viz) ? chartData(t) : null;
+                  const hasData = t.columns?.length > 0 && t.rows?.length > 0;
+                  const showSuggestions = (t.status === "clarify" || t.status === "out_of_scope") && t.suggestions?.length;
+                  const showFollowups = t.status === "ok" && t.followups?.length;
                   return (
                     <div key={t.ts} className="flex flex-col gap-3">
                       <div className="self-end max-w-[78%] bg-violet-600 text-white text-sm px-4 py-2.5 rounded-2xl rounded-br-md whitespace-pre-wrap">{t.q}</div>
                       <div className={`self-start max-w-[88%] rounded-2xl rounded-bl-md px-4 py-3 text-sm leading-relaxed ${t.clarify ? "bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-amber-900 dark:text-amber-200" : "bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100"}`}>
+                        {/* Answer text */}
                         <p className="whitespace-pre-wrap">{t.answer}</p>
+
+                        {/* Viz chart (new contract) */}
+                        {t.viz && t.columns?.length > 0 && t.rows?.length > 0 && (
+                          <div className="mt-3">
+                            {t.viz.title && <p className="text-[11px] font-medium text-gray-500 mb-1">{t.viz.title}</p>}
+                            <AskViz viz={t.viz} columns={t.columns} rows={t.rows} />
+                          </div>
+                        )}
+
+                        {/* Legacy mini chart (old contract, no viz) */}
+                        {cd && (
+                          <div className="mt-3 h-32 -ml-2">
+                            <ResponsiveContainer width="100%" height="100%">
+                              <BarChart data={cd} margin={{ top: 4, right: 4, bottom: 0, left: 4 }}>
+                                <XAxis dataKey="name" tick={{ fontSize: 9 }} interval={0} axisLine={false} tickLine={false} />
+                                <YAxis hide />
+                                <Tooltip cursor={{ fill: "rgba(124,58,237,0.08)" }} contentStyle={{ fontSize: 11, borderRadius: 8 }} />
+                                <Bar dataKey="value" fill="#7c3aed" radius={[4, 4, 0, 0]} />
+                              </BarChart>
+                            </ResponsiveContainer>
+                          </div>
+                        )}
+
                         {t.clarify ? (
                           <p className="mt-2 text-[11px] text-amber-600 dark:text-amber-400">Type your reply below to continue.</p>
                         ) : (
                           <>
-                            {cd && (
-                              <div className="mt-3 h-32 -ml-2">
-                                <ResponsiveContainer width="100%" height="100%">
-                                  <BarChart data={cd} margin={{ top: 4, right: 4, bottom: 0, left: 4 }}>
-                                    <XAxis dataKey="name" tick={{ fontSize: 9 }} interval={0} axisLine={false} tickLine={false} />
-                                    <YAxis hide />
-                                    <Tooltip cursor={{ fill: "rgba(124,58,237,0.08)" }} contentStyle={{ fontSize: 11, borderRadius: 8 }} />
-                                    <Bar dataKey="value" fill="#7c3aed" radius={[4, 4, 0, 0]} />
-                                  </BarChart>
-                                </ResponsiveContainer>
+                            {/* Collapsible Data + SQL section */}
+                            {hasData && (
+                              <div className="mt-2.5">
+                                <button onClick={() => toggleSql(t.ts)} className="inline-flex items-center gap-1.5 text-[11px] text-gray-500 hover:text-violet-600">
+                                  <ChevronDown className={`w-3 h-3 transition-transform ${openSql.has(t.ts) ? "rotate-180" : ""}`} />
+                                  Data + SQL ({t.row_count} row{t.row_count === 1 ? "" : "s"})
+                                </button>
+                                {openSql.has(t.ts) && (
+                                  <div className="mt-2 space-y-2">
+                                    {t.sql && (
+                                      <pre className="p-3 rounded-lg bg-gray-900 text-gray-100 text-[10.5px] overflow-x-auto whitespace-pre-wrap">{t.sql}</pre>
+                                    )}
+                                    {t.rows.length > 0 && (
+                                      <div className="overflow-x-auto max-h-48 overflow-y-auto rounded-lg border border-gray-200 dark:border-gray-700">
+                                        <table className="text-[11px] w-full">
+                                          <thead className="text-gray-500 border-b border-gray-200 dark:border-gray-700 sticky top-0 bg-white dark:bg-gray-800">
+                                            <tr>{t.columns.map((c, j) => <th key={j} className="px-2 py-1 text-left font-medium whitespace-nowrap">{c}</th>)}</tr>
+                                          </thead>
+                                          <tbody className="divide-y divide-gray-200/60 dark:divide-gray-700">
+                                            {t.rows.slice(0, 12).map((r, ri) => (
+                                              <tr key={ri}>{r.map((v, ci) => <td key={ci} className="px-2 py-1 text-gray-700 dark:text-gray-300 max-w-[160px] truncate">{v === null ? "\u2014" : String(v)}</td>)}</tr>
+                                            ))}
+                                          </tbody>
+                                        </table>
+                                        {t.rows.length > 12 && <p className="text-[10.5px] text-gray-400 px-2 py-1 border-t border-gray-200 dark:border-gray-700">...and {t.rows.length - 12} more rows</p>}
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
                               </div>
                             )}
-                            <div className="mt-2.5 flex items-center gap-3">
-                              <button onClick={() => toggleSql(t.ts)} className="inline-flex items-center gap-1.5 text-[11px] text-gray-500 hover:text-violet-600">
-                                <Code2 className="w-3 h-3" /> {openSql.has(t.ts) ? "Hide" : "Show"} SQL
+
+                            {/* Download action */}
+                            {hasData && (
+                              <button
+                                onClick={() => {
+                                  const header = t.columns.join(",");
+                                  const csv = [header, ...t.rows.map((r) => r.map((v) => `"${String(v ?? "").replace(/"/g, '""')}"`).join(","))].join("\n");
+                                  const a = document.createElement("a");
+                                  a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
+                                  a.download = `ask-result-${new Date().toISOString().slice(0, 10)}.csv`;
+                                  a.click();
+                                }}
+                                className="mt-2 inline-flex items-center gap-1.5 text-[11px] text-gray-500 hover:text-violet-600"
+                              >
+                                <Download className="w-3 h-3" /> Download spreadsheet
                               </button>
-                              <span className="text-[11px] text-gray-400">{t.row_count} row{t.row_count === 1 ? "" : "s"}</span>
-                            </div>
-                            {openSql.has(t.ts) && t.sql && (
-                              <pre className="mt-2 p-3 rounded-lg bg-gray-900 text-gray-100 text-[10.5px] overflow-x-auto whitespace-pre-wrap">{t.sql}</pre>
                             )}
-                            {openSql.has(t.ts) && t.rows.length > 0 && (
-                              <div className="mt-2 overflow-x-auto">
-                                <table className="text-[11px] w-full">
-                                  <thead className="text-gray-500 border-b border-gray-200 dark:border-gray-700">
-                                    <tr>{t.columns.map((c, j) => <th key={j} className="px-2 py-1 text-left font-medium">{c}</th>)}</tr>
-                                  </thead>
-                                  <tbody className="divide-y divide-gray-200/60 dark:divide-gray-700">
-                                    {t.rows.slice(0, 8).map((r, ri) => (
-                                      <tr key={ri}>{r.map((v, ci) => <td key={ci} className="px-2 py-1 text-gray-700 dark:text-gray-300 max-w-[160px] truncate">{v === null ? "\u2014" : String(v)}</td>)}</tr>
-                                    ))}
-                                  </tbody>
-                                </table>
-                                {t.rows.length > 8 && <p className="text-[10.5px] text-gray-400 mt-1">...and {t.rows.length - 8} more rows</p>}
+
+                            {/* Flags / confidence footer */}
+                            {t.flags && t.flags.length > 0 && (
+                              <div className="mt-2 space-y-0.5">
+                                {t.flags.map((f, fi) => (
+                                  <p key={fi} className="text-[10px] text-gray-400/70 italic">{f.message}</p>
+                                ))}
                               </div>
                             )}
                           </>
+                        )}
+
+                        {/* Suggestion chips (clarify / out_of_scope) */}
+                        {showSuggestions && (
+                          <div className="mt-3 flex flex-wrap gap-1.5">
+                            {t.suggestions!.map((s) => (
+                              <button key={s} onClick={() => submit(s)} disabled={busy}
+                                className="px-3 py-1.5 rounded-full text-xs bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300 hover:bg-violet-200 dark:hover:bg-violet-900/60 transition disabled:opacity-50">
+                                {s}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Follow-up chips */}
+                        {showFollowups && (
+                          <div className="mt-3 flex flex-wrap gap-1.5">
+                            {t.followups!.map((f) => (
+                              <button key={f} onClick={() => submit(f)} disabled={busy}
+                                className="px-2.5 py-1 rounded-full text-[11px] border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-violet-50 dark:hover:bg-violet-900/20 transition disabled:opacity-50">
+                                {f}
+                              </button>
+                            ))}
+                          </div>
                         )}
                       </div>
                     </div>

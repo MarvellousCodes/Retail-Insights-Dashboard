@@ -6,6 +6,21 @@ import { apiCall } from "@/lib/api";
 // so a conversation continues seamlessly between them. Persisted to
 // localStorage; the active conversation id lives in sessionStorage.
 
+export interface VizSpec {
+  type: "stat" | "line" | "multiline" | "column" | "heatmap" | "donut" | "hbar" | "scatter" | "table";
+  x: string | null;
+  y: string[];
+  series: string | null;
+  units: Record<string, "eur" | "pct" | "count" | "text">;
+  labels: Record<string, Record<string, string>>;
+  title: string;
+}
+
+export interface AskFlag {
+  kind: string;
+  message: string;
+}
+
 export interface AskTurn {
   ts: number;
   cid: string; // conversation id
@@ -16,6 +31,11 @@ export interface AskTurn {
   rows: any[][];
   row_count: number;
   clarify?: boolean; // true when the answer is a follow-up question, not data
+  status?: "ok" | "clarify" | "out_of_scope" | "fallback" | "error";
+  suggestions?: string[];
+  followups?: string[];
+  viz?: VizSpec | null;
+  flags?: AskFlag[];
 }
 
 export interface Conversation {
@@ -120,9 +140,14 @@ export async function runAsk(
       columns: d.columns || [],
       rows: d.rows || [],
       row_count: d.row_count || 0,
-      clarify: !!d.needs_clarification,
+      clarify: !!d.needs_clarification || d.status === "clarify",
+      status: d.status || "ok",
+      suggestions: d.suggestions || undefined,
+      followups: d.followups || undefined,
+      viz: d.viz || undefined,
+      flags: d.flags || undefined,
     });
-    return { ok: true, usage: d.usage, clarify: !!d.needs_clarification };
+    return { ok: true, usage: d.usage, clarify: !!d.needs_clarification || d.status === "clarify" };
   } catch {
     return { ok: false, error: "Something went wrong, please try again." };
   }
