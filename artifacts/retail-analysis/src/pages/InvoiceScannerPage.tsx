@@ -2,8 +2,9 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { apiCall, API_BASE } from "@/lib/api";
 import {
   ScanLine, UploadCloud, Loader2, CheckCircle2, AlertTriangle, Sparkles,
-  FileText, TrendingUp, Gauge, X, ClipboardCopy, ArrowRight, Pencil,
+  FileText, TrendingUp, Gauge, X, ClipboardCopy, ArrowRight, Pencil, Plus,
 } from "lucide-react";
+import { AddToShopModal } from "@/components/AddToShopModal";
 
 /* ─── Types ─── */
 interface Line {
@@ -296,9 +297,10 @@ interface ModalProps {
   onClose: () => void;
   onResult: (msg: string, ok: boolean) => void;
   writebackEnabled: boolean;
+  onAddToShop: (line: { invoice_desc: string; barcode: string; invoice_cost: number; qty: number }) => void;
 }
 
-function InvoiceActionsModal({ groups, onClose, onResult, writebackEnabled }: ModalProps) {
+function InvoiceActionsModal({ groups, onClose, onResult, writebackEnabled, onAddToShop }: ModalProps) {
   const [priceInclude, setPriceInclude] = useState<Record<string, boolean>>(() => {
     const m: Record<string, boolean> = {};
     groups.price_changes.forEach((p) => { m[p.product_code] = true; });
@@ -464,6 +466,7 @@ function InvoiceActionsModal({ groups, onClose, onResult, writebackEnabled }: Mo
                       <th className="text-left px-3 py-2 text-[11px] font-semibold uppercase text-gray-500">Barcode</th>
                       <th className="text-right px-3 py-2 text-[11px] font-semibold uppercase text-gray-500">Invoice cost</th>
                       <th className="text-right px-3 py-2 text-[11px] font-semibold uppercase text-gray-500">Qty</th>
+                      {writebackEnabled && <th className="text-right px-3 py-2 text-[11px] font-semibold uppercase text-gray-500"></th>}
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100 dark:divide-gray-700/60">
@@ -473,6 +476,15 @@ function InvoiceActionsModal({ groups, onClose, onResult, writebackEnabled }: Mo
                         <td className="px-3 py-2 font-mono text-[11px] text-gray-400">{p.barcode || "\u2014"}</td>
                         <td className="px-3 py-2 text-right tabular-nums">{eur(p.invoice_cost)}</td>
                         <td className="px-3 py-2 text-right tabular-nums text-gray-500">{p.qty}</td>
+                        {writebackEnabled && (
+                          <td className="px-3 py-2 text-right">
+                            <button
+                              onClick={() => onAddToShop({ invoice_desc: p.description, barcode: p.barcode, invoice_cost: p.invoice_cost, qty: p.qty })}
+                              className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-semibold text-violet-600 hover:text-violet-800 border border-violet-200 dark:border-violet-700 hover:bg-violet-50 dark:hover:bg-violet-900/20 transition">
+                              <Plus className="w-3 h-3" /> Add
+                            </button>
+                          </td>
+                        )}
                       </tr>
                     ))}
                   </tbody>
@@ -550,8 +562,12 @@ export function InvoiceScannerPage(_props?: { existingProducts?: any[]; onAddToS
   const [pushAllValues, setPushAllValues] = useState<EditsMap>({});
   const [batchSubmitting, setBatchSubmitting] = useState(false);
 
+  // Add to shop state
+  const [addToShopLine, setAddToShopLine] = useState<Line | null>(null);
+  const [newProductStatuses, setNewProductStatuses] = useState<Record<string, "added" | "queued">>({});
+
   // Reset inline edits when result changes
-  useEffect(() => { setInlineEdits({}); setRowStatuses({}); }, [result]);
+  useEffect(() => { setInlineEdits({}); setRowStatuses({}); setNewProductStatuses({}); }, [result]);
 
   // Derived: count of unpushed edited rows
   const unpushedCount = result ? result.lines.filter((l, i) => {
@@ -886,7 +902,22 @@ export function InvoiceScannerPage(_props?: { existingProducts?: any[]; onAddToS
                       </td>
                       <td className="px-4 py-2.5 max-w-[180px]">
                         {l.status === "new"
-                          ? <span className="text-violet-500 text-xs italic">Not in your shop yet</span>
+                          ? (
+                            <div className="flex items-center gap-2">
+                              {newProductStatuses[k] === "added" ? (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300"><CheckCircle2 className="w-3 h-3" /> Added</span>
+                              ) : newProductStatuses[k] === "queued" ? (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300">Queued</span>
+                              ) : writebackEnabled ? (
+                                <button onClick={() => setAddToShopLine(l)}
+                                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold text-violet-600 hover:text-violet-800 border border-violet-200 dark:border-violet-700 hover:bg-violet-50 dark:hover:bg-violet-900/20 transition">
+                                  <Plus className="w-3 h-3" /> Add to shop
+                                </button>
+                              ) : (
+                                <span className="text-violet-500 text-xs italic">Not in your shop yet</span>
+                              )}
+                            </div>
+                          )
                           : <span className="text-gray-600 dark:text-gray-300 block truncate" title={l.matched}>{l.matched}</span>}
                       </td>
                       <td className="px-3 py-2.5 text-right whitespace-nowrap">
@@ -978,6 +1009,10 @@ export function InvoiceScannerPage(_props?: { existingProducts?: any[]; onAddToS
           groups={groups}
           writebackEnabled={writebackEnabled}
           onClose={() => setShowModal(false)}
+          onAddToShop={(line) => {
+            setShowModal(false);
+            setAddToShopLine({ ...line, status: "new", flag: "not on system", qty: line.qty } as Line);
+          }}
           onResult={(msg, ok) => {
             const suffix = ok ? (msg.includes("queued") ? " \u2014 review them on the Price changes page" : " \u2014 track them on the Price changes page") : "";
             setResultBanner({ msg: msg + suffix, ok });
@@ -1009,6 +1044,32 @@ export function InvoiceScannerPage(_props?: { existingProducts?: any[]; onAddToS
           onQueue={() => submitBatch(true)}
           onClose={() => setShowPushAll(false)}
           submitting={batchSubmitting}
+        />
+      )}
+
+      {/* Add to shop modal */}
+      {addToShopLine && (
+        <AddToShopModal
+          line={addToShopLine}
+          onClose={() => setAddToShopLine(null)}
+          onResult={(msg, ok) => {
+            if (ok) {
+              const key = addToShopLine.invoice_desc + "|" + (addToShopLine.barcode || "");
+              const status = msg.includes("queued") ? "queued" : "added";
+              setNewProductStatuses((s) => ({ ...s, [key]: status }));
+              // Also mark by row index for the scan table
+              if (result) {
+                result.lines.forEach((l, i) => {
+                  if (l.status === "new" && l.invoice_desc === addToShopLine.invoice_desc && (l.barcode || "") === (addToShopLine.barcode || "")) {
+                    setNewProductStatuses((s) => ({ ...s, [rowKey(l, i)]: status }));
+                  }
+                });
+              }
+            }
+            const suffix = ok ? " \u2014 track it on the Price changes page" : "";
+            setResultBanner({ msg: msg + suffix, ok });
+            setAddToShopLine(null);
+          }}
         />
       )}
     </div>
