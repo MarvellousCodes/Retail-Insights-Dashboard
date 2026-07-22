@@ -5,6 +5,7 @@ import {
   FileText, TrendingUp, Gauge, X, ClipboardCopy, ArrowRight, Pencil, Plus,
 } from "lucide-react";
 import { AddToShopModal } from "@/components/AddToShopModal";
+import { EditProductModal } from "@/components/EditProductModal";
 
 /* ─── Types ─── */
 interface Line {
@@ -564,6 +565,7 @@ export function InvoiceScannerPage(_props?: { existingProducts?: any[]; onAddToS
 
   // Add to shop state
   const [addToShopLine, setAddToShopLine] = useState<Line | null>(null);
+  const [editLine, setEditLine] = useState<Line | null>(null);
   const [newProductStatuses, setNewProductStatuses] = useState<Record<string, "added" | "queued">>({});
 
   // Reset inline edits when result changes
@@ -755,12 +757,6 @@ export function InvoiceScannerPage(_props?: { existingProducts?: any[]; onAddToS
       {u && (
         <div className="flex flex-wrap items-center gap-4 mb-4 text-xs">
           <span className="inline-flex items-center gap-1.5 text-gray-500"><Gauge className="w-3.5 h-3.5" /> <b className="text-gray-700 dark:text-gray-200">{u.today}/{u.daily_limit}</b> scans today</span>
-          <span className="inline-flex items-center gap-2 text-gray-500">
-            ${u.month_cost.toFixed(3)} / ${u.monthly_ceiling.toFixed(0)} this month
-            <span className="inline-block w-24 h-1.5 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden align-middle">
-              <span className="block h-full bg-violet-500" style={{ width: `${pctBudget}%` }} />
-            </span>
-          </span>
           {!u.configured && <span className="text-red-600">not configured</span>}
         </div>
       )}
@@ -871,6 +867,7 @@ export function InvoiceScannerPage(_props?: { existingProducts?: any[]; onAddToS
                       )}
                     </span>
                   </th>
+                  <th className="w-[120px] px-4 py-2.5 text-right text-[11px] font-semibold uppercase tracking-wide text-gray-500">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-gray-700/60">
@@ -903,20 +900,7 @@ export function InvoiceScannerPage(_props?: { existingProducts?: any[]; onAddToS
                       <td className="px-4 py-2.5 max-w-[180px]">
                         {l.status === "new"
                           ? (
-                            <div className="flex items-center gap-2">
-                              {newProductStatuses[k] === "added" ? (
-                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300"><CheckCircle2 className="w-3 h-3" /> Added</span>
-                              ) : newProductStatuses[k] === "queued" ? (
-                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300">Queued</span>
-                              ) : writebackEnabled ? (
-                                <button onClick={() => setAddToShopLine(l)}
-                                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold text-violet-600 hover:text-violet-800 border border-violet-200 dark:border-violet-700 hover:bg-violet-50 dark:hover:bg-violet-900/20 transition">
-                                  <Plus className="w-3 h-3" /> Add to shop
-                                </button>
-                              ) : (
-                                <span className="text-violet-500 text-xs italic">Not in your shop yet</span>
-                              )}
-                            </div>
+                            <span className="text-gray-400 dark:text-gray-500 text-xs italic">Not in your shop yet</span>
                           )
                           : <span className="text-gray-600 dark:text-gray-300 block truncate" title={l.matched}>{l.matched}</span>}
                       </td>
@@ -961,10 +945,30 @@ export function InvoiceScannerPage(_props?: { existingProducts?: any[]; onAddToS
                         </div>
                         {!rStatus && l.status !== "review" && <span className="block text-[10px] text-gray-400 mt-0.5">{l.flag}</span>}
                       </td>
+                      {/* Actions column */}
+                      <td className="w-[120px] px-4 py-2.5 text-right whitespace-nowrap">
+                        {l.status === "new" ? (
+                          newProductStatuses[k] === "added" ? (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300"><CheckCircle2 className="w-3 h-3" /> Added</span>
+                          ) : newProductStatuses[k] === "queued" ? (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300">Queued</span>
+                          ) : (
+                            <button onClick={() => setAddToShopLine(l)}
+                              className="w-[100px] inline-flex items-center justify-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold text-violet-600 hover:text-violet-800 border border-violet-200 dark:border-violet-700 hover:bg-violet-50 dark:hover:bg-violet-900/20 transition">
+                              <Plus className="w-3 h-3" /> Add to shop
+                            </button>
+                          )
+                        ) : l.status === "matched" ? (
+                          <button onClick={() => setEditLine(l)}
+                            className="w-[100px] inline-flex items-center justify-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold text-gray-500 hover:text-violet-700 border border-gray-200 dark:border-gray-600 hover:border-violet-300 hover:bg-violet-50 dark:hover:bg-violet-900/20 transition">
+                            <Pencil className="w-3 h-3" /> Edit
+                          </button>
+                        ) : null}
+                      </td>
                     </tr>
                     {l.status === "review" && l.reason && (
                       <tr>
-                        <td colSpan={7} className="px-4 pb-2.5 pt-0">
+                        <td colSpan={8} className="px-4 pb-2.5 pt-0">
                           <div className="flex items-start gap-2 text-[11.5px] text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/15 border border-amber-200 dark:border-amber-800 rounded-lg px-3 py-2">
                             <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
                             <span>{l.reason}</span>
@@ -974,7 +978,7 @@ export function InvoiceScannerPage(_props?: { existingProducts?: any[]; onAddToS
                     )}
                     {l.note && (
                       <tr>
-                        <td colSpan={7} className="px-4 pb-2.5 pt-0">
+                        <td colSpan={8} className="px-4 pb-2.5 pt-0">
                           <div className="flex items-start gap-2 text-[11.5px] text-blue-800 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/15 border border-blue-200 dark:border-blue-800 rounded-lg px-3 py-2">
                             <FileText className="w-3.5 h-3.5 mt-0.5 shrink-0" />
                             <span>{l.note}</span>
@@ -1069,6 +1073,26 @@ export function InvoiceScannerPage(_props?: { existingProducts?: any[]; onAddToS
             const suffix = ok ? " \u2014 track it on the Price changes page" : "";
             setResultBanner({ msg: msg + suffix, ok });
             setAddToShopLine(null);
+          }}
+        />
+      )}
+
+      {/* Edit product modal */}
+      {editLine && (
+        <EditProductModal
+          line={{
+            invoice_desc: editLine.invoice_desc,
+            matched: editLine.matched || editLine.invoice_desc,
+            barcode: editLine.barcode,
+            old_cost: editLine.old_cost ?? null,
+            invoice_cost: editLine.invoice_cost,
+            selling_price: getDisplayPrice(editLine),
+            plu: getPlU(editLine),
+          }}
+          onClose={() => setEditLine(null)}
+          onResult={(msg, ok) => {
+            setResultBanner({ msg: ok ? msg + " \u2014 track it on the Price changes page" : msg, ok });
+            setEditLine(null);
           }}
         />
       )}
