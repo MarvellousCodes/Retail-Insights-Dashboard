@@ -17,6 +17,7 @@ interface Line {
   reason?: string;
   note?: string;
   product_code?: string;
+  product_code_for_change?: string;
   current_price?: number | null;
   suggested_price?: number | null;
   eligible_for_price_change?: boolean;
@@ -273,14 +274,15 @@ export function InvoiceScannerPage(_props?: { existingProducts?: any[]; onAddToS
                         {l.status !== "review" && <span className="block text-[10px] text-gray-400 mt-0.5">{l.flag}</span>}
                       </td>
                       <td className="px-3 py-2.5 text-right whitespace-nowrap">
-                        {l.eligible_for_price_change && l.suggested_price != null && l.product_code ? (() => {
-                          const st = invoiceQueueState[l.product_code] || "idle";
+                        {l.eligible_for_price_change && l.suggested_price != null && (l.product_code_for_change || l.product_code) ? (() => {
+                          const pc = l.product_code_for_change || l.product_code!;
+                          const st = invoiceQueueState[pc] || "idle";
                           if (st === "done") return <span className="inline-flex items-center gap-1 text-[10px] text-green-600"><CheckCircle2 className="w-3 h-3" /> Queued</span>;
                           if (st === "loading") return <Loader2 className="w-3 h-3 animate-spin text-violet-500" />;
                           if (st === "error") return <span className="text-[10px] text-red-500">Failed</span>;
                           return (
                             <button
-                              onClick={() => handleInvoiceQueuePrice(l.product_code!, l.suggested_price!)}
+                              onClick={() => handleInvoiceQueuePrice(pc, l.suggested_price!)}
                               className="inline-flex items-center gap-1 text-[10px] font-medium text-violet-600 hover:text-violet-800 whitespace-nowrap"
                             >
                               Queue {`\u20AC${l.suggested_price!.toFixed(2)}`}

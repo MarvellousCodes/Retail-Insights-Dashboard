@@ -20,7 +20,7 @@ interface PriceJobsResponse {
   jobs: PriceJob[];
   writeback_enabled: boolean;
   message?: string;
-  summary?: { drafts: number; pending: number; applied: number; failed: number };
+  summary?: { drafts: number; pending: number; applied: number; failed: number; dismissed?: number };
 }
 
 const eur = (v: number) => "\u20AC" + v.toFixed(2);
