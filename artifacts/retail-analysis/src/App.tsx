@@ -25,12 +25,13 @@ import { IssuesLivePage } from "@/pages/IssuesLivePage";
 import { BarcodeScannerPage } from "@/pages/BarcodeScannerPage";
 import { AskPage } from "@/pages/AskPage";
 import { PriceHistoryPage } from "@/pages/PriceHistoryPage";
+import { PriceChangesPage } from "@/pages/PriceChangesPage";
 import { AskWidget } from "@/components/AskWidget";
 import { isLoggedIn } from "@/lib/api";
 
 const queryClient = new QueryClient();
 
-export type NavTab = "dashboard" | "upload" | "issues" | "reports" | "insights" | "departments" | "invoices" | "scanner" | "askshop" | "livedata" | "turnover" | "transactions" | "suppliers" | "customers" | "depts" | "margins" | "pricemoves" | "settings";
+export type NavTab = "dashboard" | "upload" | "issues" | "reports" | "insights" | "departments" | "invoices" | "scanner" | "askshop" | "livedata" | "turnover" | "transactions" | "suppliers" | "customers" | "depts" | "margins" | "pricemoves" | "pricechanges" | "settings";
 type InternalTab = NavTab | "analyse";
 
 // ─── Core Types ───────────────────────────────────────────────────────────────
@@ -402,6 +403,7 @@ function App() {
           {tab === "scanner" && <BarcodeScannerPage />}
           {tab === "askshop" && <AskPage />}
           {tab === "pricemoves" && <PriceHistoryPage />}
+          {tab === "pricechanges" && <PriceChangesPage />}
           {tab === "settings" && (
             <SettingsPage theme={theme} onThemeToggle={() => setTheme((t) => (t === "dark" ? "light" : "dark"))} />
           )}

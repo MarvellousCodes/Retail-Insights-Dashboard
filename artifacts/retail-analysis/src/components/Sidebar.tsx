@@ -1,4 +1,4 @@
-import { Upload, LayoutDashboard, AlertCircle, FileText, Settings, ChevronRight, ChevronLeft, Shield, Sun, Moon, ScanLine, ScanBarcode, Sparkles, BarChart3, Building2, Database, TrendingUp, Receipt, Truck, Users, Layers, AlertTriangle, X , LineChart } from "lucide-react";
+import { Upload, LayoutDashboard, AlertCircle, FileText, Settings, ChevronRight, ChevronLeft, Shield, Sun, Moon, ScanLine, ScanBarcode, Sparkles, BarChart3, Building2, Database, TrendingUp, Receipt, Truck, Users, Layers, AlertTriangle, X , LineChart, ClipboardList } from "lucide-react";
 import type { NavTab } from "@/App";
 
 interface SidebarProps {
@@ -35,6 +35,7 @@ const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
   ] },
   { label: "Records", items: [
     { tab: "livedata", icon: <Database className="w-5 h-5 shrink-0" />, label: "Products" },
+    { tab: "pricechanges", icon: <ClipboardList className="w-5 h-5 shrink-0" />, label: "Price changes" },
     { tab: "customers", icon: <Users className="w-5 h-5 shrink-0" />, label: "Customers" },
   ] },
 ];

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { apiCall } from "@/lib/api";
+import { apiCall, API_BASE } from "@/lib/api";
 import { TrendingUp, TrendingDown, Search, Loader2, LineChart as LineChartIcon, Sparkles, Layers, ArrowLeft, CheckCircle2 } from "lucide-react";
 import { ResponsiveContainer, ComposedChart, Bar, Line, XAxis, YAxis, Tooltip, Legend } from "recharts";
 
@@ -154,16 +154,76 @@ export function PriceHistoryPage() {
     setBusy(false);
   }, [busy]);
 
-  const OppRow = ({ o }: { o: Opp }) => (
-    <button onClick={() => setViewing(o.product_id)}
-      className="w-full text-left rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-3.5 hover:border-violet-300 dark:hover:border-violet-700 transition flex flex-wrap items-center justify-between gap-2">
-      <div className="min-w-0">
-        <span className="block text-sm font-semibold text-gray-900 dark:text-white truncate">{o.description}</span>
-        <span className="block text-xs text-gray-500 mt-0.5">{eur(o.price)} {"\u2192"} <b>{eur(o.suggested)}</b> &middot; margin {o.margin != null ? o.margin.toFixed(0) : "?"}% {"\u2192"} {o.new_margin.toFixed(0)}%{o.breakeven_loss_pct != null ? ` \u00B7 can lose ${o.breakeven_loss_pct}% of sales` : ""} &middot; {o.dept}</span>
+  const [applyState, setApplyState] = useState<Record<string, "idle" | "loading" | "queued" | "error">>({});
+  const [applyMsg, setApplyMsg] = useState<Record<string, string>>({});
+
+  const handleApplyPrice = async (e: React.MouseEvent, productCode: string, newPrice: number) => {
+    e.stopPropagation();
+    setApplyState((s) => ({ ...s, [productCode]: "loading" }));
+    try {
+      const token = localStorage.getItem("rg-token");
+      const res = await fetch(`${API_BASE}/api/price-jobs`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ product_code: productCode, new_price: newPrice }),
+      });
+      const d = await res.json();
+      if (res.ok) {
+        setApplyState((s) => ({ ...s, [productCode]: "queued" }));
+      } else if (res.status === 403 && d.code === "writeback_not_enabled") {
+        setApplyState((s) => ({ ...s, [productCode]: "error" }));
+        setApplyMsg((m) => ({ ...m, [productCode]: d.message || "Write-back is not active yet." }));
+      } else {
+        setApplyState((s) => ({ ...s, [productCode]: "error" }));
+        setApplyMsg((m) => ({ ...m, [productCode]: d.message || "Something went wrong." }));
+      }
+    } catch {
+      setApplyState((s) => ({ ...s, [productCode]: "error" }));
+      setApplyMsg((m) => ({ ...m, [productCode]: "Could not reach the server." }));
+    }
+  };
+
+  const OppRow = ({ o }: { o: Opp }) => {
+    const state = applyState[o.product_id] || "idle";
+    const msg = applyMsg[o.product_id];
+    return (
+      <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-3.5 hover:border-violet-300 dark:hover:border-violet-700 transition">
+        <button onClick={() => setViewing(o.product_id)} className="w-full text-left flex flex-wrap items-center justify-between gap-2">
+          <div className="min-w-0">
+            <span className="block text-sm font-semibold text-gray-900 dark:text-white truncate">{o.description}</span>
+            <span className="block text-xs text-gray-500 mt-0.5">{eur(o.price)} {"\u2192"} <b>{eur(o.suggested)}</b> &middot; margin {o.margin != null ? o.margin.toFixed(0) : "?"}% {"\u2192"} {o.new_margin.toFixed(0)}%{o.breakeven_loss_pct != null ? ` \u00B7 can lose ${o.breakeven_loss_pct}% of sales` : ""} &middot; {o.dept}</span>
+          </div>
+          <span className="text-sm font-bold text-green-600 whitespace-nowrap">+{eur0(o.gain_month)}/mo</span>
+        </button>
+        <div className="mt-2 flex items-center gap-2">
+          {state === "idle" && (
+            <button
+              onClick={(e) => handleApplyPrice(e, o.product_id, o.suggested)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-violet-600 text-white hover:bg-violet-700 transition"
+            >
+              <CheckCircle2 className="w-3 h-3" /> Apply this price
+            </button>
+          )}
+          {state === "loading" && (
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-gray-100 dark:bg-gray-700 text-gray-500">
+              <Loader2 className="w-3 h-3 animate-spin" /> Sending...
+            </span>
+          )}
+          {state === "queued" && (
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-800">
+              <CheckCircle2 className="w-3 h-3" /> Queued
+            </span>
+          )}
+          {state === "error" && msg && (
+            <span className="text-[11px] text-gray-400">{msg}</span>
+          )}
+        </div>
       </div>
-      <span className="text-sm font-bold text-green-600 whitespace-nowrap">+{eur0(o.gain_month)}/mo</span>
-    </button>
-  );
+    );
+  };
 
   return (
     <div className="p-4 md:p-6 max-w-5xl mx-auto">
