@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { apiCall } from "@/lib/api";
+import { apiCall, API_BASE } from "@/lib/api";
 import { useRevenueMask, RevenueMaskToggle, STARS } from "@/lib/privacy";
-import { AlertTriangle, DollarSign } from "lucide-react";
+import { AlertTriangle, DollarSign, Loader2, CheckCircle2 } from "lucide-react";
 
 function eur(v: number | null | undefined, masked: boolean) {
   if (masked) return STARS;
@@ -29,6 +29,23 @@ export function MarginsPage() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<"all"|"low"|"negative"|"high">("all");
   const { masked, toggle } = useRevenueMask();
+  const [queueState, setQueueState] = useState<Record<string, "idle" | "loading" | "done" | "error">>({});
+
+  const handleQueuePrice = async (productCode: string, newPrice: number) => {
+    setQueueState((s) => ({ ...s, [productCode]: "loading" }));
+    try {
+      const token = localStorage.getItem("rg-token");
+      const res = await fetch(`${API_BASE}/api/price-jobs`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        body: JSON.stringify({ product_code: productCode, new_price: newPrice, draft: true, source: "margins" }),
+      });
+      if (res.ok) setQueueState((s) => ({ ...s, [productCode]: "done" }));
+      else setQueueState((s) => ({ ...s, [productCode]: "error" }));
+    } catch {
+      setQueueState((s) => ({ ...s, [productCode]: "error" }));
+    }
+  };
 
   useEffect(() => {
     Promise.all([
@@ -171,6 +188,7 @@ export function MarginsPage() {
               <th className="px-3 py-2.5 text-right text-xs font-semibold text-violet-700">Markup</th>
               <th className="px-3 py-2.5 text-left text-xs font-semibold text-violet-700">Supplier</th>
               <th className="px-3 py-2.5 text-center text-xs font-semibold text-violet-700">Pack</th>
+              <th className="px-3 py-2.5 text-right text-xs font-semibold text-violet-700"></th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50 dark:divide-gray-700">
@@ -190,6 +208,22 @@ export function MarginsPage() {
                 <td className="px-3 py-2 text-right text-gray-500 text-xs">{p.markup === null || p.markup === undefined ? '\u2014' : p.markup + '%'}</td>
                 <td className="px-3 py-2 text-gray-500 text-xs truncate max-w-[100px]">{p.supplier}</td>
                 <td className="px-3 py-2 text-center text-gray-400 text-xs">{p.pack}</td>
+                <td className="px-3 py-2 text-right">
+                  {p.margin < 20 && p.cost > 0 && p.retail > 0 && (() => {
+                    const suggested = +(p.cost / (1 - 0.25)).toFixed(2);
+                    const key = p.code || p.name;
+                    const st = queueState[key] || "idle";
+                    if (st === "done") return <span className="inline-flex items-center gap-1 text-[10px] text-green-600"><CheckCircle2 className="w-3 h-3" />Queued</span>;
+                    if (st === "loading") return <Loader2 className="w-3 h-3 animate-spin text-violet-500" />;
+                    if (st === "error") return <span className="text-[10px] text-red-500">Failed</span>;
+                    return (
+                      <button onClick={() => handleQueuePrice(key, suggested)}
+                        className="text-[10px] font-medium text-violet-600 hover:text-violet-800 whitespace-nowrap">
+                        Queue {`\u20AC${suggested.toFixed(2)}`}
+                      </button>
+                    );
+                  })()}
+                </td>
               </tr>
             ))}
           </tbody>

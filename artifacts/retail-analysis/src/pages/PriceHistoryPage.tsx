@@ -168,7 +168,7 @@ export function PriceHistoryPage() {
           "Content-Type": "application/json",
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify({ product_code: productCode, new_price: newPrice }),
+        body: JSON.stringify({ product_code: productCode, new_price: newPrice, draft: true, source: "price_check" }),
       });
       const d = await res.json();
       if (res.ok) {
@@ -204,7 +204,7 @@ export function PriceHistoryPage() {
               onClick={(e) => handleApplyPrice(e, o.product_id, o.suggested)}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-violet-600 text-white hover:bg-violet-700 transition"
             >
-              <CheckCircle2 className="w-3 h-3" /> Apply this price
+              <CheckCircle2 className="w-3 h-3" /> Queue price change
             </button>
           )}
           {state === "loading" && (
@@ -214,7 +214,7 @@ export function PriceHistoryPage() {
           )}
           {state === "queued" && (
             <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-800">
-              <CheckCircle2 className="w-3 h-3" /> Queued
+              <CheckCircle2 className="w-3 h-3" /> Added to Price changes
             </span>
           )}
           {state === "error" && msg && (

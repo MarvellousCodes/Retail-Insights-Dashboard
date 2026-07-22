@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { apiCall } from "@/lib/api";
+import { apiCall, API_BASE } from "@/lib/api";
 import {
   ScanLine, UploadCloud, Loader2, CheckCircle2, AlertTriangle, Sparkles,
   FileText, TrendingUp, Gauge,
@@ -16,6 +16,11 @@ interface Line {
   flag: string;
   reason?: string;
   note?: string;
+  product_code?: string;
+  current_price?: number | null;
+  suggested_price?: number | null;
+  eligible_for_price_change?: boolean;
+  price_change_reason?: string;
 }
 interface ScanResult {
   supplier: string; invoice_date: string; pages: number;
@@ -67,6 +72,23 @@ export function InvoiceScannerPage(_props?: { existingProducts?: any[]; onAddToS
   const [scans, setScans] = useState<ScanRecord[]>([]);
   const [viewingPast, setViewingPast] = useState<number | null>(null); // id of past scan being viewed
   const fileRef = useRef<HTMLInputElement | null>(null);
+  const [invoiceQueueState, setInvoiceQueueState] = useState<Record<string, "idle" | "loading" | "done" | "error">>({});
+
+  const handleInvoiceQueuePrice = async (productCode: string, newPrice: number) => {
+    setInvoiceQueueState((s) => ({ ...s, [productCode]: "loading" }));
+    try {
+      const token = localStorage.getItem("rg-token");
+      const res = await fetch(`${API_BASE}/api/price-jobs`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        body: JSON.stringify({ product_code: productCode, new_price: newPrice, draft: true, source: "invoice_scanner" }),
+      });
+      if (res.ok) setInvoiceQueueState((s) => ({ ...s, [productCode]: "done" }));
+      else setInvoiceQueueState((s) => ({ ...s, [productCode]: "error" }));
+    } catch {
+      setInvoiceQueueState((s) => ({ ...s, [productCode]: "error" }));
+    }
+  };
 
   const loadUsage = useCallback(() => { apiCall("/api/invoice/usage").then(setUsage).catch(() => {}); }, []);
   const loadHistory = useCallback(() => { apiCall("/api/invoice/history").then((d) => setScans(d.scans || [])).catch(() => {}); }, []);
@@ -218,6 +240,7 @@ export function InvoiceScannerPage(_props?: { existingProducts?: any[]; onAddToS
                   <th className="px-3 py-2.5 text-right text-[11px] font-semibold uppercase tracking-wide text-gray-500">Your cost</th>
                   <th className="px-3 py-2.5 text-right text-[11px] font-semibold uppercase tracking-wide text-gray-500">New margin</th>
                   <th className="px-4 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wide text-gray-500">Status</th>
+                  <th className="px-3 py-2.5 text-right text-[11px] font-semibold uppercase tracking-wide text-gray-500"></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-gray-700/60">
@@ -249,10 +272,28 @@ export function InvoiceScannerPage(_props?: { existingProducts?: any[]; onAddToS
                         <span className={`inline-block px-2 py-0.5 rounded-full text-[11px] font-semibold ${sb.cls}`}>{l.status === "review" ? l.flag : sb.label}</span>
                         {l.status !== "review" && <span className="block text-[10px] text-gray-400 mt-0.5">{l.flag}</span>}
                       </td>
+                      <td className="px-3 py-2.5 text-right whitespace-nowrap">
+                        {l.eligible_for_price_change && l.suggested_price != null && l.product_code ? (() => {
+                          const st = invoiceQueueState[l.product_code] || "idle";
+                          if (st === "done") return <span className="inline-flex items-center gap-1 text-[10px] text-green-600"><CheckCircle2 className="w-3 h-3" /> Queued</span>;
+                          if (st === "loading") return <Loader2 className="w-3 h-3 animate-spin text-violet-500" />;
+                          if (st === "error") return <span className="text-[10px] text-red-500">Failed</span>;
+                          return (
+                            <button
+                              onClick={() => handleInvoiceQueuePrice(l.product_code!, l.suggested_price!)}
+                              className="inline-flex items-center gap-1 text-[10px] font-medium text-violet-600 hover:text-violet-800 whitespace-nowrap"
+                            >
+                              Queue {`\u20AC${l.suggested_price!.toFixed(2)}`}
+                            </button>
+                          );
+                        })() : l.eligible_for_price_change === false && l.price_change_reason === "not_in_shop" ? (
+                          <span className="text-[10px] text-gray-400 italic">Not in your shop yet</span>
+                        ) : null}
+                      </td>
                     </tr>
                     {l.status === "review" && l.reason && (
                       <tr>
-                        <td colSpan={8} className="px-4 pb-2.5 pt-0">
+                        <td colSpan={9} className="px-4 pb-2.5 pt-0">
                           <div className="flex items-start gap-2 text-[11.5px] text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/15 border border-amber-200 dark:border-amber-800 rounded-lg px-3 py-2">
                             <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
                             <span>{l.reason}</span>
@@ -262,7 +303,7 @@ export function InvoiceScannerPage(_props?: { existingProducts?: any[]; onAddToS
                     )}
                     {l.note && (
                       <tr>
-                        <td colSpan={8} className="px-4 pb-2.5 pt-0">
+                        <td colSpan={9} className="px-4 pb-2.5 pt-0">
                           <div className="flex items-start gap-2 text-[11.5px] text-blue-800 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/15 border border-blue-200 dark:border-blue-800 rounded-lg px-3 py-2">
                             <FileText className="w-3.5 h-3.5 mt-0.5 shrink-0" />
                             <span>{l.note}</span>
