@@ -20,7 +20,7 @@ import type { AskContext, AskDelta, AskContextSparkline } from "@/lib/askStore";
 
 /** Viz spec from the enhanced /api/ask response */
 export interface VizSpec {
-  type: "stat" | "line" | "multiline" | "column" | "heatmap" | "donut" | "hbar" | "scatter" | "table";
+  type: "stat" | "line" | "multiline" | "column" | "heatmap" | "donut" | "hbar" | "scatter" | "table" | "whatif";
   x: string | null;
   y: string[];
   series: string | null;
@@ -468,6 +468,194 @@ function TableViz({ viz, columns, rows, context }: AskVizProps) {
 }
 
 import React from "react";
+import type { WhatIfData, WhatIfItem } from "@/lib/askStore";
+import { API_BASE } from "@/lib/api";
+
+/* ===== WHAT-IF QUEUE BUTTON ===== */
+function QueueDraftButton({ item }: { item: WhatIfItem }) {
+  const [state, setState] = React.useState<"idle" | "loading" | "done" | "error">("idle");
+
+  const handleQueue = async () => {
+    setState("loading");
+    try {
+      const token = localStorage.getItem("rg-token");
+      const res = await fetch(`${API_BASE}/api/price-jobs`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        body: JSON.stringify({ product_code: item.code, new_price: item.proposed.price, draft: true, source: "ask_whatif" }),
+      });
+      if (res.ok) setState("done");
+      else setState("error");
+    } catch {
+      setState("error");
+    }
+  };
+
+  if (state === "done") {
+    return (
+      <span className="inline-flex items-center gap-1 text-[10px] text-emerald-600 dark:text-emerald-400">
+        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+        Queued as a draft on the Price changes page
+      </span>
+    );
+  }
+
+  if (state === "error") {
+    return <span className="text-[10px] text-red-500">Failed to queue</span>;
+  }
+
+  return (
+    <button
+      onClick={handleQueue}
+      disabled={state === "loading"}
+      className="inline-flex items-center gap-1 text-[10px] px-2 py-1 rounded-md bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 hover:bg-violet-200 dark:hover:bg-violet-800/40 transition-colors disabled:opacity-50"
+    >
+      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+      {state === "loading" ? "Queuing..." : "Queue for review"}
+    </button>
+  );
+}
+
+/* ===== WHAT-IF SINGLE PRODUCT CARD ===== */
+function WhatIfProductCard({ item }: { item: WhatIfItem }) {
+  return (
+    <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-3">
+      <p className="text-[11px] font-semibold text-gray-700 dark:text-gray-200 mb-2.5">{item.product}</p>
+      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
+        {/* Now column */}
+        <div className="space-y-1">
+          <p className="text-[9px] uppercase tracking-wider text-gray-400 font-medium">Now</p>
+          <p className="text-sm font-bold text-gray-800 dark:text-white">{fmtUnit(item.current.price, "eur")}</p>
+          <p className="text-[10px] text-gray-500">{item.current.margin_pct.toFixed(1)}% margin</p>
+          <p className="text-[10px] text-gray-500">{fmtUnit(item.current.profit, "eur")} profit</p>
+        </div>
+        {/* Delta pill */}
+        <div className="flex flex-col items-center gap-1">
+          <svg className="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+          <span className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium ${
+            item.delta.profit >= 0
+              ? "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400"
+              : "bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400"
+          }`}>
+            {item.delta.profit >= 0 ? (
+              <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 15l7-7 7 7" /></svg>
+            ) : (
+              <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" /></svg>
+            )}
+            {item.delta.profit >= 0 ? "+" : ""}{fmtUnit(item.delta.profit, "eur")}
+          </span>
+        </div>
+        {/* If changed column */}
+        <div className="space-y-1 text-right">
+          <p className="text-[9px] uppercase tracking-wider text-gray-400 font-medium">If changed</p>
+          <p className="text-sm font-bold text-violet-700 dark:text-violet-300">{fmtUnit(item.proposed.price, "eur")}</p>
+          <p className="text-[10px] text-gray-500">{item.proposed.margin_pct.toFixed(1)}% margin</p>
+          <p className="text-[10px] text-gray-500">{fmtUnit(item.proposed.profit, "eur")} profit</p>
+        </div>
+      </div>
+      {/* Breakeven sentence */}
+      {item.breakeven && (
+        <p className="mt-2.5 text-[11px] font-medium text-gray-700 dark:text-gray-200">
+          {item.breakeven.direction === "can_lose"
+            ? `You could sell ${item.breakeven.units} fewer units (${item.breakeven.pct.toFixed(1)}%) before being worse off.`
+            : `You would need to sell ${item.breakeven.units} more units (${item.breakeven.pct.toFixed(1)}%) to break even.`
+          }
+        </p>
+      )}
+      {/* Queue button */}
+      {item.queueable && (
+        <div className="mt-2.5">
+          <QueueDraftButton item={item} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ===== WHAT-IF GROUP TABLE ===== */
+function WhatIfGroupTable({ data }: { data: WhatIfData }) {
+  return (
+    <div className="space-y-2.5">
+      <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+        <table className="text-[11px] w-full">
+          <thead className="text-gray-500 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
+            <tr>
+              <th className="px-2.5 py-2 text-left font-semibold">Product</th>
+              <th className="px-2.5 py-2 text-right font-semibold">Now</th>
+              <th className="px-2.5 py-2 text-right font-semibold">New price</th>
+              <th className="px-2.5 py-2 text-right font-semibold">Profit change</th>
+              <th className="px-2.5 py-2 text-right font-semibold"></th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+            {data.items.map((item, i) => (
+              <tr key={i} className={i % 2 ? "bg-gray-50/60 dark:bg-gray-900/20" : ""}>
+                <td className="px-2.5 py-1.5 text-gray-700 dark:text-gray-300 max-w-[180px] truncate">{item.product}</td>
+                <td className="px-2.5 py-1.5 text-right text-gray-700 dark:text-gray-300">{fmtUnit(item.current.price, "eur")}</td>
+                <td className="px-2.5 py-1.5 text-right text-violet-700 dark:text-violet-300 font-medium">{fmtUnit(item.proposed.price, "eur")}</td>
+                <td className={`px-2.5 py-1.5 text-right font-medium ${item.delta.profit >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"}`}>
+                  {item.delta.profit >= 0 ? "+" : ""}{fmtUnit(item.delta.profit, "eur")}
+                </td>
+                <td className="px-2.5 py-1.5 text-right">
+                  {item.queueable && <QueueDraftButton item={item} />}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {/* Totals line */}
+      {data.totals && (
+        <div className="flex items-center gap-3 px-2 py-1.5 rounded-md bg-gray-100 dark:bg-gray-700/40 text-[11px]">
+          <span className="text-gray-500">{data.totals.items_count} items</span>
+          <span className="text-gray-600 dark:text-gray-300 font-medium">
+            Current: {fmtUnit(data.totals.current_profit, "eur")}
+          </span>
+          <svg className="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+          <span className={`font-medium ${data.totals.delta_profit >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"}`}>
+            {data.totals.delta_profit >= 0 ? "+" : ""}{fmtUnit(data.totals.delta_profit, "eur")}
+          </span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ===== WHAT-IF CARD (main) ===== */
+export function WhatIfCard({ data }: { data: WhatIfData }) {
+  if (!data?.items?.length) return null;
+  return (
+    <div className="space-y-2.5">
+      {/* Period badge */}
+      {data.period && (
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-violet-100/70 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300">
+          <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+          {data.period.label}
+        </span>
+      )}
+
+      {/* Single product or group */}
+      {data.scope === "product" && data.items.length === 1 ? (
+        <WhatIfProductCard item={data.items[0]} />
+      ) : (
+        <WhatIfGroupTable data={data} />
+      )}
+
+      {/* Assumption line (small grey translucent) */}
+      {data.assumption && (
+        <p className="text-[10px] text-gray-400/80 italic">{data.assumption}</p>
+      )}
+
+      {/* Warnings (subtle warn tint) */}
+      {data.warnings?.map((w, i) => (
+        <div key={i} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] bg-amber-50/80 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 border border-amber-200/50 dark:border-amber-800/40">
+          <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          {w}
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export function AskViz({ viz, columns, rows, context }: AskVizProps) {
   if (!viz || !columns?.length || !rows?.length) return null;

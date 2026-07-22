@@ -7,7 +7,7 @@ import { apiCall } from "@/lib/api";
 // localStorage; the active conversation id lives in sessionStorage.
 
 export interface VizSpec {
-  type: "stat" | "line" | "multiline" | "column" | "heatmap" | "donut" | "hbar" | "scatter" | "table";
+  type: "stat" | "line" | "multiline" | "column" | "heatmap" | "donut" | "hbar" | "scatter" | "table" | "whatif";
   x: string | null;
   y: string[];
   series: string | null;
@@ -66,6 +66,60 @@ export interface AskTurn {
   viz?: VizSpec | null;
   flags?: AskFlag[];
   context?: AskContext;
+  whatif?: WhatIfData;
+}
+
+export interface WhatIfItemCurrent {
+  price: number;
+  cost: number;
+  margin_pct: number;
+  units: number;
+  revenue: number;
+  profit: number;
+}
+
+export interface WhatIfItemProposed {
+  price: number;
+  margin_pct: number;
+  revenue: number;
+  profit: number;
+}
+
+export interface WhatIfItemDelta {
+  profit: number;
+  profit_pct: number;
+}
+
+export interface WhatIfItemBreakeven {
+  direction: "can_lose" | "must_gain";
+  units: number;
+  pct: number;
+}
+
+export interface WhatIfItem {
+  product: string;
+  code: string;
+  current: WhatIfItemCurrent;
+  proposed: WhatIfItemProposed;
+  delta: WhatIfItemDelta;
+  breakeven: WhatIfItemBreakeven;
+  queueable: boolean;
+}
+
+export interface WhatIfTotals {
+  current_profit: number;
+  proposed_profit: number;
+  delta_profit: number;
+  items_count: number;
+}
+
+export interface WhatIfData {
+  scope: "product" | "group";
+  period?: { label: string; start: string; end: string };
+  assumption: string;
+  items: WhatIfItem[];
+  totals?: WhatIfTotals;
+  warnings?: string[];
 }
 
 export interface Conversation {
@@ -177,6 +231,7 @@ export async function runAsk(
       viz: d.viz || undefined,
       flags: d.flags || undefined,
       context: d.context || undefined,
+      whatif: d.whatif || undefined,
     });
     return { ok: true, usage: d.usage, clarify: !!d.needs_clarification || d.status === "clarify" };
   } catch {

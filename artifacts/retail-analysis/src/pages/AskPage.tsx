@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { API_BASE } from "@/lib/api";
 import { Sparkles, Send, Loader2, Download, Gauge, AlertTriangle, FileSpreadsheet, Plus, Trash2, MessageSquare, ArrowLeft, ChevronDown } from "lucide-react";
-import { useAskHistory, useCurrentCid, runAsk, clearAskHistory, newConversation, setCurrentCid, groupConversations, askTimeAgo, type AskTurn, type VizSpec, type AskContext } from "@/lib/askStore";
-import { AskViz } from "./AskViz";
+import { useAskHistory, useCurrentCid, runAsk, clearAskHistory, newConversation, setCurrentCid, groupConversations, askTimeAgo, type AskTurn, type VizSpec, type AskContext, type WhatIfData } from "@/lib/askStore";
+import { AskViz, WhatIfCard } from "./AskViz";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from "recharts";
 
 interface Usage { today: number; daily_limit: number; month_cost: number; monthly_ceiling: number; configured: boolean; }
@@ -386,7 +386,13 @@ export function AskPage() {
                         <p className="whitespace-pre-wrap">{t.answer}</p>
 
                         {/* Viz chart (new contract) */}
-                        {t.viz && t.columns?.length > 0 && t.rows?.length > 0 && (
+                        {t.viz && t.viz.type === "whatif" && t.whatif && (
+                          <div className="mt-3">
+                            {t.viz.title && <p className="text-[11px] font-medium text-gray-500 mb-1">{t.viz.title}</p>}
+                            <WhatIfCard data={t.whatif} />
+                          </div>
+                        )}
+                        {t.viz && t.viz.type !== "whatif" && t.columns?.length > 0 && t.rows?.length > 0 && (
                           <div className="mt-3">
                             {t.viz.title && <p className="text-[11px] font-medium text-gray-500 mb-1">{t.viz.title}</p>}
                             <AskViz viz={t.viz} columns={t.columns} rows={t.rows} context={t.context} />
