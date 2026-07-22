@@ -399,7 +399,7 @@ function App() {
           {tab === "analyse" && <AnalysePage analyzing={analyzing} fileName={lastFileNames} />}
           {tab === "dashboard" && <DashboardInsights onNavigate={(t) => { setTab(t); setMobileNav(false); }} />}
           {tab === "issues" && <InsightsLivePage />}
-          {tab === "invoices" && <InvoiceScannerPage existingProducts={activeProducts} onAddToSystem={handleAnalyseMultiple} />}
+          {tab === "invoices" && <InvoiceScannerPage existingProducts={activeProducts} onAddToSystem={handleAnalyseMultiple} onNavigate={(t) => { setTab(t as any); }} />}
           {tab === "scanner" && <BarcodeScannerPage />}
           {tab === "askshop" && <AskPage />}
           {tab === "pricemoves" && <PriceHistoryPage />}
