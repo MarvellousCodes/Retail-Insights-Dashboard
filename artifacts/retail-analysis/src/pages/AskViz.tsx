@@ -209,20 +209,29 @@ function StatCard({ viz, columns, rows, context }: AskVizProps) {
   );
 }
 
-function LineViz({ viz, columns, rows }: AskVizProps) {
+function LineViz({ viz, columns, rows, context, onDrillThrough }: AskVizProps & { onDrillThrough?: (q: string) => void }) {
   const data = buildData(columns, rows, viz);
   const xKey = viz.x || columns[0];
   const unit = viz.units?.[viz.y[0]];
+
+  const handleLineClick = (entry: any) => {
+    if (!onDrillThrough || !entry?.activePayload?.length) return;
+    const point = entry.activePayload[0]?.payload?.[xKey];
+    if (!point) return;
+    const q = `Sales breakdown for ${point}`;
+    onDrillThrough(q);
+  };
+
   return (
-    <div className="h-48">
+    <div className={`h-48 ${onDrillThrough ? "cursor-pointer" : ""}`}>
       <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={data} margin={{ top: 8, right: 12, bottom: 0, left: 4 }}>
+        <LineChart data={data} margin={{ top: 8, right: 12, bottom: 0, left: 4 }} onClick={onDrillThrough ? handleLineClick : undefined}>
           <CartesianGrid strokeDasharray="3 3" stroke="rgba(156,163,175,0.2)" />
           <XAxis dataKey={xKey} tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
           <YAxis tick={{ fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={(v) => fmtUnit(v, unit)} />
           <Tooltip content={<CustomTooltip unit={unit} />} />
           {viz.y.map((col, i) => (
-            <Line key={col} type="monotone" dataKey={col} stroke={COLORS[i % COLORS.length]} strokeWidth={2} dot={false} />
+            <Line key={col} type="monotone" dataKey={col} stroke={COLORS[i % COLORS.length]} strokeWidth={2} dot={false} activeDot={onDrillThrough ? { r: 5, strokeWidth: 2 } : undefined} />
           ))}
           {viz.y.length > 1 && <Legend wrapperStyle={{ fontSize: 10 }} />}
         </LineChart>
@@ -231,20 +240,32 @@ function LineViz({ viz, columns, rows }: AskVizProps) {
   );
 }
 
-function ColumnViz({ viz, columns, rows }: AskVizProps) {
+function ColumnViz({ viz, columns, rows, context, onDrillThrough }: AskVizProps & { onDrillThrough?: (q: string) => void }) {
   const data = buildData(columns, rows, viz);
   const xKey = viz.x || columns[0];
   const unit = viz.units?.[viz.y[0]];
+  const periodLabel = context?.period?.label || "";
+
+  const handleBarClick = (entry: any) => {
+    if (!onDrillThrough || !entry?.activePayload?.length) return;
+    const category = entry.activePayload[0]?.payload?.[xKey];
+    if (!category) return;
+    const q = periodLabel
+      ? `Sales breakdown for ${category} for ${periodLabel}`
+      : `Sales breakdown for ${category}`;
+    onDrillThrough(q);
+  };
+
   return (
-    <div className="h-48">
+    <div className={`h-48 ${onDrillThrough ? "cursor-pointer" : ""}`}>
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={data} margin={{ top: 8, right: 12, bottom: 0, left: 4 }}>
+        <BarChart data={data} margin={{ top: 8, right: 12, bottom: 0, left: 4 }} onClick={onDrillThrough ? handleBarClick : undefined}>
           <CartesianGrid strokeDasharray="3 3" stroke="rgba(156,163,175,0.2)" />
           <XAxis dataKey={xKey} tick={{ fontSize: 9 }} interval={0} axisLine={false} tickLine={false} />
           <YAxis tick={{ fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={(v) => fmtUnit(v, unit)} />
           <Tooltip content={<CustomTooltip unit={unit} />} />
           {viz.y.map((col, i) => (
-            <Bar key={col} dataKey={col} fill={COLORS[i % COLORS.length]} radius={[4, 4, 0, 0]} />
+            <Bar key={col} dataKey={col} fill={COLORS[i % COLORS.length]} radius={[4, 4, 0, 0]} className={onDrillThrough ? "hover:opacity-80 transition-opacity" : ""} />
           ))}
         </BarChart>
       </ResponsiveContainer>
@@ -252,17 +273,29 @@ function ColumnViz({ viz, columns, rows }: AskVizProps) {
   );
 }
 
-function HBarViz({ viz, columns, rows, context }: AskVizProps) {
+function HBarViz({ viz, columns, rows, context, onDrillThrough }: AskVizProps & { onDrillThrough?: (q: string) => void }) {
   const data = buildData(columns, rows, viz);
   const xKey = viz.x || columns[0];
   const yCol = viz.y[0];
   const unit = viz.units?.[yCol];
   const total = data.reduce((s, d) => s + (parseFloat(d[yCol]) || 0), 0);
+  const periodLabel = context?.period?.label || "";
+
+  const handleBarClick = (entry: any) => {
+    if (!onDrillThrough || !entry?.activePayload?.length) return;
+    const category = entry.activePayload[0]?.payload?.[xKey];
+    if (!category) return;
+    const q = periodLabel
+      ? `Top 10 products in ${category} by revenue for ${periodLabel}`
+      : `Top 10 products in ${category} by revenue`;
+    onDrillThrough(q);
+  };
+
   return (
     <>
-      <div style={{ height: Math.max(120, rows.length * 28 + 20) }}>
+      <div style={{ height: Math.max(120, rows.length * 28 + 20) }} className={onDrillThrough ? "cursor-pointer" : ""}>
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={data} layout="vertical" margin={{ top: 4, right: 12, bottom: 0, left: 80 }}>
+          <BarChart data={data} layout="vertical" margin={{ top: 4, right: 12, bottom: 0, left: 80 }} onClick={onDrillThrough ? handleBarClick : undefined}>
             <XAxis type="number" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={(v) => fmtUnit(v, unit)} />
             <YAxis type="category" dataKey={xKey} tick={{ fontSize: 10 }} axisLine={false} tickLine={false} width={76} />
             <Tooltip
@@ -275,11 +308,12 @@ function HBarViz({ viz, columns, rows, context }: AskVizProps) {
                   <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-xs shadow-md">
                     <p className="font-semibold text-gray-900 dark:text-white">{fmtUnit(v, unit)}</p>
                     <p className="text-gray-500">{pct}% of total, rank #{rank}</p>
+                    {onDrillThrough && <p className="text-violet-500 mt-0.5">Click to drill down</p>}
                   </div>
                 );
               }}
             />
-            <Bar dataKey={yCol} fill={COLORS[0]} radius={[0, 4, 4, 0]} />
+            <Bar dataKey={yCol} fill={COLORS[0]} radius={[0, 4, 4, 0]} className={onDrillThrough ? "hover:opacity-80 transition-opacity" : ""} />
           </BarChart>
         </ResponsiveContainer>
       </div>
@@ -288,15 +322,27 @@ function HBarViz({ viz, columns, rows, context }: AskVizProps) {
   );
 }
 
-function DonutViz({ viz, columns, rows, context }: AskVizProps) {
+function DonutViz({ viz, columns, rows, context, onDrillThrough }: AskVizProps & { onDrillThrough?: (q: string) => void }) {
   const xKey = viz.x || columns[0];
   const yCol = viz.y[0];
   const unit = viz.units?.[yCol];
   const data = buildData(columns, rows, viz);
   const total = data.reduce((s, d) => s + (parseFloat(d[yCol]) || 0), 0);
+  const periodLabel = context?.period?.label || "";
+
+  const handlePieClick = (_: any, index: number) => {
+    if (!onDrillThrough || index < 0 || index >= data.length) return;
+    const category = data[index]?.[xKey];
+    if (!category) return;
+    const q = periodLabel
+      ? `Top 10 products in ${category} for ${periodLabel}`
+      : `Top 10 products in ${category}`;
+    onDrillThrough(q);
+  };
+
   return (
     <>
-      <div className="h-48">
+      <div className={`h-48 ${onDrillThrough ? "cursor-pointer" : ""}`}>
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
@@ -310,6 +356,8 @@ function DonutViz({ viz, columns, rows, context }: AskVizProps) {
               paddingAngle={2}
               label={({ name, percent }) => `${String(name).slice(0, 12)} ${(percent * 100).toFixed(0)}%`}
               labelLine={false}
+              onClick={onDrillThrough ? handlePieClick : undefined}
+              className={onDrillThrough ? "hover:opacity-80 transition-opacity" : ""}
             >
               {data.map((_, i) => (
                 <Cell key={i} fill={COLORS[i % COLORS.length]} />
@@ -324,6 +372,7 @@ function DonutViz({ viz, columns, rows, context }: AskVizProps) {
                   <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-xs shadow-md">
                     <p className="font-semibold text-gray-900 dark:text-white">{payload[0].name}</p>
                     <p className="text-gray-500">{fmtUnit(v, unit)} ({pct}%)</p>
+                    {onDrillThrough && <p className="text-violet-500 mt-0.5">Click to drill down</p>}
                   </div>
                 );
               }}
@@ -657,7 +706,7 @@ export function WhatIfCard({ data }: { data: WhatIfData }) {
   );
 }
 
-export function AskViz({ viz, columns, rows, context }: AskVizProps) {
+export function AskViz({ viz, columns, rows, context, onDrillThrough }: AskVizProps & { onDrillThrough?: (q: string) => void }) {
   if (!viz || !columns?.length || !rows?.length) return null;
 
   const renderChart = () => {
@@ -666,13 +715,13 @@ export function AskViz({ viz, columns, rows, context }: AskVizProps) {
         return <StatCard viz={viz} columns={columns} rows={rows} context={context} />;
       case "line":
       case "multiline":
-        return <LineViz viz={viz} columns={columns} rows={rows} context={context} />;
+        return <LineViz viz={viz} columns={columns} rows={rows} context={context} onDrillThrough={onDrillThrough} />;
       case "column":
-        return <ColumnViz viz={viz} columns={columns} rows={rows} context={context} />;
+        return <ColumnViz viz={viz} columns={columns} rows={rows} context={context} onDrillThrough={onDrillThrough} />;
       case "hbar":
-        return <HBarViz viz={viz} columns={columns} rows={rows} context={context} />;
+        return <HBarViz viz={viz} columns={columns} rows={rows} context={context} onDrillThrough={onDrillThrough} />;
       case "donut":
-        return <DonutViz viz={viz} columns={columns} rows={rows} context={context} />;
+        return <DonutViz viz={viz} columns={columns} rows={rows} context={context} onDrillThrough={onDrillThrough} />;
       case "heatmap":
         return <HeatmapViz viz={viz} columns={columns} rows={rows} context={context} />;
       case "scatter":

@@ -3,6 +3,7 @@ import { API_BASE } from "@/lib/api";
 import { Sparkles, Send, Loader2, Download, Gauge, AlertTriangle, FileSpreadsheet, Plus, Trash2, MessageSquare, ArrowLeft, ChevronDown } from "lucide-react";
 import { useAskHistory, useCurrentCid, runAsk, clearAskHistory, newConversation, setCurrentCid, groupConversations, askTimeAgo, type AskTurn, type VizSpec, type AskContext, type WhatIfData } from "@/lib/askStore";
 import { AskViz, WhatIfCard } from "./AskViz";
+import { WatchForm, WatchesStrip } from "./AskWatches";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from "recharts";
 
 interface Usage { today: number; daily_limit: number; month_cost: number; monthly_ceiling: number; configured: boolean; }
@@ -361,6 +362,7 @@ export function AskPage() {
                   </div>
                 ))}
               </div>
+              <WatchesStrip />
               {error && (
                 <div className="mt-4 flex items-start gap-2 p-3 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300 text-sm text-left">
                   <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" /> <span>{error}</span>
@@ -395,9 +397,24 @@ export function AskPage() {
                         {t.viz && t.viz.type !== "whatif" && t.columns?.length > 0 && t.rows?.length > 0 && (
                           <div className="mt-3">
                             {t.viz.title && <p className="text-[11px] font-medium text-gray-500 mb-1">{t.viz.title}</p>}
-                            <AskViz viz={t.viz} columns={t.columns} rows={t.rows} context={t.context} />
+                            <AskViz viz={t.viz} columns={t.columns} rows={t.rows} context={t.context} onDrillThrough={(q) => submit(q)} />
                           </div>
                         )}
+
+                        {/* Watch this affordance (stat answers only) */}
+                        {t.viz?.type === "stat" && t.sql && t.status === "ok" && t.columns?.length > 0 && t.rows?.length > 0 && (() => {
+                          const yCol = t.viz!.y?.[0];
+                          const yi = yCol ? t.columns.indexOf(yCol) : -1;
+                          const val = yi >= 0 && t.rows[0] ? parseFloat(String(t.rows[0][yi])) : null;
+                          return (
+                            <WatchForm
+                              question={t.q}
+                              sql={t.sql}
+                              column={yCol || t.columns[0]}
+                              currentValue={val != null && !isNaN(val) ? val : null}
+                            />
+                          );
+                        })()}
 
                         {/* Legacy mini chart (old contract, no viz) */}
                         {cd && (
@@ -469,9 +486,28 @@ export function AskPage() {
                             {/* Flags / confidence footer */}
                             {t.flags && t.flags.length > 0 && (
                               <div className="mt-2 space-y-0.5">
-                                {t.flags.map((f, fi) => (
-                                  <p key={fi} className="text-[10px] text-gray-400/70 italic">{f.message}</p>
-                                ))}
+                                {t.flags.map((f, fi) => {
+                                  const isVerified = f.kind === "verified";
+                                  const isCached = f.kind === "cached";
+                                  const displayMsg = isVerified
+                                    ? "Answered from a verified question"
+                                    : isCached
+                                      ? "Instant answer from a recent result"
+                                      : f.message;
+                                  return (
+                                    <p key={fi} className={`text-[10px] italic ${
+                                      isVerified ? "text-emerald-500/70" : isCached ? "text-blue-400/70" : "text-gray-400/70"
+                                    }`}>
+                                      {isVerified && (
+                                        <svg className="w-2.5 h-2.5 inline mr-0.5 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                                      )}
+                                      {isCached && (
+                                        <svg className="w-2.5 h-2.5 inline mr-0.5 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                                      )}
+                                      {displayMsg}
+                                    </p>
+                                  );
+                                })}
                               </div>
                             )}
                           </>
