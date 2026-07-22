@@ -21,6 +21,35 @@ export interface AskFlag {
   message: string;
 }
 
+export interface AskDelta {
+  label: string;
+  prev: number;
+  pct: number;
+  direction: "up" | "down" | "flat";
+}
+
+export interface AskContextTotal {
+  label: string;
+  value: number;
+  unit: "eur" | "pct" | "count";
+}
+
+export interface AskContextSparkline {
+  label: string;
+  unit: "eur" | "pct" | "count";
+  points: [string, number][];
+}
+
+export interface AskContext {
+  period?: { label: string; start: string; end: string };
+  data_through?: string;
+  coverage?: string | null;
+  deltas?: AskDelta[];
+  total?: AskContextTotal;
+  callouts?: string[];
+  sparkline?: AskContextSparkline;
+}
+
 export interface AskTurn {
   ts: number;
   cid: string; // conversation id
@@ -36,6 +65,7 @@ export interface AskTurn {
   followups?: string[];
   viz?: VizSpec | null;
   flags?: AskFlag[];
+  context?: AskContext;
 }
 
 export interface Conversation {
@@ -146,6 +176,7 @@ export async function runAsk(
       followups: d.followups || undefined,
       viz: d.viz || undefined,
       flags: d.flags || undefined,
+      context: d.context || undefined,
     });
     return { ok: true, usage: d.usage, clarify: !!d.needs_clarification || d.status === "clarify" };
   } catch {
