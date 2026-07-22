@@ -209,8 +209,8 @@ export function MarginsPage() {
                 <td className="px-3 py-2 text-gray-500 text-xs truncate max-w-[100px]">{p.supplier}</td>
                 <td className="px-3 py-2 text-center text-gray-400 text-xs">{p.pack}</td>
                 <td className="px-3 py-2 text-right">
-                  {p.margin < 20 && p.cost > 0 && p.retail > 0 && (() => {
-                    const suggested = +(p.cost / (1 - 0.25)).toFixed(2);
+                  {p.cost > 0 && p.retail > 0 && (() => {
+                    const suggested = p.margin < 20 ? +(p.cost / (1 - 0.25)).toFixed(2) : +(p.retail).toFixed(2);
                     const key = p.code || p.name;
                     const st = queueState[key] || "idle";
                     if (st === "done") return <span className="inline-flex items-center gap-1 text-[10px] text-green-600"><CheckCircle2 className="w-3 h-3" />Queued</span>;

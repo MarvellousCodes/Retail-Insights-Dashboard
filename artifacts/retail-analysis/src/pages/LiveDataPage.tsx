@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { apiCall } from "@/lib/api";
+import { apiCall, API_BASE } from "@/lib/api";
 import { ProductDetail } from "@/components/ProductDetail";
+import { CheckCircle2, Loader2 } from "lucide-react";
 
 function fmtPrice(v: string) {
   const n = parseFloat(v || "0");
@@ -57,6 +58,29 @@ export function LiveDataPage() {
   const [activeOnly, setActiveOnly] = useState(true);
   const [counts, setCounts] = useState<{active:number;all:number}>({active:0,all:0});
   const [selId, setSelId] = useState<string|null>(null);
+  const [queueState, setQueueState] = useState<Record<string, "idle" | "loading" | "done" | "error">>({});
+  const [queueInput, setQueueInput] = useState<Record<string, string>>({});
+  const [queueOpen, setQueueOpen] = useState<string | null>(null);
+
+  const handleQueuePrice = async (productCode: string, newPrice: number) => {
+    setQueueState((s) => ({ ...s, [productCode]: "loading" }));
+    try {
+      const token = localStorage.getItem("rg-token");
+      const res = await fetch(`${API_BASE}/api/price-jobs`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        body: JSON.stringify({ product_code: productCode, new_price: newPrice, draft: true, source: "products" }),
+      });
+      if (res.ok) {
+        setQueueState((s) => ({ ...s, [productCode]: "done" }));
+        setTimeout(() => { setQueueState((s) => ({ ...s, [productCode]: "idle" })); setQueueOpen(null); }, 2000);
+      } else {
+        setQueueState((s) => ({ ...s, [productCode]: "error" }));
+      }
+    } catch {
+      setQueueState((s) => ({ ...s, [productCode]: "error" }));
+    }
+  };
 
   useEffect(() => { loadData(); }, [activeOnly]);
 
@@ -214,6 +238,7 @@ export function LiveDataPage() {
                 <th className="px-3 py-2.5 text-left text-xs font-semibold text-violet-700"><Tip label="Supplier" tip="The supplier name, with their code beside it." /></th>
                 <th className="px-3 py-2.5 text-center text-xs font-semibold text-violet-700"><Tip label="Status" tip="Active or inactive, taken straight from the Active flag in your EPOS export (Active = Y)." /></th>
                 <th className="px-3 py-2.5 text-left text-xs font-semibold text-violet-700"><Tip label="Barcode" tip="The product barcode." /></th>
+                <th className="px-3 py-2.5 text-right text-xs font-semibold text-violet-700"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50 dark:divide-gray-700">
@@ -232,6 +257,39 @@ export function LiveDataPage() {
                   </td>
                   <td className="px-3 py-2.5 text-center">{(p.Active||"").trim()==="Y"?<span className="text-green-500 text-xs">●&nbsp;Active</span>:<span className="text-gray-300 text-xs">○&nbsp;Inactive</span>}</td>
                   <td className="px-3 py-2.5 text-gray-400 text-xs font-mono">{(p.BarCode||"").trim()}</td>
+                  <td className="px-3 py-2.5 text-right relative">
+                    {(() => {
+                      const code = String(p.ID || "");
+                      if (!code) return null;
+                      const cost = parseFloat(p.UnitCost || p.CurrentCost || "0");
+                      const retail = parseFloat(p.Retail1 || "0");
+                      if (cost <= 0 || retail <= 0) return null;
+                      const st = queueState[code] || "idle";
+                      if (st === "done") return <span className="inline-flex items-center gap-1 text-[10px] text-green-600"><CheckCircle2 className="w-3 h-3" />Added to Price changes</span>;
+                      if (st === "loading") return <Loader2 className="w-3 h-3 animate-spin text-violet-500" />;
+                      if (st === "error") return <span className="text-[10px] text-red-500">Failed</span>;
+                      if (queueOpen === code) {
+                        const val = queueInput[code] ?? retail.toFixed(2);
+                        return (
+                          <span className="inline-flex items-center gap-1" onClick={e => e.stopPropagation()}>
+                            <span className="text-[10px] text-gray-500">€</span>
+                            <input type="number" step="0.01" value={val}
+                              onChange={e => setQueueInput(s => ({ ...s, [code]: e.target.value }))}
+                              className="w-16 px-1.5 py-0.5 border border-violet-300 rounded text-xs text-right focus:outline-none focus:ring-1 focus:ring-violet-400" />
+                            <button onClick={() => { const v = parseFloat(queueInput[code] ?? String(retail)); if (v > 0) handleQueuePrice(code, v); }}
+                              className="text-[10px] font-medium bg-violet-600 text-white px-2 py-0.5 rounded hover:bg-violet-700">Save</button>
+                            <button onClick={() => setQueueOpen(null)} className="text-[10px] text-gray-400 hover:text-gray-600">✕</button>
+                          </span>
+                        );
+                      }
+                      return (
+                        <button onClick={e => { e.stopPropagation(); setQueueOpen(code); setQueueInput(s => ({ ...s, [code]: retail.toFixed(2) })); }}
+                          className="text-[10px] font-medium text-violet-600 hover:text-violet-800 whitespace-nowrap">
+                          Queue price change
+                        </button>
+                      );
+                    })()}
+                  </td>
                 </tr>
               ))}
             </tbody>
