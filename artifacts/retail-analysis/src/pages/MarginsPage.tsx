@@ -29,7 +29,7 @@ export function MarginsPage() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<"all"|"low"|"negative"|"high">("all");
   const { masked, toggle } = useRevenueMask();
-  const [queueState, setQueueState] = useState<Record<string, "idle" | "loading" | "done" | "error">>({});
+  const [queueState, setQueueState] = useState<Record<string, string>>({});
 
   const handleQueuePrice = async (productCode: string, newPrice: number) => {
     setQueueState((s) => ({ ...s, [productCode]: "loading" }));
@@ -41,9 +41,9 @@ export function MarginsPage() {
         body: JSON.stringify({ product_code: productCode, new_price: newPrice, draft: true, source: "margins" }),
       });
       if (res.ok) setQueueState((s) => ({ ...s, [productCode]: "done" }));
-      else setQueueState((s) => ({ ...s, [productCode]: "error" }));
-    } catch {
-      setQueueState((s) => ({ ...s, [productCode]: "error" }));
+      else { const e = await res.json().catch(() => ({})); setQueueState((s) => ({ ...s, [productCode]: e.error || e.message || "Failed" })); }
+    } catch (err: any) {
+      setQueueState((s) => ({ ...s, [productCode]: err?.message || "Network error" }));
     }
   };
 
@@ -215,7 +215,7 @@ export function MarginsPage() {
                     const st = queueState[key] || "idle";
                     if (st === "done") return <span className="inline-flex items-center gap-1 text-[10px] text-green-600"><CheckCircle2 className="w-3 h-3" />Queued</span>;
                     if (st === "loading") return <Loader2 className="w-3 h-3 animate-spin text-violet-500" />;
-                    if (st === "error") return <span className="text-[10px] text-red-500">Failed</span>;
+                    if (st !== "idle" && st !== "loading" && st !== "done") return <span className="text-[10px] text-red-500">{st}</span>;
                     return (
                       <button onClick={() => handleQueuePrice(key, suggested)}
                         className="text-[10px] font-medium text-violet-600 hover:text-violet-800 whitespace-nowrap">

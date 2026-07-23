@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { RefreshCw, LogOut, Sun, Moon, Box, Receipt, TrendingUp } from "lucide-react";
+import { LogOut, Sun, Moon, Box, Receipt, TrendingUp, Sparkles } from "lucide-react";
 import { apiCall, getUser, logout } from "@/lib/api";
 
 interface SettingsPageProps {
@@ -9,16 +9,42 @@ interface SettingsPageProps {
 
 export function SettingsPage({ theme, onThemeToggle }: SettingsPageProps) {
   const [stats, setStats] = useState<any>(null);
-  const [syncing, setSyncing] = useState(false);
-  const [syncMsg, setSyncMsg] = useState("");
+  const [aiProvider, setAiProvider] = useState<"claude" | "mistral">("mistral");
+  const [aiModel, setAiModel] = useState("");
+  const [claudeAvailable, setClaudeAvailable] = useState(false);
+  const [aiSwitching, setAiSwitching] = useState(false);
+  const [aiToast, setAiToast] = useState("");
 
   useEffect(() => { apiCall("/api/stats").then(setStats).catch(() => {}); }, []);
 
-  const handleSync = async () => {
-    setSyncing(true); setSyncMsg("");
-    try { await apiCall("/api/sync", { method: "POST" }); setSyncMsg("Refresh started. The latest figures land within a few minutes."); }
-    catch { setSyncMsg("Could not reach the server. Try again in a moment."); }
-    setSyncing(false);
+  useEffect(() => {
+    apiCall("/api/ask/provider").then((data) => {
+      if (data) {
+        setAiProvider(data.provider || "mistral");
+        setAiModel(data.model || "");
+        setClaudeAvailable(!!data.claude_available);
+      }
+    }).catch(() => {});
+  }, []);
+
+  const switchProvider = async (provider: "claude" | "mistral") => {
+    if (provider === aiProvider) return;
+    if (provider === "claude" && !claudeAvailable) return;
+    setAiSwitching(true);
+    try {
+      const data = await apiCall("/api/ask/provider", {
+        method: "POST",
+        body: JSON.stringify({ provider }),
+      });
+      setAiProvider(data.provider || provider);
+      setAiModel(data.model || "");
+      setAiToast(`Switched to ${provider === "claude" ? "Claude" : "Mistral"}`);
+      setTimeout(() => setAiToast(""), 3000);
+    } catch {
+      setAiToast("Failed to switch model");
+      setTimeout(() => setAiToast(""), 3000);
+    }
+    setAiSwitching(false);
   };
 
   const name = getUser() || "Store Manager";
@@ -34,22 +60,15 @@ export function SettingsPage({ theme, onThemeToggle }: SettingsPageProps) {
 
         {/* Your data */}
         <section className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-sm font-black text-gray-900 dark:text-white">Your data</h2>
-            <button onClick={handleSync} disabled={syncing}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 bg-violet-600 hover:bg-violet-700 text-white rounded-lg text-xs font-semibold disabled:opacity-50">
-              <RefreshCw className={`w-3.5 h-3.5 ${syncing ? "animate-spin" : ""}`} /> {syncing ? "Refreshing…" : "Refresh now"}
-            </button>
-          </div>
+          <h2 className="text-sm font-black text-gray-900 dark:text-white mb-4">Your data</h2>
           <div className="grid grid-cols-3 gap-3">
             <Stat icon={<Box className="w-4 h-4" />} label="Products" value={stats ? fmt(stats.stock) : "…"} />
             <Stat icon={<Receipt className="w-4 h-4" />} label="Transactions" value={stats ? fmt(stats.transactions) : "…"} />
             <Stat icon={<TrendingUp className="w-4 h-4" />} label="Sales records" value={stats ? fmt(stats.turnover) : "…"} />
           </div>
           <p className="text-xs text-gray-400 mt-4 leading-relaxed">
-            Your shop data updates automatically. Tap <span className="font-semibold text-gray-500 dark:text-gray-300">Refresh now</span> to pull the latest figures from your till system straight away.
+            Your shop data updates automatically from your till system.
           </p>
-          {syncMsg && <p className="text-xs text-violet-600 dark:text-violet-400 mt-2">{syncMsg}</p>}
         </section>
 
         {/* Account */}
@@ -88,6 +107,62 @@ export function SettingsPage({ theme, onThemeToggle }: SettingsPageProps) {
               Switch to {theme === "dark" ? "light" : "dark"}
             </button>
           </div>
+        </section>
+
+        {/* AI Model */}
+        <section className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-violet-500" />
+              <h2 className="text-sm font-black text-gray-900 dark:text-white">AI Model</h2>
+            </div>
+            {aiToast && (
+              <span className="text-xs font-semibold text-violet-600 dark:text-violet-400 animate-pulse">{aiToast}</span>
+            )}
+          </div>
+          <p className="text-xs text-gray-400 mb-4">Choose the model that powers Ask Your Shop</p>
+          <div className="grid grid-cols-2 gap-3">
+            {/* Claude option */}
+            <button
+              onClick={() => switchProvider("claude")}
+              disabled={!claudeAvailable || aiSwitching}
+              className={`relative p-4 rounded-xl border-2 text-left transition-all ${
+                aiProvider === "claude"
+                  ? "border-violet-500 bg-violet-50 dark:bg-violet-900/20"
+                  : claudeAvailable
+                    ? "border-gray-200 dark:border-gray-600 hover:border-violet-300"
+                    : "border-gray-100 dark:border-gray-700 opacity-50 cursor-not-allowed"
+              }`}
+            >
+              <p className="text-sm font-bold text-gray-900 dark:text-white">Claude Sonnet 4</p>
+              <p className="text-[11px] text-gray-400 mt-0.5">Anthropic</p>
+              {aiProvider === "claude" && (
+                <span className="absolute top-3 right-3 px-2 py-0.5 bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-400 text-[10px] font-bold rounded-full">Active</span>
+              )}
+              {!claudeAvailable && (
+                <span className="block mt-2 text-[10px] text-red-400 font-medium">Not configured</span>
+              )}
+            </button>
+            {/* Mistral option */}
+            <button
+              onClick={() => switchProvider("mistral")}
+              disabled={aiSwitching}
+              className={`relative p-4 rounded-xl border-2 text-left transition-all ${
+                aiProvider === "mistral"
+                  ? "border-violet-500 bg-violet-50 dark:bg-violet-900/20"
+                  : "border-gray-200 dark:border-gray-600 hover:border-violet-300"
+              }`}
+            >
+              <p className="text-sm font-bold text-gray-900 dark:text-white">Mistral Small</p>
+              <p className="text-[11px] text-gray-400 mt-0.5">Mistral AI</p>
+              {aiProvider === "mistral" && (
+                <span className="absolute top-3 right-3 px-2 py-0.5 bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-400 text-[10px] font-bold rounded-full">Active</span>
+              )}
+            </button>
+          </div>
+          {aiModel && (
+            <p className="text-[11px] text-gray-400 mt-3">Current model: <span className="font-mono text-gray-500 dark:text-gray-300">{aiModel}</span></p>
+          )}
         </section>
 
         <p className="text-center text-[11px] text-gray-300 dark:text-gray-600 pt-2">RetailGuard · know your shop, grow your margins</p>

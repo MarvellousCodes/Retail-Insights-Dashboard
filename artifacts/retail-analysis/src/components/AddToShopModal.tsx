@@ -64,10 +64,10 @@ export function AddToShopModal({ line, onClose, onResult }: AddToShopModalProps)
         onResult(`1 new product ${word} to your shop`, true);
       } else {
         const data = await res.json().catch(() => ({}));
-        onResult(data.error || "Could not add product", false);
+        onResult(data.error || data.message || `Could not add product (${res.status})`, false);
       }
-    } catch {
-      onResult("Network error, please try again", false);
+    } catch (err: any) {
+      onResult(err?.message || "Network error, please try again", false);
     }
     setSubmitting(false);
     setShowConfirm(false);

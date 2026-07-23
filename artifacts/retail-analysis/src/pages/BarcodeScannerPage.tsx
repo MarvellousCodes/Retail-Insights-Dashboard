@@ -1,10 +1,11 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { apiCall } from "@/lib/api";
+import { EditProductModal } from "@/components/EditProductModal";
 import { BrowserMultiFormatReader } from "@zxing/browser";
 import { DecodeHintType, BarcodeFormat } from "@zxing/library";
 import {
   ScanBarcode, Camera, CameraOff, Check, X, Keyboard, ImageUp,
-  Loader2, PackageSearch, AlertTriangle,
+  Loader2, PackageSearch, AlertTriangle, Pencil,
 } from "lucide-react";
 
 // Retail 1D formats. ZXing decodes these in pure JS, so it works on iOS Safari
@@ -42,6 +43,8 @@ export function BarcodeScannerPage() {
   const [looking, setLooking] = useState(false);
   const [scanning, setScanning] = useState(false);
   const [notice, setNotice] = useState("");
+  const [editProduct, setEditProduct] = useState<Product | null>(null);
+  const [editBanner, setEditBanner] = useState<{ msg: string; ok: boolean } | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const readerRef = useRef<BrowserMultiFormatReader | null>(null);
   const controlsRef = useRef<{ stop: () => void } | null>(null);
@@ -236,6 +239,18 @@ export function BarcodeScannerPage() {
               {p.sub_name && <span><span className="text-gray-400">Sub-dept:</span> {p.sub_name}</span>}
               {p.supplier && <span><span className="text-gray-400">Supplier:</span> {p.supplier}</span>}
             </div>
+            {/* Edit button */}
+            {p.price !== null && p.cost !== null && (
+              <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
+                <button onClick={() => setEditProduct(p)}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-violet-600 hover:bg-violet-700 text-white rounded-lg text-xs font-semibold transition">
+                  <Pencil className="w-3.5 h-3.5" /> Edit price / cost
+                </button>
+              </div>
+            )}
+            {editBanner && (
+              <p className={`mt-2 text-xs font-medium ${editBanner.ok ? "text-green-600" : "text-red-500"}`}>{editBanner.msg}</p>
+            )}
           </div>
         </div>
       )}
@@ -250,6 +265,26 @@ export function BarcodeScannerPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Edit product modal */}
+      {editProduct && (
+        <EditProductModal
+          line={{
+            invoice_desc: editProduct.name,
+            matched: editProduct.name,
+            barcode: editProduct.barcode || undefined,
+            old_cost: editProduct.cost,
+            invoice_cost: editProduct.cost,
+            selling_price: editProduct.price,
+            plu: editProduct.code || editProduct.barcode || undefined,
+          }}
+          onClose={() => setEditProduct(null)}
+          onResult={(msg, ok) => {
+            setEditBanner({ msg, ok });
+            setEditProduct(null);
+          }}
+        />
       )}
     </div>
   );

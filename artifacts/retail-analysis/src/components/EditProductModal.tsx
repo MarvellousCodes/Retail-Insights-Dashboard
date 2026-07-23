@@ -89,7 +89,7 @@ export function EditProductModal({ line, onClose, onResult }: EditProductModalPr
       if (allOk) {
         onResult(`${count} change${count > 1 ? "s" : ""} ${word}`, true);
       } else {
-        onResult("Some changes failed, please try again", false);
+        const failedRes = results.find((r) => !r.ok); const errData = failedRes ? await failedRes.json().catch(() => ({})) : {}; onResult(errData.error || errData.message || "Some changes failed, please try again", false);
       }
     } catch {
       onResult("Network error, please try again", false);

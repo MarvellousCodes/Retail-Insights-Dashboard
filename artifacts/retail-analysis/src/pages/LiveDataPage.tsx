@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { apiCall, API_BASE } from "@/lib/api";
 import { ProductDetail } from "@/components/ProductDetail";
+import { useRevenueMask, RevenueMaskToggle, STARS } from "@/lib/privacy";
 import { CheckCircle2, Loader2 } from "lucide-react";
 
 function fmtPrice(v: string) {
@@ -54,11 +55,11 @@ export function LiveDataPage() {
   const [groupBy, setGroupBy] = useState("");
   const [view, setView] = useState<"cards"|"table">("table");
   const [expanded, setExpanded] = useState<number|null>(null);
-  const [syncing, setSyncing] = useState(false);
   const [activeOnly, setActiveOnly] = useState(true);
+  const { masked, toggle } = useRevenueMask();
   const [counts, setCounts] = useState<{active:number;all:number}>({active:0,all:0});
   const [selId, setSelId] = useState<string|null>(null);
-  const [queueState, setQueueState] = useState<Record<string, "idle" | "loading" | "done" | "error">>({});
+  const [queueState, setQueueState] = useState<Record<string, string>>({});
   const [queueInput, setQueueInput] = useState<Record<string, string>>({});
   const [queueOpen, setQueueOpen] = useState<string | null>(null);
 
@@ -75,10 +76,10 @@ export function LiveDataPage() {
         setQueueState((s) => ({ ...s, [productCode]: "done" }));
         setTimeout(() => { setQueueState((s) => ({ ...s, [productCode]: "idle" })); setQueueOpen(null); }, 2000);
       } else {
-        setQueueState((s) => ({ ...s, [productCode]: "error" }));
+        const errBody = res ? await res.json().catch(() => ({})) : {}; setQueueState((s) => ({ ...s, [productCode]: errBody.error || errBody.message || "error" }));
       }
     } catch {
-      setQueueState((s) => ({ ...s, [productCode]: "error" }));
+      const errBody = res ? await res.json().catch(() => ({})) : {}; setQueueState((s) => ({ ...s, [productCode]: errBody.error || errBody.message || "error" }));
     }
   };
 
@@ -97,8 +98,6 @@ export function LiveDataPage() {
     const p = await apiCall(`/api/products?limit=300&active=${activeOnly?1:0}${search.trim()?`&search=${encodeURIComponent(search)}`:""}`);
     setProducts(p.data || []);
   };
-
-  const handleSync = async () => { setSyncing(true); await apiCall("/api/sync", { method: "POST" }); setSyncing(false); alert("Sync triggered! Data refreshes within 5 minutes."); };
 
   if (loading) return <div className="p-8 text-center text-gray-400">Loading products...</div>;
 
@@ -131,9 +130,7 @@ export function LiveDataPage() {
           <h1 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">Products</h1>
           <p className="text-gray-500 text-xs mt-0.5">{counts.active.toLocaleString()} active{!activeOnly && counts.all ? ` of ${counts.all.toLocaleString()} total` : ""} • Synced from store EPOS</p>
         </div>
-        <button onClick={handleSync} disabled={syncing} className="px-3 py-1.5 bg-violet-600 hover:bg-violet-700 text-white rounded-lg text-xs font-medium disabled:opacity-50">
-          {syncing ? "..." : "⟳ Sync Now"}
-        </button>
+        <RevenueMaskToggle masked={masked} toggle={toggle} />
       </div>
 
       {/* Controls */}
@@ -182,7 +179,7 @@ export function LiveDataPage() {
                       <span className="text-sm text-gray-800 dark:text-gray-200">{(p.Description||"").trim()}</span>
                       {(p.Active||"").trim() === "N" && <span className="ml-2 text-[10px] bg-red-50 text-red-500 px-1.5 py-0.5 rounded">Inactive</span>}
                     </div>
-                    <span className="text-sm font-semibold text-violet-600">{fmtPrice(p.Retail1)}</span>
+                    <span className="text-sm font-semibold text-violet-600">{masked ? STARS : fmtPrice(p.Retail1)}</span>
                   </div>
                 ))}
                 {items.length > 5 && <div className="px-4 py-2 text-xs text-gray-400 text-center">+{items.length-5} more products</div>}
@@ -200,8 +197,8 @@ export function LiveDataPage() {
                   <p className="text-xs text-gray-400 mt-0.5">{(p.SupplierName||p.Supplier||"").trim()} {(p.BarCode||"").trim() ? `• ${(p.BarCode||"").trim()}` : ""}</p>
                 </div>
                 <div className="text-right shrink-0">
-                  <p className="text-lg font-bold text-violet-600">{fmtPrice(p.Retail1)}</p>
-                  <p className="text-[10px] text-gray-400">Cost {fmtPrice(p.UnitCost||p.CurrentCost)}</p>
+                  <p className="text-lg font-bold text-violet-600">{masked ? STARS : fmtPrice(p.Retail1)}</p>
+                  <p className="text-[10px] text-gray-400">Cost {masked ? STARS : fmtPrice(p.UnitCost||p.CurrentCost)}</p>
                 </div>
               </div>
               <div className="flex gap-2 mt-2 flex-wrap items-center">
@@ -214,7 +211,7 @@ export function LiveDataPage() {
                 <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700 grid grid-cols-2 gap-2 text-xs">
                   <div><span className="text-gray-400">Barcode:</span> <span className="text-gray-700 dark:text-gray-300">{(p.BarCode||"—").trim()}</span></div>
                   <div><span className="text-gray-400">Pack Size:</span> <span className="text-gray-700 dark:text-gray-300">{p.PackSize||"—"}</span></div>
-                  <div><span className="text-gray-400">Avg Cost:</span> <span className="text-gray-700 dark:text-gray-300">{fmtPrice(p.AverageCost)}</span></div>
+                  <div><span className="text-gray-400">Avg Cost:</span> <span className="text-gray-700 dark:text-gray-300">{masked ? STARS : fmtPrice(p.AverageCost)}</span></div>
                   <div><span className="text-gray-400">Markup:</span> <span className="text-gray-700 dark:text-gray-300">{p.Markup||"—"}%</span></div>
                   <div><span className="text-gray-400">Reorder Level:</span> <span className="text-gray-700 dark:text-gray-300">{p.ReOrderLevel||"—"}</span></div>
                   <div><span className="text-gray-400">Category:</span> <span className="text-gray-700 dark:text-gray-300">{(p.Analysis1||"—").trim()}</span></div>
@@ -245,8 +242,8 @@ export function LiveDataPage() {
               {sorted.map((p, i) => (
                 <tr key={i} onClick={() => p.ID && setSelId(String(p.ID))} className="hover:bg-violet-50/40 cursor-pointer">
                   <td className="px-3 py-2.5 text-gray-800 dark:text-gray-200 truncate max-w-[220px]">{(p.Description||"").trim()}</td>
-                  <td className="px-3 py-2.5 text-right font-medium text-violet-600">{p.price_on_request ? <span className="text-[11px] text-gray-400">on request</span> : fmtPrice(p.Retail1)}</td>
-                  <td className="px-3 py-2.5 text-right text-gray-500">{fmtPrice(p.UnitCost||p.CurrentCost)}</td>
+                  <td className="px-3 py-2.5 text-right font-medium text-violet-600">{p.price_on_request ? <span className="text-[11px] text-gray-400">on request</span> : masked ? STARS : fmtPrice(p.Retail1)}</td>
+                  <td className="px-3 py-2.5 text-right text-gray-500">{masked ? STARS : fmtPrice(p.UnitCost||p.CurrentCost)}</td>
                   <td className="px-3 py-2.5 text-center"><MarginBadge p={p} /></td>
                   <td className="px-3 py-2.5 text-right text-gray-500 text-xs">{p.markup===null||p.markup===undefined?"—":p.markup+"%"}</td>
                   <td className="px-3 py-2.5 text-gray-500 truncate max-w-[180px]">
@@ -267,7 +264,7 @@ export function LiveDataPage() {
                       const st = queueState[code] || "idle";
                       if (st === "done") return <span className="inline-flex items-center gap-1 text-[10px] text-green-600"><CheckCircle2 className="w-3 h-3" />Added to Price changes</span>;
                       if (st === "loading") return <Loader2 className="w-3 h-3 animate-spin text-violet-500" />;
-                      if (st === "error") return <span className="text-[10px] text-red-500">Failed</span>;
+                      if (st !== "idle" && st !== "loading" && st !== "done") return <span className="text-[10px] text-red-500">{st}</span>;
                       if (queueOpen === code) {
                         const val = queueInput[code] ?? retail.toFixed(2);
                         return (
