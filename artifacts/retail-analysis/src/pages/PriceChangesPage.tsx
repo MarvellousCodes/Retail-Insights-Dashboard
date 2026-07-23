@@ -25,6 +25,12 @@ interface PriceJobsResponse {
 
 const eur = (v: number) => "\u20AC" + v.toFixed(2);
 
+function formatExactTime(iso: string | null): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  return d.toLocaleString("en-IE", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", hour12: false });
+}
+
 function humanTime(iso: string | null): string {
   if (!iso) return "";
   const d = new Date(iso);
@@ -72,6 +78,7 @@ export function PriceChangesPage() {
   const [confirming, setConfirming] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [dismissing, setDismissing] = useState<number | null>(null);
+  const [banner, setBanner] = useState<{ msg: string; ok: boolean } | null>(null);
 
   const fetchJobs = useCallback(async () => {
     setLoading(true);
@@ -110,21 +117,27 @@ export function PriceChangesPage() {
     setDismissing(jobId);
     try {
       await apiCall(`/api/price-jobs/${jobId}/dismiss`, { method: "POST" });
+      setBanner({ msg: "Price change dismissed", ok: true });
       fetchJobs();
-    } catch { /* noop */ }
+    } catch {
+      setBanner({ msg: "Could not dismiss. Please try again.", ok: false });
+    }
     setDismissing(null);
   };
 
   const handleConfirmBatch = async () => {
     setConfirming(true);
     try {
-      await apiCall("/api/price-jobs/confirm", {
+      const res = await apiCall("/api/price-jobs/confirm", {
         method: "POST",
         body: JSON.stringify({ ids: Array.from(checked) }),
       });
       setShowModal(false);
+      setBanner({ msg: `${checked.size} price change${checked.size !== 1 ? "s" : ""} pushed to your shop`, ok: true });
       fetchJobs();
-    } catch { /* noop */ }
+    } catch {
+      setBanner({ msg: "Could not push changes. Please try again.", ok: false });
+    }
     setConfirming(false);
   };
 
@@ -169,6 +182,14 @@ export function PriceChangesPage() {
         Every change is recorded with before and after prices.
       </p>
 
+      {banner && (
+        <div className={`mb-4 flex items-center gap-2 px-4 py-3 rounded-xl border text-sm ${banner.ok ? "bg-green-50 dark:bg-green-900/15 border-green-200 dark:border-green-800 text-green-800 dark:text-green-300" : "bg-red-50 dark:bg-red-900/15 border-red-200 dark:border-red-800 text-red-800 dark:text-red-300"}`}>
+          {banner.ok ? <CheckCircle2 className="w-4 h-4 shrink-0" /> : <AlertCircle className="w-4 h-4 shrink-0" />}
+          <span>{banner.msg}</span>
+          <button onClick={() => setBanner(null)} className="ml-auto text-gray-400 hover:text-gray-600"><X className="w-3.5 h-3.5" /></button>
+        </div>
+      )}
+
       {!enabled && (
         <div className="flex items-start gap-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 p-4 mb-5">
           <AlertCircle className="w-4 h-4 text-gray-400 mt-0.5 shrink-0" />
@@ -206,6 +227,7 @@ export function PriceChangesPage() {
                         <th className="text-center px-2 py-2.5 font-semibold text-gray-400">{"\u2192"}</th>
                         <th className="text-right px-3 py-2.5 font-semibold text-gray-700 dark:text-gray-200">Proposed</th>
                         <th className="text-left px-3 py-2.5 font-semibold text-gray-700 dark:text-gray-200">Source</th>
+                        <th className="text-right px-3 py-2.5 font-semibold text-gray-700 dark:text-gray-200">Queued</th>
                         <th className="text-right px-3 py-2.5"></th>
                       </tr>
                     </thead>
@@ -233,6 +255,9 @@ export function PriceChangesPage() {
                           </td>
                           <td className="px-3 py-3">
                             <SourceChip source={job.source} />
+                          </td>
+                          <td className="text-right px-3 py-3 text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                            {formatExactTime(job.created_at)}
                           </td>
                           <td className="text-right px-3 py-3">
                             <button
@@ -352,8 +377,9 @@ export function PriceChangesPage() {
                       <td className="px-3 py-3">
                         <SourceChip source={job.source} />
                       </td>
-                      <td className="text-right px-4 py-3 text-xs text-gray-400">
-                        {humanTime(job.applied_at || job.created_at)}
+                      <td className="text-right px-4 py-3 text-xs whitespace-nowrap">
+                        <span className="block text-gray-700 dark:text-gray-200">{formatExactTime(job.applied_at || job.created_at)}</span>
+                        <span className="block text-gray-400 text-[10px]">{humanTime(job.applied_at || job.created_at)}</span>
                       </td>
                       <td className="text-right px-4 py-3">
                         {job.status === "applied" && (
